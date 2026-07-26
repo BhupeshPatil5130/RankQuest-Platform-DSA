@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, CheckCircle, Circle, Search, Play, StickyNote, X, Save, 
+import {
+  ArrowLeft, CheckCircle, Circle, Search, Play, StickyNote, X, Save,
   Bookmark, ExternalLink, Building2, Tag, Loader2
 } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -136,16 +136,16 @@ const SheetDetail = () => {
   const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTopic, setSelectedTopic] = useState('all')
   const [selectedDifficulty, setSelectedDifficulty] = useState('all')
   const [selectedCompany, setSelectedCompany] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
-  
+
   const [solvedProblems, setSolvedProblems] = useState(new Set())
   const [bookmarks, setBookmarks] = useState(() => JSON.parse(localStorage.getItem('rankquest_bookmarks') || '[]'))
-  
+
   const [isLoading, setIsLoading] = useState(true)
   const [sheetInfo, setSheetInfo] = useState(null)
   const [problems, setProblems] = useState([])
@@ -225,8 +225,8 @@ const SheetDetail = () => {
     : (sheetFallback[sheetId]?.color || 'bg-gradient-to-r from-blue-500 to-blue-600');
 
   // If backend returns problems use them, otherwise filter default catalog by sheetSlug
-  const sheetProblems = problems.length > 0 
-    ? problems 
+  const sheetProblems = problems.length > 0
+    ? problems
     : defaultSheetProblems.filter(p => p.sheetSlug === sheetId);
 
   const solvedInSheet = sheetProblems.filter(p => solvedProblems.has(p.id)).length;
@@ -240,20 +240,22 @@ const SheetDetail = () => {
   const statuses = ['all', 'solved', 'unsolved', 'bookmarked'];
 
   const filteredProblems = sheetProblems.filter(problem => {
-    const matchesSearch = problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (problem.topic || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (problem.companies || '').toLowerCase().includes(searchTerm.toLowerCase());
+    if (!problem) return false;
+    const term = (searchTerm || '').toLowerCase();
+    const matchesSearch = (problem.title || '').toLowerCase().includes(term) ||
+      (problem.topic || '').toLowerCase().includes(term) ||
+      (problem.companies || '').toLowerCase().includes(term);
     const matchesTopic = selectedTopic === 'all' || problem.topic === selectedTopic;
     const matchesDifficulty = selectedDifficulty === 'all' || problem.difficulty === selectedDifficulty;
     const matchesCompany = selectedCompany === 'all' || (problem.companies && problem.companies.includes(selectedCompany));
-    
+
     const isSolved = solvedProblems.has(problem.id);
     const isBm = bookmarks.includes(Number(problem.id));
     const matchesStatus = selectedStatus === 'all' ||
-                         (selectedStatus === 'solved' && isSolved) ||
-                         (selectedStatus === 'unsolved' && !isSolved) ||
-                         (selectedStatus === 'bookmarked' && isBm);
-                         
+      (selectedStatus === 'solved' && isSolved) ||
+      (selectedStatus === 'unsolved' && !isSolved) ||
+      (selectedStatus === 'bookmarked' && isBm);
+
     return matchesSearch && matchesTopic && matchesDifficulty && matchesCompany && matchesStatus;
   });
 

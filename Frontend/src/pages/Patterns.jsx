@@ -70,9 +70,11 @@ const Patterns = () => {
   }, [user]);
 
   const filteredPatterns = patterns.filter(pattern => {
-    const matchesSearch = pattern.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          pattern.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          pattern.category.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!pattern) return false;
+    const term = (searchTerm || '').toLowerCase();
+    const matchesSearch = (pattern.name || '').toLowerCase().includes(term) ||
+                          (pattern.description || '').toLowerCase().includes(term) ||
+                          (pattern.category || '').toLowerCase().includes(term);
     const matchesCategory = selectedCategory === 'All' || pattern.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
