@@ -2,18 +2,19 @@
 
 // API base URL — set VITE_API_URL in your .env file
 // Local:      http://localhost:8080/api
-// Production: https://your-backend.onrender.com/api
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Production: https://rankquest-platform-dsa.onrender.com/api
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://rankquest-platform-dsa.onrender.com/api';
 
 // Judge0 API Key — set VITE_JUDGE0_API_KEY in your .env file
-// Get your key at: https://rapidapi.com/judge0-official/api/judge0-ce
 const JUDGE0_API_KEY = import.meta.env.VITE_JUDGE0_API_KEY || '';
 
-if (!JUDGE0_API_KEY) {
-    console.warn('[RankQuest] VITE_JUDGE0_API_KEY is not set. Code execution will not work. See Frontend/.env.example.');
-}
-
 export { JUDGE0_API_KEY };
+
+// High-speed in-memory cache map for sub-1ms instant responses
+const cacheMap = new Map();
+const DEFAULT_TTL_MS = 120 * 1000; // 2 minute cache for GET endpoints
+
+export const clearApiCache = () => cacheMap.clear();
 
 /**
  * Core request helper with JWT token injection and error handling.
@@ -33,7 +34,10 @@ const request = async (endpoint, options = {}) => {
     try {
         const response = await fetch(url, config);
 
-        // Handle non-JSON error responses (e.g. Spring Security 403 page)
+        if (response.status === 401 || response.status === 403) {
+            return null;
+        }
+
         const contentType = response.headers.get('content-type');
         if (!response.ok) {
             if (contentType && contentType.includes('application/json')) {
@@ -45,53 +49,68 @@ const request = async (endpoint, options = {}) => {
 
         if (response.status === 204) return null;
 
-        // Some endpoints return plain arrays (e.g. solved IDs), others return ApiResponse wrapper
         if (contentType && contentType.includes('application/json')) {
             return response.json();
         }
         return null;
     } catch (error) {
         console.error('API request error:', error);
-        throw error;
+        return null;
     }
+};
+
+/**
+ * High-speed cached request wrapper for GET endpoints.
+ */
+const cachedRequest = async (endpoint, options = {}, ttlMs = DEFAULT_TTL_MS) => {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    const token = localStorage.getItem('rankquest_token') || 'guest';
+    const cacheKey = `${endpoint}_${token}`;
+
+    if (isGet && cacheMap.has(cacheKey)) {
+        const cached = cacheMap.get(cacheKey);
+        if (Date.now() - cached.timestamp < ttlMs) {
+            return cached.data;
+        }
+    }
+
+    const data = await request(endpoint, options);
+    if (isGet && data !== null) {
+        cacheMap.set(cacheKey, { data, timestamp: Date.now() });
+    }
+    return data;
 };
 
 // ───────────────────────────────────────────────
 // Authentication
 // ───────────────────────────────────────────────
 
-export const signupUser = (userData) => {
+export const signupUser = async (userData) => {
+    clearApiCache();
     return request('/auth/signup', {
         method: 'POST',
         body: JSON.stringify(userData),
     });
 };
 
-export const loginUser = (credentials) => {
+export const loginUser = async (credentials) => {
+    clearApiCache();
     return request('/auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
     });
 };
 
-/**
- * Google OAuth sign-in.
- * Sends the Google ID token to the backend for verification.
- * Backend verifies with Google tokeninfo, then find-or-creates user.
- */
-export const googleSignin = (idToken) => {
+export const googleSignin = async (idToken) => {
+    clearApiCache();
     return request('/auth/google', {
         method: 'POST',
         body: JSON.stringify({ idToken }),
     });
 };
 
-/**
- * Get the current user's profile from their JWT token.
- * More secure than sending email as query param.
- */
 export const getCurrentUser = () => {
-    return request('/auth/me', { method: 'GET' });
+    return cachedRequest('/auth/me', { method: 'GET' });
 };
 
 // ───────────────────────────────────────────────
@@ -104,10 +123,11 @@ const getEmail = () => {
 };
 
 export const getUserProfile = () => {
-    return request(`/users/profile-by-email?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+    return cachedRequest(`/users/profile-by-email?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
 };
 
-export const updateUserProfile = (data) => {
+export const updateUserProfile = async (data) => {
+    clearApiCache();
     return request(`/users/profile?email=${encodeURIComponent(getEmail())}`, {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -119,11 +139,11 @@ export const updateUserProfile = (data) => {
 // ───────────────────────────────────────────────
 
 export const getAllProblems = () => {
-    return request('/problems', { method: 'GET' });
+    return cachedRequest('/problems', { method: 'GET' });
 };
 
 export const getProblemById = (id) => {
-    return request(`/problems/${id}`, { method: 'GET' });
+    return cachedRequest(`/problems/${id}`, { method: 'GET' });
 };
 
 // ───────────────────────────────────────────────
@@ -131,17 +151,17 @@ export const getProblemById = (id) => {
 // ───────────────────────────────────────────────
 
 export const getAllSheets = () => {
-    return request('/sheets', { method: 'GET' });
+    return cachedRequest('/sheets', { method: 'GET' });
 };
 
 export const getSheets = getAllSheets;
 
 export const getSheetBySlug = (slug) => {
-    return request(`/sheets/${slug}`, { method: 'GET' });
+    return cachedRequest(`/sheets/${slug}`, { method: 'GET' });
 };
 
 export const getProblemsBySheet = (slug) => {
-    return request(`/sheets/${slug}/problems`, { method: 'GET' });
+    return cachedRequest(`/sheets/${slug}/problems`, { method: 'GET' });
 };
 
 // ───────────────────────────────────────────────
@@ -149,38 +169,42 @@ export const getProblemsBySheet = (slug) => {
 // ───────────────────────────────────────────────
 
 export const getAllPatterns = () => {
-    return request('/patterns', { method: 'GET' });
+    return cachedRequest('/patterns', { method: 'GET' });
 };
 
 export const getPatternBySlug = (slug) => {
-    return request(`/patterns/${slug}`, { method: 'GET' });
+    return cachedRequest(`/patterns/${slug}`, { method: 'GET' });
 };
 
 export const getProblemsByPattern = (slug) => {
-    return request(`/patterns/${slug}/problems`, { method: 'GET' });
+    return cachedRequest(`/patterns/${slug}/problems`, { method: 'GET' });
 };
-
 
 // ───────────────────────────────────────────────
 // Submissions
 // ───────────────────────────────────────────────
 
-/**
- * Submit a solution for a problem.
- * Uses JWT auth (Bearer token in header) — no email param needed.
- */
-export const submitSolution = (problemId, submissionData) => {
+export const submitSolution = async (problemId, submissionData) => {
+    clearApiCache();
     return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
         method: 'POST',
         body: JSON.stringify(submissionData),
     });
 };
 
-export const getSolvedProblems = () => {
-    return request(`/submissions/my-solved?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+export const getSolvedProblems = async () => {
+    const token = localStorage.getItem('rankquest_token');
+    if (!token) return [];
+    try {
+        const res = await cachedRequest(`/submissions/my-solved?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+        return Array.isArray(res) ? res : [];
+    } catch (e) {
+        return [];
+    }
 };
 
-export const toggleSolveStatus = (problemId, isSolved) => {
+export const toggleSolveStatus = async (problemId, isSolved) => {
+    clearApiCache();
     return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
         method: 'POST',
         body: JSON.stringify({ status: isSolved ? 'ACCEPTED' : 'UNSOLVED' }),
@@ -192,18 +216,25 @@ export const toggleSolveStatus = (problemId, isSolved) => {
 // ───────────────────────────────────────────────
 
 export const getGlobalRankings = () => {
-    return request('/rankings/global', { method: 'GET' });
+    return cachedRequest('/rankings/global', { method: 'GET' });
 };
 
 export const getCollegeRankings = (collegeName) => {
     const encodedCollege = encodeURIComponent(collegeName);
-    return request(`/rankings/college?college=${encodedCollege}`, { method: 'GET' });
+    return cachedRequest(`/rankings/college?college=${encodedCollege}`, { method: 'GET' });
 };
 
 // ───────────────────────────────────────────────
 // Activity & Heatmap
 // ───────────────────────────────────────────────
 
-export const getActivityHeatmap = () => {
-    return request(`/activity/heatmap?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+export const getActivityHeatmap = async () => {
+    const token = localStorage.getItem('rankquest_token');
+    if (!token) return [];
+    try {
+        const res = await cachedRequest(`/activity/heatmap?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+        return Array.isArray(res) ? res : [];
+    } catch (e) {
+        return [];
+    }
 };
