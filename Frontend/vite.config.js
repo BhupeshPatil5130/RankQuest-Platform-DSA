@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path' // 1. Import the 'path' module
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,7 +13,6 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  // 2. Add this 'resolve' section to create the alias
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
