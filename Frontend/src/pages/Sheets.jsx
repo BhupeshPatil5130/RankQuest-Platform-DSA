@@ -1,160 +1,121 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Search, ArrowRight, Layers, Sparkles, ShieldCheck } from 'lucide-react';
-import { Card, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
+import { BookOpen, Search, ArrowRight, Sparkles } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
+import { Input } from '../components/ui/input';
 import { getSheets, getSolvedProblems } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sheets = () => {
+const sheetColors = [
+  { border: 'border-indigo-200 dark:border-indigo-800/60', grad: 'from-indigo-500 to-purple-600', badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800', bar: '[&>div]:from-indigo-400 [&>div]:to-purple-500' },
+  { border: 'border-emerald-200 dark:border-emerald-800/60', grad: 'from-emerald-500 to-teal-600', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', bar: '[&>div]:from-emerald-400 [&>div]:to-teal-500' },
+  { border: 'border-amber-200 dark:border-amber-800/60', grad: 'from-amber-500 to-orange-600', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-800', bar: '[&>div]:from-amber-400 [&>div]:to-orange-500' },
+  { border: 'border-pink-200 dark:border-pink-800/60', grad: 'from-pink-500 to-rose-600', badge: 'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-400 border-pink-200 dark:border-pink-800', bar: '[&>div]:from-pink-400 [&>div]:to-rose-500' },
+  { border: 'border-cyan-200 dark:border-cyan-800/60', grad: 'from-cyan-500 to-blue-600', badge: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800', bar: '[&>div]:from-cyan-400 [&>div]:to-blue-500' },
+  { border: 'border-violet-200 dark:border-violet-800/60', grad: 'from-violet-500 to-fuchsia-600', badge: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400 border-violet-200 dark:border-violet-800', bar: '[&>div]:from-violet-400 [&>div]:to-fuchsia-500' },
+];
+
+export default function Sheets() {
   const { user } = useAuth();
-  const [sheets, setSheets] = useState([]);
+  const [sheets,  setSheets]  = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search,  setSearch]  = useState('');
   const [solvedCountMap, setSolvedCountMap] = useState({});
 
   useEffect(() => {
-    const fetchSheetsData = async () => {
+    (async () => {
       try {
-        setLoading(true);
         const data = await getSheets();
-        if (data && Array.isArray(data)) {
+        if (data?.length) {
           setSheets(data);
-
           if (user) {
-            try {
-              const solvedIds = await getSolvedProblems();
-              const solvedSet = new Set(solvedIds || []);
-
-              const countMap = {};
-              for (const sheet of data) {
-                if (sheet.problems && Array.isArray(sheet.problems)) {
-                  const count = sheet.problems.filter(p => solvedSet.has(p.id)).length;
-                  countMap[sheet.id] = count;
-                }
-              }
-              setSolvedCountMap(countMap);
-            } catch (err) {
-              console.error('Failed to get sheet solved count:', err);
+            const ids = await getSolvedProblems().catch(() => []);
+            const s   = new Set(ids || []);
+            const m   = {};
+            for (const sh of data) {
+              if (sh.problems?.length) m[sh.id] = sh.problems.filter(p => s.has(p.id)).length;
             }
+            setSolvedCountMap(m);
           }
         }
-      } catch (err) {
-        console.error('Error fetching sheets:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSheetsData();
+      } finally { setLoading(false); }
+    })();
   }, [user]);
 
-  const filteredSheets = sheets.filter(sheet => 
-    sheet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sheet.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sheet.author?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = sheets.filter(sh =>
+    sh.title.toLowerCase().includes(search.toLowerCase()) ||
+    sh.description?.toLowerCase().includes(search.toLowerCase()) ||
+    sh.author?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header Hero */}
-        <div className="border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4 shadow-sm dark:shadow-none">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-            <BookOpen className="w-3.5 h-3.5" />
-            Curated SDE Problem Sheets
+
+        {/* Hero */}
+        <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl p-7 md:p-10 shadow-xl shadow-emerald-500/20 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-extrabold uppercase tracking-widest">
+            <BookOpen className="w-3.5 h-3.5" /> Curated SDE Problem Sheets
           </div>
-          
-          <div className="max-w-3xl space-y-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-              SDE Sheet Collections
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
-              Handpicked problem collections by industry leaders including Striver SDE Sheet, NeetCode 150, Blind 75, and Love Babbar 450.
-            </p>
-          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">SDE Sheet Collections</h1>
+          <p className="text-emerald-100 text-sm max-w-2xl leading-relaxed">
+            Handpicked problem collections — Striver SDE Sheet, NeetCode 150, Blind 75, and Love Babbar 450.
+          </p>
         </div>
 
         {/* Search */}
-        <div className="flex justify-between items-center bg-white dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
-          <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-            <Input
-              type="text"
-              placeholder="Search sheets by title or author..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-xs h-9 rounded-lg"
-            />
+        <div className="flex justify-end bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input placeholder="Search sheets…" value={search} onChange={e => setSearch(e.target.value)}
+              className="pl-9 h-9 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg" />
           </div>
         </div>
 
-        {/* Sheets Grid */}
+        {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-56 rounded-xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 animate-pulse p-5"></div>
-            ))}
+            {[1,2,3].map(i => <div key={i} className="h-56 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredSheets.map((sheet) => {
-              const solvedCount = solvedCountMap[sheet.id] || 0;
-              const totalProblems = sheet.problemCount || sheet.problems?.length || 0;
-              const progressPct = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
-
+            {filtered.map((sheet, idx) => {
+              const c      = sheetColors[idx % sheetColors.length];
+              const solved = solvedCountMap[sheet.id] || 0;
+              const total  = sheet.problemCount || sheet.problems?.length || 0;
+              const pct    = total ? Math.round((solved / total) * 100) : 0;
               return (
-                <Card 
-                  key={sheet.id}
-                  className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between p-5 space-y-4 group shadow-sm dark:shadow-none"
-                >
-                  <CardContent className="p-0 space-y-4 flex-1 flex flex-col justify-between">
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
-                          {sheet.author || 'Curated'}
-                        </Badge>
-                        <span className="text-xs text-zinc-500 font-mono">{totalProblems} Questions</span>
-                      </div>
-
-                      <h2 className="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        {sheet.title}
-                      </h2>
-
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed">
-                        {sheet.description}
-                      </p>
+                <div key={sheet.id}
+                  className={`group bg-white dark:bg-slate-900 border-2 ${c.border} rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between`}>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${c.badge}`}>{sheet.author || 'Curated'}</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500 code-font">{total} Qs</span>
                     </div>
-
-                    <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-zinc-500">Progress</span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{solvedCount} / {totalProblems} Solved</span>
-                      </div>
-                      <Progress value={progressPct} className="h-1.5 bg-zinc-100 dark:bg-zinc-950" />
-
-                      <Link to={`/sheets/${sheet.id}`} className="block pt-1">
-                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 text-xs font-semibold transition-all">
-                          <span>Open SDE Sheet</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      </Link>
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.grad} flex items-center justify-center shadow-md`}>
+                      <BookOpen className="w-5 h-5 text-white" />
                     </div>
-
-                  </CardContent>
-                </Card>
+                    <h2 className="font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{sheet.title}</h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">{sheet.description}</p>
+                  </div>
+                  <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between text-[11px] font-semibold">
+                      <span className="text-slate-500">Progress</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">{solved} / {total}</span>
+                    </div>
+                    <Progress value={pct} className={`h-1.5 bg-slate-100 dark:bg-slate-800 [&>div]:bg-gradient-to-r ${c.bar}`} />
+                    <Link to={`/sheets/${sheet.id}`}>
+                      <button className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r ${c.grad} text-white text-xs font-bold shadow-md hover:opacity-90 hover:scale-[1.02] transition-all`}>
+                        Open Sheet <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
-
       </div>
     </div>
   );
-};
-
-export default Sheets;
+}

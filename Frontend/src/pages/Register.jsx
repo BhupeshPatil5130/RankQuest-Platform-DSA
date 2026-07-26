@@ -1,293 +1,165 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-import {
-  Eye, EyeOff, Mail, Lock, User, School,
-  UserPlus, BookOpen, ArrowRight, Loader2, Layers
-} from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
+import { Eye, EyeOff, Mail, Lock, User, School, BookOpen, ArrowRight, Loader2, Layers, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
 
-const FormField = ({ label, icon: Icon, error, children }) => (
+const Field = ({ label, icon: Icon, error, iconColor = 'text-indigo-500', children }) => (
   <div className="space-y-1">
-    <Label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-      {Icon && <Icon className="w-3.5 h-3.5 text-zinc-500" />} {label}
-    </Label>
+    <label className={`text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5`}>
+      <Icon className={`w-3.5 h-3.5 ${iconColor}`} /> {label}
+    </label>
     {children}
-    {error && <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-0.5">{error}</p>}
+    {error && <p className="text-[11px] text-rose-500">{error}</p>}
   </div>
 );
 
-const Register = () => {
+const inputCls = (err) =>
+  `w-full h-10 px-3.5 rounded-xl border ${err ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'} bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all`;
+
+export default function Register() {
   const navigate = useNavigate();
   const { register, googleLogin } = useAuth();
   const { toast } = useToast();
 
-  const [loading, setLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [showConf, setShowConf] = useState(false);
+  const [errors,   setErrors]   = useState({});
+  const [form,     setForm]     = useState({ name: '', email: '', college: '', branch: '', password: '', confirmPassword: '' });
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    rollNumber: '',
-    college: '',
-    branch: '',
-    year: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [errors, setErrors] = useState({});
-
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
-  };
+  const set = (k, v) => { setForm(p => ({ ...p, [k]: v })); if (errors[k]) setErrors(p => ({ ...p, [k]: '' })); };
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Full name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
-    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const e = {};
+    if (!form.name.trim())     e.name     = 'Full name is required';
+    if (!form.email.trim())    e.email    = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email';
+    if (!form.password)        e.password = 'Password is required';
+    else if (form.password.length < 6)  e.password = 'Minimum 6 characters';
+    if (!form.confirmPassword) e.confirmPassword = 'Please confirm password';
+    else if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
+    setErrors(e);
+    return !Object.keys(e).length;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (ev) => {
+    ev.preventDefault();
     if (!validate()) return;
-
     setLoading(true);
-    const userDataForBackend = {
-      username: formData.name.trim().replace(/\s+/g, '_').toLowerCase(),
-      fullName: formData.name.trim(),
-      email: formData.email,
-      password: formData.password,
-      rollNumber: formData.rollNumber,
-      college: formData.college,
-      branch: formData.branch,
-      year: formData.year,
+    const payload = {
+      username:  form.name.trim().replace(/\s+/g,'_').toLowerCase(),
+      fullName:  form.name.trim(),
+      email:     form.email,
+      password:  form.password,
+      college:   form.college,
+      branch:    form.branch,
     };
-
-    try {
-      const result = await register(userDataForBackend);
-      if (result.success) {
-        toast({
-          title: '🎉 Account Created!',
-          description: 'Welcome to RankQuest! Please sign in to continue.',
-          variant: 'default'
-        });
-        navigate('/login');
-      } else {
-        toast({
-          title: 'Registration Failed',
-          description: result.error || 'Failed to create account',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      toast({ title: 'Error', description: 'Something went wrong. Please try again.', variant: 'destructive' });
-    } finally {
-      setLoading(false);
-    }
+    const r = await register(payload);
+    setLoading(false);
+    if (r.success) { toast({ title: '🎉 Account created!', variant: 'success' }); navigate('/login'); }
+    else toast({ title: 'Registration failed', description: r.error, variant: 'destructive' });
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid flex flex-col justify-center py-12 px-4 transition-colors">
       <div className="w-full max-w-xl mx-auto space-y-6">
-        
-        {/* Brand Header */}
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <Link to="/" className="inline-flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 group-hover:border-indigo-400 transition-colors shadow-sm">
-              <Layers className="w-6 h-6" />
+
+        {/* Brand */}
+        <div className="text-center space-y-3">
+          <Link to="/" className="inline-flex items-center gap-2 group">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+              <Layers className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
-              RankQuest
-            </span>
+            <span className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">RankQuest</span>
           </Link>
-          <div className="text-center">
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">Create your account</h1>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Start grinding pattern-wise DSA problems today</p>
+          <div>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Create your account</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Start your pattern-wise DSA journey today</p>
           </div>
         </div>
 
         {/* Card */}
-        <Card className="bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800/80 shadow-xl dark:shadow-2xl backdrop-blur-sm rounded-2xl overflow-hidden">
-          <CardContent className="p-6 sm:p-8 space-y-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-7 shadow-xl space-y-5">
 
-            {/* Google OAuth */}
-            <div className="w-full flex justify-center">
-              <GoogleLogin
-                onSuccess={async (credentialResponse) => {
-                  setIsGoogleLoading(true);
-                  try {
-                    const token = credentialResponse.credential;
-                    const result = await googleLogin(token);
-                    if (result.success) {
-                      toast({ title: 'Welcome!', description: 'Signed in with Google successfully.', variant: 'success' });
-                      navigate('/dashboard');
-                    } else {
-                      toast({ title: 'Google sign-in failed', description: result.error, variant: 'destructive' });
-                    }
-                  } catch (err) {
-                    toast({ title: 'Error', description: 'Google sign-in failed.', variant: 'destructive' });
-                  } finally {
-                    setIsGoogleLoading(false);
-                  }
-                }}
-                onError={() => {
-                  toast({ title: 'Google Sign-In Error', description: 'Failed to authenticate with Google.', variant: 'destructive' });
-                }}
-                theme="filled_black"
-                size="large"
-                width="100%"
-                shape="pill"
-              />
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (cr) => {
+                const r = await googleLogin(cr.credential);
+                if (r.success) { toast({ title: 'Welcome!', variant: 'success' }); navigate('/'); }
+                else toast({ title: 'Google sign-in failed', description: r.error, variant: 'destructive' });
+              }}
+              onError={() => toast({ title: 'Google Sign-In Error', variant: 'destructive' })}
+              theme="filled_black" size="large" width="100%" shape="pill"
+            />
+          </div>
+
+          <div className="relative flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+            <span className="text-[11px] font-semibold text-slate-400 shrink-0">or register with email</span>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          </div>
+
+          <form onSubmit={onSubmit} className="space-y-4">
+            {/* Name & Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Full Name *" icon={User} error={errors.name}>
+                <input type="text" placeholder="John Doe" value={form.name} onChange={e => set('name', e.target.value)} className={inputCls(errors.name)} />
+              </Field>
+              <Field label="Email Address *" icon={Mail} error={errors.email}>
+                <input type="email" placeholder="john@example.com" value={form.email} onChange={e => set('email', e.target.value)} className={inputCls(errors.email)} />
+              </Field>
             </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-3 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 font-medium">
-                  or register with email
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* College details */}
+            <div className="pt-1 space-y-3">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Academic Details (optional)</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Full Name *" icon={User} error={errors.name}>
-                  <Input
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                    className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs focus:border-indigo-500"
-                  />
-                </FormField>
-
-                <FormField label="Email Address *" icon={Mail} error={errors.email}>
-                  <Input
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs focus:border-indigo-500"
-                  />
-                </FormField>
+                <Field label="College" icon={School} iconColor="text-emerald-500">
+                  <input type="text" placeholder="IIT Bombay" value={form.college} onChange={e => set('college', e.target.value)} className={inputCls(false)} />
+                </Field>
+                <Field label="Branch" icon={BookOpen} iconColor="text-cyan-500">
+                  <input type="text" placeholder="Computer Science" value={form.branch} onChange={e => set('branch', e.target.value)} className={inputCls(false)} />
+                </Field>
               </div>
-
-              {/* Optional College Details */}
-              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 space-y-3">
-                <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Academic Details (Optional)</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="College" icon={School}>
-                    <Input
-                      type="text"
-                      placeholder="IIT Bombay"
-                      value={formData.college}
-                      onChange={(e) => handleChange('college', e.target.value)}
-                      className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs focus:border-indigo-500"
-                    />
-                  </FormField>
-
-                  <FormField label="Branch" icon={BookOpen}>
-                    <Input
-                      type="text"
-                      placeholder="Computer Science"
-                      value={formData.branch}
-                      onChange={(e) => handleChange('branch', e.target.value)}
-                      className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs focus:border-indigo-500"
-                    />
-                  </FormField>
-                </div>
-              </div>
-
-              {/* Security */}
-              <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/60 space-y-3">
-                <p className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Security</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="Password *" icon={Lock} error={errors.password}>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Min 6 characters"
-                        value={formData.password}
-                        onChange={(e) => handleChange('password', e.target.value)}
-                        className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs pr-10 focus:border-indigo-500"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </FormField>
-
-                  <FormField label="Confirm Password *" icon={Lock} error={errors.confirmPassword}>
-                    <div className="relative">
-                      <Input
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        placeholder="Repeat password"
-                        value={formData.confirmPassword}
-                        onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                        className="bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl text-xs pr-10 focus:border-indigo-500"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      </button>
-                    </div>
-                  </FormField>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-10 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs shadow-md transition-all border-0 mt-3"
-              >
-                {loading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>
-                ) : (
-                  <><UserPlus className="mr-1.5 h-4 w-4" /> Create Account <ArrowRight className="ml-1.5 h-4 w-4" /></>
-                )}
-              </Button>
-            </form>
-
-            <div className="text-center pt-2 border-t border-zinc-100 dark:border-zinc-800/60">
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Already have an account?{' '}
-                <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
-                  Sign in
-                </Link>
-              </p>
             </div>
 
-          </CardContent>
-        </Card>
+            {/* Password */}
+            <div className="pt-1 space-y-3">
+              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Security</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Password *" icon={Lock} error={errors.password}>
+                  <div className="relative">
+                    <input type={showPass ? 'text' : 'password'} placeholder="Min 6 characters" value={form.password} onChange={e => set('password', e.target.value)} className={inputCls(errors.password) + ' pr-10'} />
+                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </Field>
+                <Field label="Confirm Password *" icon={Lock} error={errors.confirmPassword}>
+                  <div className="relative">
+                    <input type={showConf ? 'text' : 'password'} placeholder="Repeat password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} className={inputCls(errors.confirmPassword) + ' pr-10'} />
+                    <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      {showConf ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </Field>
+              </div>
+            </div>
 
+            <button type="submit" disabled={loading}
+              className="w-full h-10 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account…</> : <><UserPlus className="w-4 h-4" /> Create Account <ArrowRight className="w-4 h-4" /></>}
+            </button>
+          </form>
+
+          <p className="text-center text-xs text-slate-600 dark:text-slate-400">
+            Already have an account?{' '}
+            <Link to="/login" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Register;
+}

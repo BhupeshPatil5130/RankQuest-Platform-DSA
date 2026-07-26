@@ -1,216 +1,180 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Trophy, Medal, Crown, Zap, Search, Shield, Star, Sparkles, AlertCircle, 
-  Flame, CheckCircle, School
-} from 'lucide-react';
-import { Card, CardContent } from '../components/ui/card';
+import { Trophy, Crown, Medal, Flame, Search, AlertCircle, School, TrendingUp } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { getGlobalRankings, getCollegeRankings } from '../services/apiService';
 
-const Rankings = () => {
+export default function Rankings() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('global');
+  const [tab,      setTab]      = useState('global');
   const [rankings, setRankings] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [search,   setSearch]   = useState('');
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState('');
 
   useEffect(() => {
-    const fetchRankings = async () => {
-      setLoading(true);
-      setError('');
+    (async () => {
+      setLoading(true); setError('');
       try {
         let data = [];
-        if (activeTab === 'global') {
+        if (tab === 'global') {
           data = await getGlobalRankings();
-        } else if (activeTab === 'college') {
-          if (user?.college) {
-            data = await getCollegeRankings(user.college);
-          } else {
-            setError("Please update your College in Profile settings to view College Rankings.");
-            setRankings([]);
-            setLoading(false);
-            return;
-          }
+        } else if (user?.college) {
+          data = await getCollegeRankings(user.college);
+        } else {
+          setError('Please add your College in Profile settings to see College Rankings.');
+          setRankings([]); setLoading(false); return;
         }
         setRankings(data || []);
-      } catch (err) {
-        console.error("Rankings error:", err);
-        setError("Failed to load rankings.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      } catch { setError('Failed to load rankings. Please try again.'); }
+      finally { setLoading(false); }
+    })();
+  }, [tab, user]);
 
-    fetchRankings();
-  }, [activeTab, user]);
-
-  const filteredRankings = rankings.filter(r => 
-    r.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.college?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filtered = rankings.filter(r =>
+    r.username?.toLowerCase().includes(search.toLowerCase()) ||
+    r.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+    r.college?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const rankStyle = (n) => {
+    if (n === 1) return { bg: 'bg-gradient-to-r from-amber-400 to-yellow-500', text: 'text-white', icon: <Crown className="w-4 h-4" /> };
+    if (n === 2) return { bg: 'bg-gradient-to-r from-slate-400 to-slate-500', text: 'text-white', icon: <Medal className="w-4 h-4" /> };
+    if (n === 3) return { bg: 'bg-gradient-to-r from-amber-700 to-orange-700', text: 'text-white', icon: <Medal className="w-4 h-4" /> };
+    return { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300', icon: null };
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
-      <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header */}
-        <div className="border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 p-6 md:p-8 backdrop-blur-sm space-y-4 shadow-sm dark:shadow-none">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold uppercase tracking-wider">
-            <Trophy className="w-3.5 h-3.5" />
-            Competitive Leaderboards
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="max-w-6xl mx-auto space-y-8">
+
+        {/* Hero */}
+        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 rounded-2xl p-7 md:p-10 shadow-xl shadow-amber-500/20 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-extrabold uppercase tracking-widest">
+            <Trophy className="w-3.5 h-3.5" /> Competitive Leaderboards
           </div>
-          
-          <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-              Developer Rankings
-            </h1>
-            <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400">
-              See where you stand among thousands of developers solving DSA patterns.
-            </p>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Developer Rankings</h1>
+          <p className="text-amber-100 text-sm max-w-xl leading-relaxed">
+            See where you stand among developers solving DSA patterns daily. Compete with your college peers.
+          </p>
+        </div>
+
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+          <div className="flex gap-1.5">
+            <button onClick={() => setTab('global')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all
+                ${tab === 'global' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+              🌍 Global Leaderboard
+            </button>
+            <button onClick={() => setTab('college')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all
+                ${tab === 'college' ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/25' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+              🏫 College Leaderboard
+            </button>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input placeholder="Search developer…" value={search} onChange={e => setSearch(e.target.value)}
+              className="pl-9 h-9 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg" />
           </div>
         </div>
 
-        {/* Tab & Search Bar */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
-          <div className="flex gap-2 w-full md:w-auto">
-            <button
-              onClick={() => setActiveTab('global')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'global'
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              Global Leaderboard
-            </button>
-
-            <button
-              onClick={() => setActiveTab('college')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'college'
-                  ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white border border-zinc-700 shadow-sm'
-                  : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-              }`}
-            >
-              College Leaderboard {user?.college && `(${user.college})`}
-            </button>
+        {/* Podium Top 3 */}
+        {!loading && !error && filtered.length >= 3 && (
+          <div className="flex flex-col sm:flex-row items-end justify-center gap-3 py-2">
+            {[1, 0, 2].map(pos => {
+              const r = filtered[pos];
+              if (!r) return null;
+              const rank = pos + 1;
+              const heights = ['h-32', 'h-40', 'h-24'];
+              const grads = ['from-slate-400 to-slate-500', 'from-amber-400 to-yellow-500', 'from-amber-700 to-orange-700'];
+              const emojis = ['🥈', '🥇', '🥉'];
+              return (
+                <div key={pos} className="flex flex-col items-center gap-2">
+                  <div className="text-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-extrabold text-lg flex items-center justify-center shadow-lg mx-auto">
+                      {(r.fullName || r.username || 'D').charAt(0).toUpperCase()}
+                    </div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white mt-1 max-w-[90px] truncate">{r.fullName || r.username}</p>
+                    <p className="text-[10px] text-slate-500">{r.problemsSolved || 0} solved</p>
+                  </div>
+                  <div className={`w-24 ${heights[pos]} rounded-t-xl bg-gradient-to-b ${grads[pos]} flex items-start justify-center pt-3`}>
+                    <span className="text-2xl">{emojis[pos]}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        )}
 
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-            <Input
-              type="text"
-              placeholder="Search developer or college..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-xs h-9 rounded-lg"
-            />
-          </div>
-        </div>
-
-        {/* Leaderboard Table Container */}
+        {/* Table */}
         {error ? (
-          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 p-8 rounded-2xl text-center space-y-3 shadow-sm dark:shadow-none">
-            <AlertCircle className="w-8 h-8 text-amber-500 dark:text-amber-400 mx-auto" />
-            <p className="text-xs text-zinc-700 dark:text-zinc-300">{error}</p>
-            <Link to="/profile" className="inline-block text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
-              Update Profile Settings →
-            </Link>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-10 rounded-2xl text-center space-y-3 shadow-sm">
+            <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
+            <p className="text-sm text-slate-700 dark:text-slate-300">{error}</p>
+            <Link to="/settings" className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Update Profile →</Link>
           </div>
         ) : loading ? (
-          <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl h-80 animate-pulse"></div>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl h-72 animate-pulse" />
         ) : (
-          <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl overflow-hidden shadow-sm dark:shadow-none">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800/80 text-zinc-600 dark:text-zinc-400 uppercase font-semibold text-[11px] tracking-wider">
+              <table className="w-full text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-[11px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   <tr>
-                    <th className="py-3.5 px-4 text-center">Rank</th>
-                    <th className="py-3.5 px-4">Developer</th>
-                    <th className="py-3.5 px-4">College</th>
-                    <th className="py-3.5 px-4 text-center">Streak</th>
-                    <th className="py-3.5 px-4 text-center">Problems Solved</th>
-                    <th className="py-3.5 px-4 text-right">Points</th>
+                    <th className="px-5 py-3.5 text-center">Rank</th>
+                    <th className="px-5 py-3.5">Developer</th>
+                    <th className="px-5 py-3.5 hidden md:table-cell">College</th>
+                    <th className="px-5 py-3.5 text-center">Streak</th>
+                    <th className="px-5 py-3.5 text-center">Solved</th>
+                    <th className="px-5 py-3.5 text-right">Points</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-                  {filteredRankings.map((row, index) => {
-                    const isCurrentUser = user && (user.username === row.username || user.email === row.email);
-                    const rankNum = index + 1;
-
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {filtered.map((row, i) => {
+                    const isMe = user && (user.username === row.username || user.email === row.email);
+                    const n    = i + 1;
+                    const rs   = rankStyle(n);
                     return (
-                      <tr 
-                        key={row.username || index}
-                        className={`hover:bg-zinc-50 dark:hover:bg-zinc-900/80 transition-colors ${
-                          isCurrentUser ? 'bg-indigo-500/10 font-semibold border-l-2 border-indigo-500' : ''
-                        }`}
-                      >
-                        {/* Rank Badge */}
-                        <td className="py-3.5 px-4 text-center font-bold text-sm">
-                          {rankNum === 1 ? (
-                            <span className="inline-flex items-center gap-1 text-amber-500 dark:text-amber-400">
-                              <Crown className="w-4 h-4 fill-amber-400/20" /> #1
-                            </span>
-                          ) : rankNum === 2 ? (
-                            <span className="inline-flex items-center gap-1 text-zinc-500 dark:text-zinc-300">
-                              <Medal className="w-4 h-4 text-zinc-500 dark:text-zinc-300" /> #2
-                            </span>
-                          ) : rankNum === 3 ? (
-                            <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-600">
-                              <Medal className="w-4 h-4 text-amber-700 dark:text-amber-600" /> #3
-                            </span>
-                          ) : (
-                            <span className="text-zinc-500">#{rankNum}</span>
-                          )}
+                      <tr key={row.username || i}
+                        className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${isMe ? 'bg-indigo-50 dark:bg-indigo-950/30 font-semibold' : ''}`}>
+                        <td className="px-5 py-3.5 text-center">
+                          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${rs.bg} ${rs.text} font-extrabold`}>
+                            {rs.icon} #{n}
+                          </div>
                         </td>
-
-                        {/* Developer Info */}
-                        <td className="py-3.5 px-4">
+                        <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 font-bold flex items-center justify-center text-xs">
-                              {(row.fullName || row.username || 'D').charAt(0).toUpperCase()}
+                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-xs flex items-center justify-center shadow-sm shrink-0">
+                              {(row.fullName || row.username || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <p className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                              <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                                 {row.fullName || row.username}
-                                {isCurrentUser && <Badge className="bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[9px] border-indigo-500/30">You</Badge>}
+                                {isMe && <Badge className="bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 text-[9px] border-indigo-200 dark:border-indigo-800">You</Badge>}
                               </p>
-                              <p className="text-[11px] text-zinc-500">@{row.username}</p>
+                              <p className="text-[10px] text-slate-400">@{row.username}</p>
                             </div>
                           </div>
                         </td>
-
-                        {/* College */}
-                        <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
-                          {row.college ? (
-                            <span className="flex items-center gap-1 text-zinc-800 dark:text-zinc-300">
-                              <School className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" /> {row.college}
-                            </span>
-                          ) : (
-                            <span className="text-zinc-400 dark:text-zinc-600">-</span>
-                          )}
-                        </td>
-
-                        {/* Streak */}
-                        <td className="py-3.5 px-4 text-center">
-                          <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                            <Flame className="w-3 h-3 fill-amber-500 dark:fill-amber-400" /> {row.streakDays || row.streak || 0}d
+                        <td className="px-5 py-3.5 hidden md:table-cell">
+                          <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
+                            {row.college ? <><School className="w-3.5 h-3.5 text-slate-400" />{row.college}</> : <span className="text-slate-400">—</span>}
                           </span>
                         </td>
-
-                        {/* Problems Solved */}
-                        <td className="py-3.5 px-4 text-center font-semibold text-emerald-600 dark:text-emerald-400">
+                        <td className="px-5 py-3.5 text-center">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 font-bold border border-amber-200 dark:border-amber-800">
+                            <Flame className="w-3 h-3" /> {row.streakDays || row.streak || 0}d
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 text-center font-extrabold text-emerald-600 dark:text-emerald-400">
                           {row.problemsSolved || row.solvedCount || 0}
                         </td>
-
-                        {/* Points */}
-                        <td className="py-3.5 px-4 text-right font-extrabold text-zinc-900 dark:text-white">
-                          {(row.problemsSolved || row.solvedCount || 0) * 10} pts
+                        <td className="px-5 py-3.5 text-right font-extrabold text-slate-900 dark:text-white">
+                          {(row.problemsSolved || 0) * 10} <span className="text-slate-400 font-normal">pts</span>
                         </td>
                       </tr>
                     );
@@ -220,10 +184,7 @@ const Rankings = () => {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
-};
-
-export default Rankings;
+}

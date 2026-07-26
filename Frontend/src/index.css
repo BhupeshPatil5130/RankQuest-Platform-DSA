@@ -6,106 +6,66 @@
 
 @layer base {
   :root {
-    /* Light Mode Tokens — Crisp & Vibrant Legibility */
-    --background: 210 40% 98%;      /* #f8fafc */
-    --foreground: 222.2 84% 4.9%;   /* #020817 */
-    --card: 0 0% 100%;              /* #ffffff */
-    --card-foreground: 222.2 84% 4.9%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 238.7 83.5% 66.7%;   /* #6366f1 Indigo */
+    --popover-foreground: 222 47% 11%;
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;    /* #e2e8f0 */
-    --input: 214.3 31.8% 91.4%;
-    --ring: 238.7 83.5% 66.7%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 239 84% 67%;
     --radius: 0.85rem;
   }
 
   .dark {
-    /* Dark Mode Tokens — Rich Slate/Indigo Dark Theme */
-    --background: 222.2 84% 4.9%;   /* #020817 */
-    --foreground: 210 40% 98%;      /* #f8fafc */
-    --card: 222.2 47.4% 7.5%;       /* #090e1a */
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 7%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 47.4% 7.5%;
+    --popover: 222 47% 7%;
     --popover-foreground: 210 40% 98%;
-    --primary: 238.7 83.5% 66.7%;   /* #6366f1 Indigo */
+    --primary: 239 84% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 12%;
+    --secondary: 217 33% 12%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 12%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 14%;
+    --muted: 217 33% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 15%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;    /* #1e293b */
-    --input: 217.2 32.6% 17.5%;
-    --ring: 238.7 83.5% 66.7%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 239 84% 67%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-indigo-500/20 selection:text-indigo-400;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: "cv02","cv03","cv04","cv11";
   }
 }
 
-/* Vibrant Gradient Classes */
-.gradient-brand {
-  @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
-}
+@layer utilities {
+  .code-font { font-family: 'JetBrains Mono', monospace; }
 
-.gradient-emerald {
-  @apply bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500;
-}
-
-.gradient-amber {
-  @apply bg-gradient-to-r from-amber-500 via-orange-500 to-red-500;
-}
-
-.gradient-violet {
-  @apply bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500;
-}
-
-.gradient-cyan {
-  @apply bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500;
-}
-
-/* Tactile Color Card Surfaces */
-.card-color-indigo {
-  @apply bg-white dark:bg-slate-900/80 border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-400 dark:hover:border-indigo-400/60 shadow-sm transition-all;
-}
-
-.card-color-emerald {
-  @apply bg-white dark:bg-slate-900/80 border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-400 dark:hover:border-emerald-400/60 shadow-sm transition-all;
-}
-
-.card-color-amber {
-  @apply bg-white dark:bg-slate-900/80 border-amber-200 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400/60 shadow-sm transition-all;
-}
-
-.card-color-violet {
-  @apply bg-white dark:bg-slate-900/80 border-purple-200 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-400/60 shadow-sm transition-all;
-}
-
-.code-font {
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.subtle-grid {
-  background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
-  background-size: 24px 24px;
+  /* Dot-grid background overlay */
+  .subtle-grid {
+    background-image: radial-gradient(rgba(99,102,241,0.10) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 }

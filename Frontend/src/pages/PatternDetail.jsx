@@ -1,240 +1,153 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  ArrowLeft, CheckCircle, Circle, ExternalLink, Code2, Sparkles, 
-  Layers, Target, ShieldCheck, ChevronRight, BookOpen, Search
-} from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Circle, ExternalLink, Code2, Sparkles, ChevronRight } from 'lucide-react';
 import { getPatternBySlug, getProblemsByPattern, toggleSolveStatus, getSolvedProblems } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
-import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 
-const PatternDetail = () => {
+const stepGradients = [
+  'from-indigo-500 to-purple-600','from-purple-500 to-violet-600','from-violet-500 to-fuchsia-600','from-fuchsia-500 to-pink-600',
+  'from-pink-500 to-rose-600','from-rose-500 to-red-600','from-orange-500 to-amber-600','from-amber-500 to-yellow-500',
+  'from-yellow-500 to-lime-500','from-lime-500 to-green-500','from-green-500 to-emerald-600','from-emerald-500 to-teal-600',
+  'from-teal-500 to-cyan-600','from-cyan-500 to-blue-600','from-blue-500 to-indigo-600',
+];
+
+export default function PatternDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  
-  const [pattern, setPattern] = useState(null);
-  const [problems, setProblems] = useState([]);
-  const [solvedIds, setSolvedIds] = useState(new Set());
-  const [loading, setLoading] = useState(true);
+  const [pattern,   setPattern]  = useState(null);
+  const [problems,  setProblems] = useState([]);
+  const [solvedIds, setSolved]   = useState(new Set());
+  const [loading,   setLoading]  = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
-        setLoading(true);
-        const [patternData, problemsData] = await Promise.all([
-          getPatternBySlug(slug),
-          getProblemsByPattern(slug)
-        ]);
-
-        setPattern(patternData);
-        setProblems(problemsData || []);
-
+        const [pat, probs] = await Promise.all([getPatternBySlug(slug), getProblemsByPattern(slug)]);
+        setPattern(pat);
+        setProblems(probs || []);
         if (user) {
-          try {
-            const solved = await getSolvedProblems();
-            setSolvedIds(new Set(solved || []));
-          } catch (err) {
-            console.error('Failed to fetch solved problems:', err);
-          }
+          const s = await getSolvedProblems().catch(() => []);
+          setSolved(new Set(s || []));
         }
-      } catch (err) {
-        console.error('Error fetching pattern details:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+      } finally { setLoading(false); }
+    })();
   }, [slug, user]);
 
-  const handleToggleSolved = async (problemId) => {
-    if (!user) {
-      toast({ title: 'Sign In Required', description: 'Please sign in to track your progress.' });
-      return;
-    }
-
-    try {
-      const newSolvedState = !solvedIds.has(problemId);
-      await toggleSolveStatus(problemId, newSolvedState);
-      
-      setSolvedIds(prev => {
-        const next = new Set(prev);
-        if (newSolvedState) next.add(problemId);
-        else next.delete(problemId);
-        return next;
-      });
-
-      toast({
-        title: newSolvedState ? 'Problem Marked Solved!' : 'Problem Unmarked',
-        variant: 'success'
-      });
-    } catch (err) {
-      toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
-    }
+  const handleToggle = async (id) => {
+    if (!user) return toast({ title: 'Sign in required', description: 'Please sign in to track progress.' });
+    const newState = !solvedIds.has(id);
+    await toggleSolveStatus(id, newState).catch(() => {});
+    setSolved(prev => { const n = new Set(prev); newState ? n.add(id) : n.delete(id); return n; });
+    toast({ title: newState ? '✅ Marked solved!' : 'Unmarked', variant: 'default' });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4 max-w-7xl mx-auto space-y-6">
-        <div className="h-40 rounded-xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 animate-pulse"></div>
-        <div className="h-96 rounded-xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 animate-pulse"></div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-10 px-4 max-w-5xl mx-auto space-y-5">
+      <div className="h-40 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
+      <div className="h-96 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
+    </div>
+  );
 
-  if (!pattern) {
-    return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white flex flex-col items-center justify-center space-y-4">
-        <h2 className="text-xl font-bold">Pattern Not Found</h2>
-        <Link to="/patterns" className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs flex items-center gap-1">
-          <ArrowLeft className="w-4 h-4" /> Back to Roadmaps
-        </Link>
-      </div>
-    );
-  }
+  if (!pattern) return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center gap-4">
+      <p className="text-slate-700 dark:text-slate-300 font-semibold">Pattern not found.</p>
+      <Link to="/patterns" className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs flex items-center gap-1">
+        <ArrowLeft className="w-4 h-4" /> Back to Patterns
+      </Link>
+    </div>
+  );
 
-  const solvedCount = problems.filter(p => solvedIds.has(p.id)).length;
-  const progressPct = problems.length ? Math.round((solvedCount / problems.length) * 100) : 0;
+  const gradient   = stepGradients[(pattern.sequenceOrder - 1) % stepGradients.length];
+  const solved     = problems.filter(p => solvedIds.has(p.id)).length;
+  const total      = problems.length;
+  const pct        = total ? Math.round((solved / total) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
-      <div className="max-w-7xl mx-auto space-y-6">
-        
-        {/* Navigation Breadcrumb */}
-        <Link to="/patterns" className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="max-w-5xl mx-auto space-y-6">
+
+        <Link to="/patterns" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Patterns Roadmap
         </Link>
 
-        {/* Pattern Header Box */}
-        <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 rounded-2xl overflow-hidden p-6 md:p-8 space-y-6 shadow-sm dark:shadow-none">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Pattern Header */}
+        <div className={`rounded-2xl bg-gradient-to-br ${gradient} p-7 md:p-9 space-y-5 shadow-xl`}>
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 code-font uppercase">
-                  Step {String(pattern.sequenceOrder).padStart(2, '0')}
-                </span>
-                <Badge variant="outline" className="border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs">
-                  {pattern.difficulty}
-                </Badge>
-                <span className="text-xs text-zinc-500">{pattern.category}</span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-white text-xs font-extrabold code-font uppercase">
+                Step {String(pattern.sequenceOrder).padStart(2,'0')} · {pattern.difficulty}
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                {pattern.name}
-              </h1>
-              <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-3xl">
-                {pattern.description}
-              </p>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">{pattern.name}</h1>
+              <p className="text-sm text-white/80 leading-relaxed max-w-2xl">{pattern.description}</p>
             </div>
-
-            {/* Overall Progress Badge */}
-            <div className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-xl min-w-[220px] space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-zinc-600 dark:text-zinc-400 font-medium">Pattern Solved</span>
-                <span className="font-bold text-indigo-600 dark:text-indigo-400">{solvedCount} / {problems.length}</span>
+            <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 min-w-[200px] space-y-2 shrink-0">
+              <div className="flex justify-between text-xs font-semibold text-white">
+                <span>Solved</span>
+                <span>{solved} / {total}</span>
               </div>
-              <Progress value={progressPct} className="h-2 bg-zinc-200 dark:bg-zinc-900" />
-              <p className="text-[11px] text-zinc-500 text-right font-medium">{progressPct}% Completed</p>
+              <Progress value={pct} className="h-2 bg-white/20 [&>div]:bg-white" />
+              <p className="text-xs text-white/60 text-right">{pct}% done</p>
             </div>
           </div>
-
-          {/* Strategy Formula Card */}
           {pattern.strategyPattern && (
-            <div className="bg-zinc-50 dark:bg-zinc-950/80 border border-zinc-200 dark:border-zinc-800 p-4 md:p-5 rounded-xl space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+            <div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-xl p-4 space-y-1.5">
+              <div className="flex items-center gap-2 text-xs font-extrabold text-amber-200">
                 <Sparkles className="w-4 h-4" /> Strategy & Recognition Formula
               </div>
-              <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                {pattern.strategyPattern}
-              </p>
+              <p className="text-sm text-white/90 leading-relaxed">{pattern.strategyPattern}</p>
               {pattern.keyIdentifiers && (
-                <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">Key Triggers:</span> {pattern.keyIdentifiers}
-                </div>
+                <p className="text-xs text-white/60"><span className="font-semibold text-white/80">Key Triggers:</span> {pattern.keyIdentifiers}</p>
               )}
             </div>
           )}
-        </Card>
+        </div>
 
-        {/* Problems List Table */}
-        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl overflow-hidden p-6 space-y-4 shadow-sm dark:shadow-none">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Curated Problem Set (10 Questions)</h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Solve questions on LeetCode / GFG or directly in RankQuest Playground</p>
-            </div>
+        {/* Problem list */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+            <h2 className="font-extrabold text-slate-900 dark:text-white">Curated Problem Set</h2>
+            <p className="text-xs text-slate-500 mt-0.5">10 handpicked problems — solve on LeetCode, GFG, or the in-app Playground</p>
           </div>
-
-          <div className="divide-y divide-zinc-200 dark:divide-zinc-800/60">
-            {problems.map((problem, index) => {
-              const isSolved = solvedIds.has(problem.id);
-              
+          <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            {problems.map((problem, idx) => {
+              const done = solvedIds.has(problem.id);
+              const diffCls = problem.difficulty === 'Easy' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                            : problem.difficulty === 'Medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                            : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-rose-200 dark:border-rose-800';
               return (
-                <div 
-                  key={problem.id}
-                  className="py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-3.5 flex-1">
-                    <button 
-                      onClick={() => handleToggleSolved(problem.id)}
-                      className="text-zinc-400 hover:text-emerald-500 transition-colors"
-                      title={isSolved ? "Mark as unsolved" : "Mark as solved"}
-                    >
-                      {isSolved ? (
-                        <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 fill-emerald-500/20" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-zinc-400 dark:text-zinc-600" />
-                      )}
+                <div key={problem.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => handleToggle(problem.id)} className="shrink-0">
+                      {done
+                        ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        : <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600 hover:text-emerald-400 transition-colors" />}
                     </button>
-
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-400 dark:text-zinc-500 font-mono">#{index + 1}</span>
-                        <h3 className={`text-sm font-semibold ${isSolved ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>
-                          {problem.title}
-                        </h3>
-                        <Badge variant="outline" className={`text-[10px] ${
-                          problem.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' :
-                          problem.difficulty === 'Medium' ? 'border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10' :
-                          'border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10'
-                        }`}>
-                          {problem.difficulty}
-                        </Badge>
-                      </div>
-                    </div>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 code-font shrink-0">#{idx+1}</span>
+                    <span className={`text-sm font-semibold transition-colors ${done ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'}`}>
+                      {problem.title}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffCls} hidden sm:inline`}>{problem.difficulty}</span>
                   </div>
-
-                  {/* Problem Action Links */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 ml-8 sm:ml-0">
                     {problem.leetcodeUrl && (
-                      <a 
-                        href={problem.leetcodeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-amber-600 dark:hover:text-amber-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                      >
+                      <a href={problem.leetcodeUrl} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-[11px] font-bold hover:bg-amber-100 dark:hover:bg-amber-950/60 transition-colors">
                         LeetCode <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
-
                     {problem.gfgUrl && (
-                      <a 
-                        href={problem.gfgUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                      >
+                      <a href={problem.gfgUrl} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition-colors">
                         GFG <ExternalLink className="w-3 h-3" />
                       </a>
                     )}
-
-                    <Link to={`/playground?problem=${problem.id}`}>
-                      <button className="px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 text-xs font-semibold flex items-center gap-1.5 transition-colors">
-                        Solve In App <Code2 className="w-3 h-3" />
-                      </button>
+                    <Link to={`/playground?problem=${problem.id}`}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 text-[11px] font-bold hover:bg-indigo-100 dark:hover:bg-indigo-950/60 transition-colors">
+                      <Code2 className="w-3 h-3" /> Solve
                     </Link>
                   </div>
                 </div>
@@ -242,10 +155,7 @@ const PatternDetail = () => {
             })}
           </div>
         </div>
-
       </div>
     </div>
   );
-};
-
-export default PatternDetail;
+}

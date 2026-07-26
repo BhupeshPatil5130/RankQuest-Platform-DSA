@@ -1,228 +1,176 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, 
-  GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network,
-  Sparkles, BookOpen, ArrowRight, Compass, ShieldCheck
-} from 'lucide-react';
-import { Card, CardContent } from '../components/ui/card';
-import { Input } from '../components/ui/input';
+import { Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network, Compass, BookOpen, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
+import { Input } from '../components/ui/input';
 import { getAllPatterns, getSolvedProblems, getProblemsByPattern } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
-const iconMap = {
-  Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, 
-  GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network
-};
+const iconMap = { Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network };
 
-const categoryTiers = [
-  { id: 'All', label: 'All Tiers' },
-  { id: 'Beginner Foundations', label: 'Step 1: Beginner Foundations' },
-  { id: 'Intermediate Techniques', label: 'Step 2: Intermediate Techniques' },
-  { id: 'Advanced Algorithmic Mastery', label: 'Step 3: Advanced Mastery' }
+const stepGradients = [
+  'from-indigo-500 to-purple-600',
+  'from-purple-500 to-violet-600',
+  'from-violet-500 to-fuchsia-600',
+  'from-fuchsia-500 to-pink-600',
+  'from-pink-500 to-rose-600',
+  'from-rose-500 to-red-600',
+  'from-orange-500 to-amber-600',
+  'from-amber-500 to-yellow-500',
+  'from-yellow-500 to-lime-500',
+  'from-lime-500 to-green-500',
+  'from-green-500 to-emerald-600',
+  'from-emerald-500 to-teal-600',
+  'from-teal-500 to-cyan-600',
+  'from-cyan-500 to-blue-600',
+  'from-blue-500 to-indigo-600',
 ];
 
-const Patterns = () => {
+const categoryFilters = [
+  { id: 'All', label: 'All Tiers' },
+  { id: 'Beginner Foundations', label: '🌱 Beginner' },
+  { id: 'Intermediate Techniques', label: '⚡ Intermediate' },
+  { id: 'Advanced Algorithmic Mastery', label: '🔥 Advanced' },
+];
+
+export default function Patterns() {
   const { user } = useAuth();
-  const [patterns, setPatterns] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [patterns,       setPatterns]       = useState([]);
+  const [loading,        setLoading]        = useState(true);
+  const [search,         setSearch]         = useState('');
+  const [category,       setCategory]       = useState('All');
   const [patternSolveMap, setPatternSolveMap] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
-        setLoading(true);
         const data = await getAllPatterns();
-        if (data && Array.isArray(data)) {
-          setPatterns(data);
-
-          if (user) {
-            try {
-              const solvedIds = await getSolvedProblems();
-              const solvedSet = new Set(solvedIds || []);
-              
-              const solveMap = {};
-              for (const pattern of data) {
-                const problems = await getProblemsByPattern(pattern.slug);
-                if (problems && Array.isArray(problems)) {
-                  const solvedCount = problems.filter(p => solvedSet.has(p.id)).length;
-                  solveMap[pattern.slug] = solvedCount;
-                }
-              }
-              setPatternSolveMap(solveMap);
-            } catch (err) {
-              console.error('Failed to fetch solved problems for patterns:', err);
-            }
+        if (!data?.length) return;
+        setPatterns(data);
+        if (user) {
+          const solvedIds = await getSolvedProblems().catch(() => []);
+          const solvedSet = new Set(solvedIds || []);
+          const map = {};
+          for (const p of data) {
+            const problems = await getProblemsByPattern(p.slug).catch(() => []);
+            if (problems?.length) map[p.slug] = problems.filter(x => solvedSet.has(x.id)).length;
           }
+          setPatternSolveMap(map);
         }
-      } catch (err) {
-        console.error('Error fetching patterns:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+      } finally { setLoading(false); }
+    })();
   }, [user]);
 
-  const filteredPatterns = patterns.filter(pattern => {
-    const matchesSearch = pattern.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          pattern.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          pattern.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || pattern.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const filtered = patterns.filter(p => {
+    const s = search.toLowerCase();
+    return (
+      (p.name.toLowerCase().includes(s) || p.description?.toLowerCase().includes(s)) &&
+      (category === 'All' || p.category === category)
+    );
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-7xl mx-auto space-y-8">
-        
-        {/* Header Hero Section */}
-        <div className="border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4 shadow-sm dark:shadow-none">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-            <Compass className="w-3.5 h-3.5" />
-            Sequential Learning Path (Steps 01 to 15)
-          </div>
-          
-          <div className="max-w-3xl space-y-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-              Pattern-Wise DSA Roadmap
-            </h1>
-            <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
-              Learn algorithms in the proven order of difficulty. Master 15 core patterns with 10 handpicked questions per pattern, linked directly to LeetCode and GeeksforGeeks.
-            </p>
-          </div>
 
-          <div className="flex flex-wrap gap-4 pt-2 text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              15 Sequential Steps
+        {/* Hero */}
+        <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-7 md:p-10 shadow-xl shadow-purple-500/20 space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-extrabold uppercase tracking-widest">
+            <Compass className="w-3.5 h-3.5" /> Sequential Learning Path (Steps 01 → 15)
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Pattern-Wise DSA Roadmap</h1>
+          <p className="text-violet-100 text-sm max-w-2xl leading-relaxed">
+            Learn the 15 core algorithmic patterns in a proven sequential order. Master each pattern with 10 handpicked problems linked to LeetCode & GFG.
+          </p>
+          <div className="flex flex-wrap gap-4 pt-1 text-xs text-white font-semibold">
+            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg">
+              <ShieldCheck className="w-4 h-4 text-emerald-300" /> 15 Sequential Steps
             </div>
-            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              150 Handpicked Problems
+            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg">
+              <BookOpen className="w-4 h-4 text-cyan-300" /> 150 Handpicked Problems
             </div>
-            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <Sparkles className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-              LeetCode & GFG Integration
+            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg">
+              <Sparkles className="w-4 h-4 text-amber-300" /> LeetCode & GFG Links
             </div>
           </div>
         </div>
 
-        {/* Filter Controls Bar */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            {categoryTiers.map(tier => (
-              <button
-                key={tier.id}
-                onClick={() => setSelectedCategory(tier.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  selectedCategory === tier.id
-                    ? 'bg-zinc-900 text-white dark:bg-zinc-800 dark:text-white font-semibold border border-zinc-700 shadow-sm'
-                    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-950 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800'
-                }`}
-              >
-                {tier.label}
+        {/* Filter row */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+          <div className="flex flex-wrap gap-1.5">
+            {categoryFilters.map(({ id, label }) => (
+              <button key={id} onClick={() => setCategory(id)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all
+                  ${category === id
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/25'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+                {label}
               </button>
             ))}
           </div>
-
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
-            <Input
-              type="text"
-              placeholder="Search pattern..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-xs h-9 rounded-lg"
-            />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input placeholder="Search pattern…" value={search} onChange={e => setSearch(e.target.value)}
+              className="pl-9 h-9 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 rounded-lg" />
           </div>
         </div>
 
-        {/* Pattern Cards Grid */}
+        {/* Cards grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-56 rounded-xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 animate-pulse p-5"></div>
-            ))}
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-56 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredPatterns.map((pattern) => {
-              const IconComponent = iconMap[pattern.icon] || Target;
-              const solvedCount = patternSolveMap[pattern.slug] || 0;
-              const totalProblems = pattern.totalProblems || 10;
-              const progressPct = Math.round((solvedCount / totalProblems) * 100);
-
+            {filtered.map((pattern, idx) => {
+              const Icon        = iconMap[pattern.icon] || Target;
+              const solved      = patternSolveMap[pattern.slug] || 0;
+              const total       = pattern.totalProblems || 10;
+              const pct         = Math.round((solved / total) * 100);
+              const gradientCls = stepGradients[(pattern.sequenceOrder - 1) % stepGradients.length] || 'from-indigo-500 to-purple-600';
+              const diffColor   = pattern.difficulty === 'Easy' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                : pattern.difficulty === 'Medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                                : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-rose-200 dark:border-rose-800';
               return (
-                <Card 
-                  key={pattern.id}
-                  className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between group p-5 space-y-4 shadow-sm dark:shadow-none"
-                >
-                  <CardContent className="p-0 space-y-4 flex-1 flex flex-col justify-between">
-                    
-                    {/* Header */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 code-font uppercase">
-                          Step {String(pattern.sequenceOrder).padStart(2, '0')}
-                        </span>
-                        <Badge variant="outline" className="text-[11px] border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400">
-                          {pattern.difficulty}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:border-indigo-400 transition-colors">
-                          <IconComponent className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h2 className="text-base font-bold text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                            {pattern.name}
-                          </h2>
-                          <p className="text-[11px] text-zinc-500 mt-0.5">
-                            {pattern.category}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed">
-                        {pattern.description}
-                      </p>
+                <div key={pattern.id}
+                  className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-lg bg-gradient-to-r ${gradientCls} text-white shadow-sm code-font`}>
+                        Step {String(pattern.sequenceOrder).padStart(2, '0')}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffColor}`}>{pattern.difficulty}</span>
                     </div>
-
-                    {/* Progress & CTA */}
-                    <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
-                      <div className="flex justify-between items-center text-[11px]">
-                        <span className="text-zinc-500">Progress</span>
-                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">
-                          {solvedCount} / {totalProblems} Solved ({progressPct}%)
-                        </span>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${gradientCls} shadow-md shrink-0`}>
+                        <Icon className="w-5 h-5 text-white" />
                       </div>
-                      <Progress value={progressPct} className="h-1.5 bg-zinc-100 dark:bg-zinc-950" />
-
-                      <Link to={`/patterns/${pattern.slug}`} className="block pt-1">
-                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 text-xs font-semibold transition-all">
-                          <span>Practice Pattern</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      </Link>
+                      <div>
+                        <h2 className="font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{pattern.name}</h2>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{pattern.category}</p>
+                      </div>
                     </div>
-
-                  </CardContent>
-                </Card>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">{pattern.description}</p>
+                  </div>
+                  <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between text-[11px] font-semibold">
+                      <span className="text-slate-500">Progress</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{solved} / {total} ({pct}%)</span>
+                    </div>
+                    <Progress value={pct} className={`h-1.5 bg-slate-100 dark:bg-slate-800 [&>div]:bg-gradient-to-r [&>div]:${gradientCls}`} />
+                    <Link to={`/patterns/${pattern.slug}`}>
+                      <button className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                        Practice Pattern <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
               );
             })}
           </div>
         )}
-
       </div>
     </div>
   );
-};
-
-export default Patterns;
+}

@@ -1,335 +1,228 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-  User, Bell, Palette, Shield, Save, CheckCircle, 
-  Moon, Sun, Trash2, Mail
-} from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { User, Bell, Palette, Shield, Save, CheckCircle, Moon, Sun, Trash2, Mail } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useToast } from '../hooks/useToast';
 
-const Settings = () => {
-  const { user, updateProfile } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const { toast } = useToast();
-  const location = useLocation();
-  
-  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile');
-  const [loading, setLoading] = useState(false);
-  
-  useEffect(() => {
-    if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab);
-    }
-  }, [location.state]);
+const tabs = [
+  { id: 'profile',       label: 'Profile',       icon: User,    color: 'text-indigo-500' },
+  { id: 'appearance',    label: 'Appearance',     icon: Palette, color: 'text-purple-500' },
+  { id: 'notifications', label: 'Notifications',  icon: Bell,    color: 'text-amber-500' },
+  { id: 'account',       label: 'Account',        icon: Shield,  color: 'text-rose-500' },
+];
 
-  // Profile Form State
+const inputCls = 'w-full h-10 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all';
+
+export default function Settings() {
+  const { user, updateProfile } = useAuth();
+  const { theme, setTheme }     = useTheme();
+  const { toast }               = useToast();
+  const location                = useLocation();
+
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile');
+  const [loading,   setLoading]   = useState(false);
+
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || '',
-    username: user?.username || '',
-    email: user?.email || '',
-    college: user?.college || '',
-    bio: user?.bio || '',
-    rollNumber: user?.rollNumber || '',
-    branch: user?.branch || '',
-    year: user?.year || ''
+    fullName: user?.fullName || '', username: user?.username || '',
+    email: user?.email || '', college: user?.college || '',
+    bio: user?.bio || '', rollNumber: user?.rollNumber || '',
+    branch: user?.branch || '', year: user?.year || '',
   });
 
   useEffect(() => {
-    if (user) {
-        setFormData({
-            fullName: user.fullName || '',
-            username: user.username || '',
-            email: user.email || '',
-            college: user.college || '',
-            bio: user.bio || '',
-            rollNumber: user.rollNumber || '',
-            branch: user.branch || '',
-            year: user.year || ''
-        });
-    }
+    if (location.state?.activeTab) setActiveTab(location.state.activeTab);
+  }, [location.state]);
+
+  useEffect(() => {
+    if (user) setFormData({ fullName: user.fullName||'', username: user.username||'', email: user.email||'',
+      college: user.college||'', bio: user.bio||'', rollNumber: user.rollNumber||'', branch: user.branch||'', year: user.year||'' });
   }, [user]);
 
-  const handleUpdateProfile = async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
-    try {
-        const result = await updateProfile(formData);
-
-        if (result.success) {
-            toast({ 
-                title: "Profile Updated ✨", 
-                description: "Your profile details have been saved successfully.", 
-                variant: "success" 
-            });
-        } else {
-            toast({ 
-                title: "Update Failed", 
-                description: result.error || "Could not save changes.", 
-                variant: "destructive" 
-            });
-        }
-    } catch (error) {
-        toast({ 
-            title: "Error", 
-            description: "Something went wrong. Please try again.", 
-            variant: "destructive" 
-        });
-    } finally {
-        setLoading(false);
-    }
+    const r = await updateProfile(formData).catch(() => ({ success: false, error: 'Network error' }));
+    setLoading(false);
+    r.success
+      ? toast({ title: 'Profile updated ✨', description: 'Saved successfully.', variant: 'success' })
+      : toast({ title: 'Update failed', description: r.error, variant: 'destructive' });
   };
 
-  const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'appearance', label: 'Appearance', icon: Palette },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'account', label: 'Account', icon: Shield },
-  ];
+  const set = (k, v) => setFormData(p => ({ ...p, [k]: v }));
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Settings</h1>
-          <p className="text-muted-foreground">Manage your account preferences and profile details.</p>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Settings</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences and profile details.</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Navigation */}
-          <Card className="glass-dark border-0 h-fit lg:w-64 shrink-0 overflow-hidden sticky top-24">
-            <div className="p-2 space-y-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeTab === tab.id 
-                      ? 'bg-primary/10 text-primary shadow-sm font-bold' 
-                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 space-y-1 h-fit lg:w-56 shrink-0 shadow-sm">
+            {tabs.map(({ id, label, icon: Icon, color }) => (
+              <button key={id} onClick={() => setActiveTab(id)}
+                className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all
+                  ${activeTab === id ? `bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 font-bold` : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'}`}>
+                <Icon className={`w-4 h-4 ${activeTab === id ? color : ''}`} />
+                {label}
+              </button>
+            ))}
+          </div>
 
-          {/* Main Content Area */}
-          <div className="flex-1 space-y-6">
-            
-            {/* PROFILE SETTINGS */}
+          {/* Content */}
+          <div className="flex-1">
+
+            {/* Profile */}
             {activeTab === 'profile' && (
-              <Card className="glass-dark border-0 shadow-2xl">
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>Update your name, institution, and personal bio.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleUpdateProfile} className="space-y-6">
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-xl">
-                        {(formData.fullName || formData.username || 'U').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg">{formData.fullName || formData.username || 'Developer'}</h3>
-                        <p className="text-xs text-muted-foreground">@{formData.username}</p>
-                      </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm space-y-6">
+                <div>
+                  <h2 className="font-extrabold text-slate-900 dark:text-white">Profile Information</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Update your name, institution, and personal bio.</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white font-extrabold text-xl flex items-center justify-center shadow-lg">
+                    {(formData.fullName || formData.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white">{formData.fullName || formData.username || 'Developer'}</h3>
+                    <p className="text-xs text-slate-400">@{formData.username}</p>
+                  </div>
+                </div>
+                <form onSubmit={handleSave} className="space-y-5">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Full Name</Label>
+                      <input className={inputCls} value={formData.fullName} onChange={e => set('fullName', e.target.value)} placeholder="Alex Johnson" />
                     </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label>Full Name</Label>
-                        <Input 
-                          value={formData.fullName} 
-                          onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
-                          placeholder="e.g. Alex Johnson"
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Username</Label>
-                        <Input 
-                          value={formData.username} 
-                          onChange={(e) => setFormData({...formData, username: e.target.value})} 
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>College / Institution</Label>
-                        <Input 
-                          value={formData.college} 
-                          onChange={(e) => setFormData({...formData, college: e.target.value})}
-                          placeholder="e.g. IIT Bombay"
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Roll Number</Label>
-                        <Input 
-                          value={formData.rollNumber} 
-                          onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
-                          placeholder="e.g. CS21B045"
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Branch</Label>
-                        <Input 
-                          value={formData.branch} 
-                          onChange={(e) => setFormData({...formData, branch: e.target.value})}
-                          placeholder="e.g. Computer Science"
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>Year of Study</Label>
-                        <Input 
-                          value={formData.year} 
-                          onChange={(e) => setFormData({...formData, year: e.target.value})}
-                          placeholder="e.g. 3rd Year"
-                          className="bg-white/5 border-white/10"
-                        />
-                      </div>
-
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>Email Address</Label>
-                        <div className="relative">
-                           <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                           <Input 
-                             value={formData.email} 
-                             disabled 
-                             className="pl-9 bg-white/5 border-white/10 opacity-60 cursor-not-allowed text-xs font-mono" 
-                           />
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">Email is tied to your account login.</p>
-                      </div>
-
-                      <div className="space-y-2 md:col-span-2">
-                        <Label>Bio / About You</Label>
-                        <textarea 
-                          className="flex min-h-[90px] w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
-                          placeholder="Tell the community about your DSA goals, target companies, or tech stack..."
-                          value={formData.bio}
-                          onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Username</Label>
+                      <input className={inputCls} value={formData.username} onChange={e => set('username', e.target.value)} />
                     </div>
-
-                    <div className="flex justify-end pt-4">
-                      <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 font-bold px-6">
-                        {loading ? 'Saving...' : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
-                      </Button>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">College</Label>
+                      <input className={inputCls} value={formData.college} onChange={e => set('college', e.target.value)} placeholder="IIT Bombay" />
                     </div>
-                  </form>
-                </CardContent>
-              </Card>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Roll Number</Label>
+                      <input className={inputCls} value={formData.rollNumber} onChange={e => set('rollNumber', e.target.value)} placeholder="CS21B045" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Branch</Label>
+                      <input className={inputCls} value={formData.branch} onChange={e => set('branch', e.target.value)} placeholder="Computer Science" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Year of Study</Label>
+                      <input className={inputCls} value={formData.year} onChange={e => set('year', e.target.value)} placeholder="3rd Year" />
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input className={`${inputCls} pl-9 opacity-60 cursor-not-allowed`} value={formData.email} disabled />
+                      </div>
+                      <p className="text-[11px] text-slate-400">Email is tied to your account and cannot be changed.</p>
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">Bio</Label>
+                      <textarea
+                        className="w-full min-h-[80px] px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all resize-none"
+                        placeholder="Tell the community about your DSA goals and target companies..."
+                        value={formData.bio} onChange={e => set('bio', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button type="submit" disabled={loading}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 hover:opacity-95 transition-all disabled:opacity-60">
+                      {loading ? 'Saving…' : <><Save className="w-4 h-4" /> Save Changes</>}
+                    </button>
+                  </div>
+                </form>
+              </div>
             )}
 
-            {/* APPEARANCE SETTINGS */}
+            {/* Appearance */}
             {activeTab === 'appearance' && (
-              <Card className="glass-dark border-0 shadow-2xl">
-                <CardHeader>
-                  <CardTitle>Appearance</CardTitle>
-                  <CardDescription>Customize the interface theme.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div 
-                      className={`cursor-pointer rounded-xl border-2 p-4 transition-all hover:bg-white/5 ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}
-                      onClick={() => setTheme('light')}
-                    >
-                      <div className="mb-3 rounded-lg bg-[#f0f0f0] p-4 aspect-video flex items-center justify-center">
-                        <Sun className="h-8 w-8 text-orange-500" />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">Light Mode</span>
-                        {theme === 'light' && <CheckCircle className="h-4 w-4 text-primary" />}
-                      </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm space-y-5">
+                <div>
+                  <h2 className="font-extrabold text-slate-900 dark:text-white">Appearance</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Customize the interface theme.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button onClick={() => setTheme('light')}
+                    className={`rounded-2xl border-2 p-5 text-left transition-all hover:-translate-y-0.5 ${theme === 'light' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}>
+                    <div className="mb-3 h-24 rounded-xl bg-gradient-to-br from-slate-100 to-white flex items-center justify-center border border-slate-200 shadow-inner">
+                      <Sun className="w-8 h-8 text-amber-500" />
                     </div>
-
-                    <div 
-                      className={`cursor-pointer rounded-xl border-2 p-4 transition-all hover:bg-white/5 ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}
-                      onClick={() => setTheme('dark')}
-                    >
-                      <div className="mb-3 rounded-lg bg-[#1a1a1a] p-4 aspect-video flex items-center justify-center">
-                        <Moon className="h-8 w-8 text-blue-400" />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">Dark Mode</span>
-                        {theme === 'dark' && <CheckCircle className="h-4 w-4 text-primary" />}
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">☀️ Light Mode</span>
+                      {theme === 'light' && <CheckCircle className="w-4 h-4 text-indigo-500" />}
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </button>
+                  <button onClick={() => setTheme('dark')}
+                    className={`rounded-2xl border-2 p-5 text-left transition-all hover:-translate-y-0.5 ${theme === 'dark' ? 'border-indigo-500 bg-indigo-950/30' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}>
+                    <div className="mb-3 h-24 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center border border-slate-700 shadow-inner">
+                      <Moon className="w-8 h-8 text-indigo-400" />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">🌙 Dark Mode</span>
+                      {theme === 'dark' && <CheckCircle className="w-4 h-4 text-indigo-500" />}
+                    </div>
+                  </button>
+                </div>
+              </div>
             )}
 
-            {/* NOTIFICATIONS */}
+            {/* Notifications */}
             {activeTab === 'notifications' && (
-              <Card className="glass-dark border-0 shadow-2xl">
-                <CardHeader>
-                  <CardTitle>Notifications</CardTitle>
-                  <CardDescription>Manage your email preferences.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    { title: "Weekly Progress Report", desc: "Get a summary of your coding activity every Monday." },
-                    { title: "Streak Reminders", desc: "Receive a notification if you are close to breaking your daily streak." },
-                    { title: "Security Alerts", desc: "Get notified about important account logins." }
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
-                      <div className="space-y-0.5">
-                        <h4 className="font-medium text-sm text-foreground">{item.title}</h4>
-                        <p className="text-xs text-muted-foreground">{item.desc}</p>
-                      </div>
-                      <div className="flex items-center">
-                         <div className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors">
-                            <span className="translate-x-5 inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200" />
-                         </div>
-                      </div>
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-sm space-y-5">
+                <div>
+                  <h2 className="font-extrabold text-slate-900 dark:text-white">Notifications</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Manage your email preferences.</p>
+                </div>
+                {[
+                  { title: 'Weekly Progress Report', desc: 'Get a summary of your coding activity every Monday.', color: 'bg-indigo-500' },
+                  { title: 'Streak Reminders',        desc: 'Get notified if you are close to breaking your daily streak.', color: 'bg-amber-500' },
+                  { title: 'Security Alerts',         desc: 'Get notified about important account logins.', color: 'bg-rose-500' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                    <div className="space-y-0.5">
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-white">{item.title}</h4>
+                      <p className="text-[11px] text-slate-500">{item.desc}</p>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* ACCOUNT SETTINGS */}
-            {activeTab === 'account' && (
-              <Card className="glass-dark border-0 border-l-4 border-l-red-500 shadow-2xl">
-                <CardHeader>
-                  <CardTitle className="text-red-400">Danger Zone</CardTitle>
-                  <CardDescription>Irreversible actions for your account.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                    <div>
-                      <h4 className="font-bold text-sm text-red-200">Delete Account</h4>
-                      <p className="text-xs text-red-300/70">Permanently remove your account and all submission data.</p>
+                    <div className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full ${item.color} shadow-sm`}>
+                      <span className="translate-x-4 inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform" />
                     </div>
-                    <Button variant="destructive" size="sm" className="bg-red-600 hover:bg-red-700 font-bold">
-                      <Trash2 className="w-4 h-4 mr-2" /> Delete Account
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
             )}
 
+            {/* Danger Zone */}
+            {activeTab === 'account' && (
+              <div className="bg-white dark:bg-slate-900 border-2 border-rose-200 dark:border-rose-800/60 rounded-2xl p-6 md:p-8 shadow-sm space-y-5">
+                <div>
+                  <h2 className="font-extrabold text-rose-600 dark:text-rose-400">⚠️ Danger Zone</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">Irreversible actions for your account.</p>
+                </div>
+                <div className="flex items-center justify-between p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60">
+                  <div className="space-y-0.5">
+                    <h4 className="font-bold text-sm text-rose-700 dark:text-rose-300">Delete Account</h4>
+                    <p className="text-xs text-rose-500 dark:text-rose-400/80">Permanently remove your account and all submission data.</p>
+                  </div>
+                  <button className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" /> Delete Account
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Settings;
+}
