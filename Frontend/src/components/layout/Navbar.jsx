@@ -66,14 +66,17 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="relative p-2 bg-gradient-to-r from-primary to-purple-600 rounded-xl shadow-lg">
-                <Brain className="h-6 w-6 text-white" />
+              <div className="relative p-2.5 bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 rounded-xl shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform duration-300">
+                <Layers className="h-5 w-5 text-white" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-80 transition duration-300 -z-10"></div>
               </div>
-              <div>
-                <span className="text-xl font-bold text-gradient bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+              <div className="flex flex-col">
+                <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-purple-400 bg-clip-text text-transparent group-hover:from-indigo-400 group-hover:to-pink-400 transition-all">
                   RankQuest
                 </span>
-                <div className="text-xs text-muted-foreground font-medium hidden sm:block">DSA Mastery</div>
+                <span className="text-[9px] font-bold text-indigo-400 tracking-widest uppercase -mt-1">
+                  DSA Platform
+                </span>
               </div>
             </Link>
           </div>

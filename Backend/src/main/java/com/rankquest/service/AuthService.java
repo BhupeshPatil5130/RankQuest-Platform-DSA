@@ -83,30 +83,53 @@ public class AuthService {
     @Transactional
     public ApiResponse<LoginResponse> googleLogin(String idToken) {
         try {
-            HttpClient client = HttpClient.newHttpClient();
+            if (idToken == null || idToken.trim().isEmpty()) {
+                return ApiResponse.error("Google token is required");
+            }
+
             JsonNode tokenInfo = null;
 
-            try {
-                HttpRequest userinfoRequest = HttpRequest.newBuilder()
-                        .uri(URI.create("https://www.googleapis.com/oauth2/v3/userinfo"))
-                        .header("Authorization", "Bearer " + idToken)
-                        .GET()
-                        .build();
-                HttpResponse<String> userinfoResponse = client.send(userinfoRequest, HttpResponse.BodyHandlers.ofString());
-                if (userinfoResponse.statusCode() == 200) {
-                    tokenInfo = objectMapper.readTree(userinfoResponse.body());
-                }
-            } catch (Exception ignored) {}
+            // 1. If it's a Google JWT ID Token (3 parts), decode payload directly (fastest & most reliable)
+            String[] parts = idToken.split("\\.");
+            if (parts.length == 3) {
+                try {
+                    byte[] decodedBytes = java.util.Base64.getUrlDecoder().decode(parts[1]);
+                    JsonNode jwtPayload = objectMapper.readTree(decodedBytes);
+                    if (jwtPayload.has("email") && !jwtPayload.path("email").asText().isEmpty()) {
+                        tokenInfo = jwtPayload;
+                    }
+                } catch (Exception ignored) {}
+            }
 
+            // 2. If JWT decode wasn't applicable, query Google's userinfo endpoint
             if (tokenInfo == null || !tokenInfo.has("email")) {
-                HttpRequest tokeninfoRequest = HttpRequest.newBuilder()
-                        .uri(URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
-                        .GET()
-                        .build();
-                HttpResponse<String> tokeninfoResponse = client.send(tokeninfoRequest, HttpResponse.BodyHandlers.ofString());
-                if (tokeninfoResponse.statusCode() == 200) {
-                    tokenInfo = objectMapper.readTree(tokeninfoResponse.body());
-                }
+                try {
+                    HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest userinfoRequest = HttpRequest.newBuilder()
+                            .uri(URI.create("https://www.googleapis.com/oauth2/v3/userinfo"))
+                            .header("Authorization", "Bearer " + idToken)
+                            .GET()
+                            .build();
+                    HttpResponse<String> response = client.send(userinfoRequest, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() == 200) {
+                        tokenInfo = objectMapper.readTree(response.body());
+                    }
+                } catch (Exception ignored) {}
+            }
+
+            // 3. Fallback to Google tokeninfo endpoint
+            if (tokenInfo == null || !tokenInfo.has("email")) {
+                try {
+                    HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest tokeninfoRequest = HttpRequest.newBuilder()
+                            .uri(URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
+                            .GET()
+                            .build();
+                    HttpResponse<String> response = client.send(tokeninfoRequest, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() == 200) {
+                        tokenInfo = objectMapper.readTree(response.body());
+                    }
+                } catch (Exception ignored) {}
             }
 
             if (tokenInfo == null || !tokenInfo.has("email") || tokenInfo.path("email").asText().isEmpty()) {
@@ -126,7 +149,7 @@ public class AuthService {
                 String baseUsername = finalEmail.split("@")[0].replaceAll("[^a-zA-Z0-9_]", "_");
                 String uniqueUsername = ensureUniqueUsername(baseUsername);
                 newUser.setUsername(uniqueUsername);
-                newUser.setFullName(finalName != null && !finalName.isEmpty() ? finalName : givenName);
+                newUser.setFullName(finalName != null && !finalName.isEmpty() ? finalName : (givenName != null ? givenName : "User"));
                 newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                 newUser.setRole(Role.USER);
                 return userRepository.save(newUser);

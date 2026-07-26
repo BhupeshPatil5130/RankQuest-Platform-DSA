@@ -105,14 +105,14 @@ const Login = () => {
 
       {/* Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 mb-4 backdrop-blur-xl">
-          <Link to="/" className="flex items-center gap-2">
-            <Brain className="w-8 h-8 text-primary" />
-            <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
-              RankQuest
-            </span>
-          </Link>
-        </div>
+        <Link to="/" className="inline-flex items-center gap-3 mb-4 group">
+          <div className="p-3 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 shadow-xl shadow-indigo-500/25 group-hover:scale-105 transition-transform duration-300">
+            <Layers className="w-8 h-8 text-white" />
+          </div>
+          <span className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-purple-400 bg-clip-text text-transparent">
+            RankQuest
+          </span>
+        </Link>
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-white mb-2">
           Welcome Back
         </h2>
