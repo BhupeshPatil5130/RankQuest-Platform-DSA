@@ -134,6 +134,8 @@ export const getAllSheets = () => {
     return request('/sheets', { method: 'GET' });
 };
 
+export const getSheets = getAllSheets;
+
 export const getSheetBySlug = (slug) => {
     return request(`/sheets/${slug}`, { method: 'GET' });
 };
@@ -176,6 +178,13 @@ export const submitSolution = (problemId, submissionData) => {
 
 export const getSolvedProblems = () => {
     return request(`/submissions/my-solved?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+};
+
+export const toggleSolveStatus = (problemId, isSolved) => {
+    return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
+        method: 'POST',
+        body: JSON.stringify({ status: isSolved ? 'ACCEPTED' : 'UNSOLVED' }),
+    });
 };
 
 // ───────────────────────────────────────────────
