@@ -51,13 +51,11 @@ const Sheets = () => {
     fetchSheetsData();
   }, [user]);
 
-  const filteredSheets = sheets.filter(sheet => {
-    if (!sheet) return false;
-    const term = (searchTerm || '').toLowerCase();
-    return (sheet.title || '').toLowerCase().includes(term) ||
-           (sheet.description || '').toLowerCase().includes(term) ||
-           (sheet.author || '').toLowerCase().includes(term);
-  });
+  const filteredSheets = sheets.filter(sheet => 
+    sheet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sheet.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sheet.author?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">

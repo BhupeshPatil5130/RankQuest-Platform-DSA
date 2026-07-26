@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import {
-  User, Bell, Palette, Shield, Save, CheckCircle,
+import { 
+  User, Bell, Palette, Shield, Save, CheckCircle, 
   Moon, Sun, Trash2, Mail
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
@@ -17,10 +17,10 @@ const Settings = () => {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const location = useLocation();
-
+  
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile');
   const [loading, setLoading] = useState(false);
-
+  
   useEffect(() => {
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab);
@@ -41,47 +41,47 @@ const Settings = () => {
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        fullName: user.fullName || '',
-        username: user.username || '',
-        email: user.email || '',
-        college: user.college || '',
-        bio: user.bio || '',
-        rollNumber: user.rollNumber || '',
-        branch: user.branch || '',
-        year: user.year || ''
-      });
+        setFormData({
+            fullName: user.fullName || '',
+            username: user.username || '',
+            email: user.email || '',
+            college: user.college || '',
+            bio: user.bio || '',
+            rollNumber: user.rollNumber || '',
+            branch: user.branch || '',
+            year: user.year || ''
+        });
     }
   }, [user]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+    
     try {
-      const result = await updateProfile(formData);
+        const result = await updateProfile(formData);
 
-      if (result.success) {
-        toast({
-          title: "Profile Updated ✨",
-          description: "Your profile details have been saved successfully.",
-          variant: "success"
-        });
-      } else {
-        toast({
-          title: "Update Failed",
-          description: result.error || "Could not save changes.",
-          variant: "destructive"
-        });
-      }
+        if (result.success) {
+            toast({ 
+                title: "Profile Updated ✨", 
+                description: "Your profile details have been saved successfully.", 
+                variant: "success" 
+            });
+        } else {
+            toast({ 
+                title: "Update Failed", 
+                description: result.error || "Could not save changes.", 
+                variant: "destructive" 
+            });
+        }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive"
-      });
+        toast({ 
+            title: "Error", 
+            description: "Something went wrong. Please try again.", 
+            variant: "destructive" 
+        });
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
@@ -108,10 +108,11 @@ const Settings = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id
-                      ? 'bg-primary/10 text-primary shadow-sm font-bold'
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeTab === tab.id 
+                      ? 'bg-primary/10 text-primary shadow-sm font-bold' 
                       : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'
-                    }`}
+                  }`}
                 >
                   <tab.icon className="w-4 h-4" />
                   <span>{tab.label}</span>
@@ -122,7 +123,7 @@ const Settings = () => {
 
           {/* Main Content Area */}
           <div className="flex-1 space-y-6">
-
+            
             {/* PROFILE SETTINGS */}
             {activeTab === 'profile' && (
               <Card className="glass-dark border-0 shadow-2xl">
@@ -145,37 +146,37 @@ const Settings = () => {
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label>Full Name</Label>
-                        <Input
-                          value={formData.fullName}
-                          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        <Input 
+                          value={formData.fullName} 
+                          onChange={(e) => setFormData({...formData, fullName: e.target.value})} 
                           placeholder="e.g. Alex Johnson"
                           className="bg-white/5 border-white/10"
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Username</Label>
-                        <Input
-                          value={formData.username}
-                          onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        <Input 
+                          value={formData.username} 
+                          onChange={(e) => setFormData({...formData, username: e.target.value})} 
                           className="bg-white/5 border-white/10"
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label>College / Institution</Label>
-                        <Input
-                          value={formData.college}
-                          onChange={(e) => setFormData({ ...formData, college: e.target.value })}
+                        <Input 
+                          value={formData.college} 
+                          onChange={(e) => setFormData({...formData, college: e.target.value})}
                           placeholder="e.g. IIT Bombay"
                           className="bg-white/5 border-white/10"
                         />
                       </div>
-
+                      
                       <div className="space-y-2">
                         <Label>Roll Number</Label>
-                        <Input
-                          value={formData.rollNumber}
-                          onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
+                        <Input 
+                          value={formData.rollNumber} 
+                          onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
                           placeholder="e.g. CS21B045"
                           className="bg-white/5 border-white/10"
                         />
@@ -183,19 +184,19 @@ const Settings = () => {
 
                       <div className="space-y-2">
                         <Label>Branch</Label>
-                        <Input
-                          value={formData.branch}
-                          onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+                        <Input 
+                          value={formData.branch} 
+                          onChange={(e) => setFormData({...formData, branch: e.target.value})}
                           placeholder="e.g. Computer Science"
                           className="bg-white/5 border-white/10"
                         />
                       </div>
-
+                      
                       <div className="space-y-2">
                         <Label>Year of Study</Label>
-                        <Input
-                          value={formData.year}
-                          onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                        <Input 
+                          value={formData.year} 
+                          onChange={(e) => setFormData({...formData, year: e.target.value})}
                           placeholder="e.g. 3rd Year"
                           className="bg-white/5 border-white/10"
                         />
@@ -204,23 +205,23 @@ const Settings = () => {
                       <div className="space-y-2 md:col-span-2">
                         <Label>Email Address</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            value={formData.email}
-                            disabled
-                            className="pl-9 bg-white/5 border-white/10 opacity-60 cursor-not-allowed text-xs font-mono"
-                          />
+                           <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                           <Input 
+                             value={formData.email} 
+                             disabled 
+                             className="pl-9 bg-white/5 border-white/10 opacity-60 cursor-not-allowed text-xs font-mono" 
+                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">Email is tied to your account login.</p>
                       </div>
 
                       <div className="space-y-2 md:col-span-2">
                         <Label>Bio / About You</Label>
-                        <textarea
+                        <textarea 
                           className="flex min-h-[90px] w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 resize-none"
                           placeholder="Tell the community about your DSA goals, target companies, or tech stack..."
                           value={formData.bio}
-                          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                          onChange={(e) => setFormData({...formData, bio: e.target.value})}
                         />
                       </div>
                     </div>
@@ -244,7 +245,7 @@ const Settings = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div
+                    <div 
                       className={`cursor-pointer rounded-xl border-2 p-4 transition-all hover:bg-white/5 ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}
                       onClick={() => setTheme('light')}
                     >
@@ -257,7 +258,7 @@ const Settings = () => {
                       </div>
                     </div>
 
-                    <div
+                    <div 
                       className={`cursor-pointer rounded-xl border-2 p-4 transition-all hover:bg-white/5 ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-white/10 bg-white/5'}`}
                       onClick={() => setTheme('dark')}
                     >
@@ -293,9 +294,9 @@ const Settings = () => {
                         <p className="text-xs text-muted-foreground">{item.desc}</p>
                       </div>
                       <div className="flex items-center">
-                        <div className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors">
-                          <span className="translate-x-5 inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200" />
-                        </div>
+                         <div className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors">
+                            <span className="translate-x-5 inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition duration-200" />
+                         </div>
                       </div>
                     </div>
                   ))}

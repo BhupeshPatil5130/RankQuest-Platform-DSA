@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import {
-  BookOpen, Video, ExternalLink, Star, Users, Filter, Search,
+import { 
+  BookOpen, Video, ExternalLink, Star, Users, Filter, Search, 
   Library, Play, FileText, GraduationCap, Zap, Table, Code, Layers, Sparkles
 } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -40,7 +40,7 @@ const Resources = () => {
   const [selectedType, setSelectedType] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [mounted, setMounted] = useState(false)
-
+  
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -182,17 +182,15 @@ const Resources = () => {
   const types = ['all', 'book', 'video', 'article', 'course']
 
   const filteredResources = resources.filter(resource => {
-    if (!resource) return false;
-    const term = (searchTerm || '').toLowerCase();
-    const matchesSearch = (resource.title || '').toLowerCase().includes(term) ||
-      (resource.author || '').toLowerCase().includes(term) ||
-      (resource.description || '').toLowerCase().includes(term) ||
-      (resource.topics || []).some(topic => (topic || '').toLowerCase().includes(term));
-    const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
-    const matchesType = selectedType === 'all' || resource.type === selectedType;
-
-    return matchesSearch && matchesCategory && matchesType;
-  });
+    const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         resource.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         resource.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory
+    const matchesType = selectedType === 'all' || resource.type === selectedType
+    
+    return matchesSearch && matchesCategory && matchesType
+  })
 
   const getTypeIcon = (type) => {
     switch (type) {
@@ -219,10 +217,10 @@ const Resources = () => {
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/20 to-transparent rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-3xl"></div>
-
+      
       <div className="relative z-10 py-8">
         <div className="container mx-auto px-4 max-w-6xl">
-
+          
           {/* Header */}
           <div className={`text-center mb-8 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
             <div className="flex items-center justify-center space-x-3 mb-4">
@@ -242,19 +240,21 @@ const Resources = () => {
               <div className="p-1 bg-white/5 border border-white/10 rounded-full shadow-lg flex gap-1">
                 <button
                   onClick={() => setActiveTab('resources')}
-                  className={`px-6 py-2 rounded-full text-xs font-semibold transition-all ${activeTab === 'resources'
-                      ? 'bg-primary text-primary-foreground shadow'
+                  className={`px-6 py-2 rounded-full text-xs font-semibold transition-all ${
+                    activeTab === 'resources' 
+                      ? 'bg-primary text-primary-foreground shadow' 
                       : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                  }`}
                 >
                   📚 Curated Resources
                 </button>
                 <button
                   onClick={() => setActiveTab('cheatsheet')}
-                  className={`px-6 py-2 rounded-full text-xs font-semibold transition-all ${activeTab === 'cheatsheet'
-                      ? 'bg-primary text-primary-foreground shadow'
+                  className={`px-6 py-2 rounded-full text-xs font-semibold transition-all ${
+                    activeTab === 'cheatsheet' 
+                      ? 'bg-primary text-primary-foreground shadow' 
                       : 'text-muted-foreground hover:text-foreground'
-                    }`}
+                  }`}
                 >
                   ⚡ Big-O & Pattern Cheat Sheet
                 </button>
@@ -328,10 +328,11 @@ const Resources = () => {
                             {resource.type.charAt(0).toUpperCase() + resource.type.slice(1)}
                           </Badge>
                         </div>
-                        <Badge className={`px-3 py-1 rounded-xl ${resource.difficulty.includes('Beginner') ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                            resource.difficulty.includes('Intermediate') ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
-                              'bg-red-500/20 text-red-400 border-red-500/30'
-                          }`}>
+                        <Badge className={`px-3 py-1 rounded-xl ${
+                          resource.difficulty.includes('Beginner') ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                          resource.difficulty.includes('Intermediate') ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                          'bg-red-500/20 text-red-400 border-red-500/30'
+                        }`}>
                           {resource.difficulty}
                         </Badge>
                       </div>
@@ -366,24 +367,24 @@ const Resources = () => {
                             <span className="text-muted-foreground">{resource.users.toLocaleString()}</span>
                           </div>
                         </div>
-
+                        
                         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-4 font-bold text-xs">
                           <a href={resource.url} target="_blank" rel="noopener noreferrer">
                             View <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
                           </a>
                         </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
           )}
 
           {/* TAB 2: BIG-O & PATTERNS CHEAT SHEET */}
           {activeTab === 'cheatsheet' && (
             <div className="space-y-8 animate-fade-in">
-
+              
               {/* Data Structures Complexity */}
               <Card className="glass-dark border-0 shadow-2xl overflow-hidden">
                 <CardHeader className="border-b border-white/10 pb-4">
