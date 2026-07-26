@@ -392,7 +392,7 @@ public class DataInitializer implements CommandLineRunner {
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setCollege("IIT Bombay");
         admin.setBranch("Computer Science and Engineering");
-        admin.setGraduationYear("2025");
+        admin.setYear("2025");
         admin.setBio("Platform administrator & competitive programming coach.");
         admin.setRole(Role.ADMIN);
 
@@ -410,7 +410,7 @@ public class DataInitializer implements CommandLineRunner {
         demo.setPassword(passwordEncoder.encode("demo123"));
         demo.setCollege("BITS Pilani");
         demo.setBranch("Information Technology");
-        demo.setGraduationYear("2026");
+        demo.setYear("2026");
         demo.setBio("DSA enthusiast grinding patterns daily!");
         demo.setRole(Role.USER);
 
