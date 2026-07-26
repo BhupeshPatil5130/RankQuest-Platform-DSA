@@ -63,9 +63,9 @@ export default function Patterns() {
   }, [user]);
 
   const filtered = patterns.filter(p => {
-    const s = search.toLowerCase();
+    const s = (search || '').toLowerCase();
     return (
-      (p.name.toLowerCase().includes(s) || p.description?.toLowerCase().includes(s)) &&
+      ((p.name || '').toLowerCase().includes(s) || (p.description || '').toLowerCase().includes(s)) &&
       (category === 'All' || p.category === category)
     );
   });

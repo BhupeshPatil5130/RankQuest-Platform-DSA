@@ -43,9 +43,9 @@ export default function Sheets() {
   }, [user]);
 
   const filtered = sheets.filter(sh =>
-    sh.title.toLowerCase().includes(search.toLowerCase()) ||
-    sh.description?.toLowerCase().includes(search.toLowerCase()) ||
-    sh.author?.toLowerCase().includes(search.toLowerCase())
+    (sh.title || '').toLowerCase().includes(search.toLowerCase()) ||
+    (sh.description || '').toLowerCase().includes(search.toLowerCase()) ||
+    (sh.author || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

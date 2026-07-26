@@ -18,7 +18,7 @@ import java.util.Optional;
 /**
  * Service layer for problem submissions.
  * Handles solution submissions, tracks solved problems,
- * updates activity logs, and manages streak calculations.
+ * updates activity logs, and manages streak calculations cleanly.
  */
 @Service
 public class SubmissionService {
@@ -41,33 +41,45 @@ public class SubmissionService {
     }
 
     /**
-     * Submit a solution for a problem.
-     * All submissions are marked ACCEPTED (no real code execution engine).
-     * Updates user stats, activity logs, and streaks atomically.
-     * If already solved, returns a message without re-counting stats.
+     * Submit or toggle a solution for a problem.
+     * Safely handles ACCEPTED and UNSOLVED statuses without duplicate key errors.
      */
     @Transactional
     public ApiResponse<String> submitSolution(Long problemId, String email, SubmissionRequest request) {
         User user = userService.findByEmail(email);
+        String requestedStatus = request != null && request.getStatus() != null ? request.getStatus() : "ACCEPTED";
 
-        // Check if already solved
-        boolean alreadySolved = submissionRepository.existsByUserIdAndProblemId(user.getId(), problemId);
+        Optional<Submission> existing = submissionRepository.findByUserIdAndProblemId(user.getId(), problemId);
 
-        if (alreadySolved) {
-            // Update existing submission's language only
-            Optional<Submission> existing = submissionRepository.findByUserIdAndProblemId(user.getId(), problemId);
-            existing.ifPresent(s -> {
-                s.setLanguage(request.getLanguage() != null ? request.getLanguage() : s.getLanguage());
-                submissionRepository.save(s);
-            });
-            return ApiResponse.success("Already solved — submission updated!");
+        // If user is requesting to unmark/unsolve the problem
+        if ("UNSOLVED".equalsIgnoreCase(requestedStatus)) {
+            if (existing.isPresent()) {
+                submissionRepository.delete(existing.get());
+                if (user.getTotalSolved() > 0) {
+                    user.setTotalSolved(user.getTotalSolved() - 1);
+                    userRepository.save(user);
+                }
+                return ApiResponse.success("Problem unmarked as solved");
+            }
+            return ApiResponse.success("Already unsolved");
         }
 
-        // Create new submission record
+        // If submission record already exists for this (user, problem) pair
+        if (existing.isPresent()) {
+            Submission s = existing.get();
+            s.setStatus(Submission.Status.ACCEPTED);
+            if (request != null && request.getLanguage() != null) {
+                s.setLanguage(request.getLanguage());
+            }
+            submissionRepository.save(s);
+            return ApiResponse.success("Submission updated!");
+        }
+
+        // Create new submission record safely
         Submission submission = new Submission(
                 user.getId(),
                 problemId,
-                request.getLanguage() != null ? request.getLanguage() : "java",
+                (request != null && request.getLanguage() != null) ? request.getLanguage() : "java",
                 Submission.Status.ACCEPTED
         );
         submissionRepository.save(submission);
@@ -91,7 +103,6 @@ public class SubmissionService {
 
     /**
      * Update the user's streak and daily activity log.
-     * Called only on first solve of a problem.
      */
     private void updateStreakAndActivity(User user) {
         LocalDate today = LocalDate.now();
@@ -109,19 +120,11 @@ public class SubmissionService {
         // Calculate streak
         LocalDate lastSolved = user.getLastSolvedDate();
         if (lastSolved == null || lastSolved.isBefore(today.minusDays(1))) {
-            // Streak broken or first solve — reset to 1
             user.setCurrentStreak(1);
         } else if (lastSolved.equals(today.minusDays(1))) {
-            // Consecutive day — increment streak
             user.setCurrentStreak(user.getCurrentStreak() + 1);
         }
-        // If lastSolved is today (multiple problems in same day), streak stays the same
 
         user.setLastSolvedDate(today);
-
-        // Update max streak if current is higher
-        if (user.getCurrentStreak() > user.getMaxStreak()) {
-            user.setMaxStreak(user.getCurrentStreak());
-        }
     }
 }

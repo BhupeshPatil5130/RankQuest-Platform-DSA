@@ -182,15 +182,16 @@ const Resources = () => {
   const types = ['all', 'book', 'video', 'article', 'course']
 
   const filteredResources = resources.filter(resource => {
-    const matchesSearch = resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resource.topics.some(topic => topic.toLowerCase().includes(searchTerm.toLowerCase()))
-    const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory
-    const matchesType = selectedType === 'all' || resource.type === selectedType
+    const s = (searchTerm || '').toLowerCase();
+    const matchesSearch = (resource.title || '').toLowerCase().includes(s) ||
+                         (resource.author || '').toLowerCase().includes(s) ||
+                         (resource.description || '').toLowerCase().includes(s) ||
+                         (resource.topics || []).some(topic => (topic || '').toLowerCase().includes(s));
+    const matchesCategory = selectedCategory === 'all' || resource.category === selectedCategory;
+    const matchesType = selectedType === 'all' || resource.type === selectedType;
     
-    return matchesSearch && matchesCategory && matchesType
-  })
+    return matchesSearch && matchesCategory && matchesType;
+  });
 
   const getTypeIcon = (type) => {
     switch (type) {

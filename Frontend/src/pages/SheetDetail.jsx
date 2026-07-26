@@ -240,9 +240,9 @@ const SheetDetail = () => {
   const statuses = ['all', 'solved', 'unsolved', 'bookmarked'];
 
   const filteredProblems = sheetProblems.filter(problem => {
-    const matchesSearch = problem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (problem.topic || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (problem.companies || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (problem.title || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+                         (problem.topic || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+                         (problem.companies || '').toLowerCase().includes((searchTerm || '').toLowerCase());
     const matchesTopic = selectedTopic === 'all' || problem.topic === selectedTopic;
     const matchesDifficulty = selectedDifficulty === 'all' || problem.difficulty === selectedDifficulty;
     const matchesCompany = selectedCompany === 'all' || (problem.companies && problem.companies.includes(selectedCompany));

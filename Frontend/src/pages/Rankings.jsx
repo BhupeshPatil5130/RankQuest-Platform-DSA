@@ -34,9 +34,9 @@ export default function Rankings() {
   }, [tab, user]);
 
   const filtered = rankings.filter(r =>
-    r.username?.toLowerCase().includes(search.toLowerCase()) ||
-    r.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-    r.college?.toLowerCase().includes(search.toLowerCase())
+    (r?.username || '').toLowerCase().includes((search || '').toLowerCase()) ||
+    (r?.fullName || '').toLowerCase().includes((search || '').toLowerCase()) ||
+    (r?.college || '').toLowerCase().includes((search || '').toLowerCase())
   );
 
   const rankStyle = (n) => {
