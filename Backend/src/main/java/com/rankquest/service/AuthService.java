@@ -19,11 +19,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
-/**
- * Service layer for authentication operations.
- * Handles signup validation, password hashing, login verification, JWT generation,
- * and Google OAuth sign-in (find-or-create pattern).
- */
+
 @Service
 public class AuthService {
 
@@ -41,11 +37,6 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
         this.objectMapper = new ObjectMapper();
     }
-
-    /**
-     * Register a new user account.
-     * Validates uniqueness of username and email before creation.
-     */
     @Transactional
     public ApiResponse<UserProfileResponse> signup(SignUpRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -70,9 +61,6 @@ public class AuthService {
         return ApiResponse.success("User registered successfully", UserProfileResponse.fromUser(saved));
     }
 
-    /**
-     * Authenticate a user and return a JWT token with their profile.
-     */
     @Transactional(readOnly = true)
     public ApiResponse<LoginResponse> login(LoginRequest request) {
         return userRepository.findByEmail(request.getEmail().toLowerCase().trim())
@@ -85,9 +73,6 @@ public class AuthService {
             .orElse(ApiResponse.error("Invalid email or password"));
     }
 
-    /**
-     * Get the current user profile from their email (extracted from JWT).
-     */
     @Transactional(readOnly = true)
     public ApiResponse<UserProfileResponse> getCurrentUser(String email) {
         return userRepository.findByEmail(email)
@@ -95,20 +80,12 @@ public class AuthService {
             .orElse(ApiResponse.error("User not found"));
     }
 
-    /**
-     * Google OAuth sign-in: verify the ID token with Google's tokeninfo endpoint.
-     * If user exists, return JWT. If not, create a new account (find-or-create pattern).
-     *
-     * @param idToken The Google ID token from the frontend
-     * @return JWT + profile on success, error on failure
-     */
     @Transactional
     public ApiResponse<LoginResponse> googleLogin(String idToken) {
         try {
             HttpClient client = HttpClient.newHttpClient();
             JsonNode tokenInfo = null;
 
-            // 1. Try Bearer token check via userinfo endpoint first (for access_token)
             try {
                 HttpRequest userinfoRequest = HttpRequest.newBuilder()
                         .uri(URI.create("https://www.googleapis.com/oauth2/v3/userinfo"))
@@ -121,7 +98,6 @@ public class AuthService {
                 }
             } catch (Exception ignored) {}
 
-            // 2. If userinfo didn't match, fallback to tokeninfo (for id_token)
             if (tokenInfo == null || !tokenInfo.has("email")) {
                 HttpRequest tokeninfoRequest = HttpRequest.newBuilder()
                         .uri(URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
@@ -144,7 +120,6 @@ public class AuthService {
             final String finalEmail = email;
             final String finalName = name;
 
-            // Find existing user or create new one
             User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
                 User newUser = new User();
                 newUser.setEmail(finalEmail);

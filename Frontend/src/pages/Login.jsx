@@ -90,7 +90,10 @@ const Login = () => {
 
   const googleLoginHook = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => toast({ title: 'Google sign-in cancelled', variant: 'destructive' }),
+    onError: (err) => {
+      console.error('Google sign-in error:', err);
+      toast({ title: 'Google sign-in error', description: 'Pop-up was closed or blocked.', variant: 'destructive' });
+    },
   });
 
   return (
@@ -100,13 +103,11 @@ const Login = () => {
       <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] opacity-50 animate-pulse delay-1000 pointer-events-none"></div>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
-      {/* Logo */}
-      <div className={`sm:mx-auto sm:w-full sm:max-w-md relative z-10 ${mounted ? 'animate-slide-up' : 'opacity-0'}`}>
-        <div className="flex justify-center mb-6">
-          <Link to="/" className="flex items-center space-x-3 group transition-transform hover:scale-105">
-            <div className="p-3 bg-gradient-to-r from-primary to-purple-600 rounded-2xl shadow-lg shadow-primary/20">
-              <Brain className="h-8 w-8 text-white" />
-            </div>
+      {/* Header */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
+        <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 mb-4 backdrop-blur-xl">
+          <Link to="/" className="flex items-center gap-2">
+            <Brain className="w-8 h-8 text-primary" />
             <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300">
               RankQuest
             </span>
@@ -129,9 +130,16 @@ const Login = () => {
             {/* Google Sign-In Button */}
             <button
               type="button"
-              onClick={() => googleLoginHook()}
+              onClick={() => {
+                try {
+                  googleLoginHook();
+                } catch (e) {
+                  console.error('Google login trigger failed:', e);
+                  toast({ title: 'Google Login Error', description: 'Could not launch Google popup.', variant: 'destructive' });
+                }
+              }}
               disabled={isGoogleLoading}
-              className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all text-white font-medium text-sm mb-6 disabled:opacity-60 hover:border-white/40"
+              className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all text-white font-medium text-sm mb-6 disabled:opacity-60 hover:border-white/40 cursor-pointer"
             >
               {isGoogleLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

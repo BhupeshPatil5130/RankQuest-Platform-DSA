@@ -75,7 +75,6 @@ const Register = () => {
     if (!formData.name.trim()) newErrors.name = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
-    if (!formData.rollNumber.trim()) newErrors.rollNumber = 'Roll number is required';
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
@@ -188,9 +187,16 @@ const Register = () => {
             {/* Google Button */}
             <button
               type="button"
-              onClick={() => googleLoginHook()}
+              onClick={() => {
+                try {
+                  googleLoginHook();
+                } catch (e) {
+                  console.error('Google login trigger failed:', e);
+                  toast({ title: 'Google Login Error', description: 'Could not launch Google popup.', variant: 'destructive' });
+                }
+              }}
               disabled={isGoogleLoading}
-              className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all text-white font-medium text-sm mb-6 disabled:opacity-60 hover:border-white/40"
+              className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all text-white font-medium text-sm mb-6 disabled:opacity-60 hover:border-white/40 cursor-pointer"
             >
               {isGoogleLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
               {isGoogleLoading ? 'Signing in...' : 'Sign up with Google'}
