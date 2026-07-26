@@ -9,7 +9,8 @@ import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
-import { getSolvedProblems, getGlobalRankings, getCollegeRankings, getActivityHeatmap } from '../services/apiService';
+import { getSolvedProblems, getActivityHeatmap } from '../services/apiService';
+import ActivityHeatmap from '../components/features/ActivityHeatmap';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -17,15 +18,28 @@ const Profile = () => {
 
   const [loading, setLoading] = useState(true);
   const [solvedCount, setSolvedCount] = useState(0);
-  const [ranks, setRanks] = useState({ global: '#12', college: '#4' });
-  const [streak, setStreak] = useState(7);
+  const [heatmapData, setHeatmapData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const solved = await getSolvedProblems().catch(() => []);
+        const [solved, heatmap] = await Promise.all([
+          getSolvedProblems().catch(() => []),
+          getActivityHeatmap().catch(() => [])
+        ]);
+
         setSolvedCount(solved?.length || 0);
+
+        const heatMapObj = {};
+        if (Array.isArray(heatmap)) {
+          heatmap.forEach(item => {
+            if (item.date) heatMapObj[item.date] = item.count || 1;
+          });
+        } else if (typeof heatmap === 'object') {
+          Object.assign(heatMapObj, heatmap);
+        }
+        setHeatmapData(heatMapObj);
       } catch (err) {
         console.error('Failed to load profile data:', err);
       } finally {
@@ -40,33 +54,33 @@ const Profile = () => {
   const getInitial = () => getDisplayName().charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Profile Card Header */}
-        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-8 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 p-6 md:p-8 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm dark:shadow-none">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 font-extrabold text-2xl flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 dark:bg-indigo-600/20 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-extrabold text-2xl flex items-center justify-center shrink-0">
               {getInitial()}
             </div>
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-extrabold text-white">
+                <h1 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-white">
                   {getDisplayName()}
                 </h1>
-                <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px]">
+                <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 text-[10px]">
                   PRO
                 </Badge>
               </div>
 
-              <p className="text-xs text-zinc-400 flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-zinc-500" /> {user?.email || 'user@example.com'}
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" /> {user?.email || 'user@example.com'}
               </p>
 
               {user?.college && (
-                <p className="text-xs text-zinc-400 flex items-center gap-2 pt-0.5">
-                  <School className="w-3.5 h-3.5 text-zinc-500" /> {user.college} {user?.branch && `• ${user.branch}`}
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-2 pt-0.5">
+                  <School className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" /> {user.college} {user?.branch && `• ${user.branch}`}
                 </p>
               )}
             </div>
@@ -74,7 +88,7 @@ const Profile = () => {
 
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/settings">
-              <button className="px-4 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-semibold text-xs transition-all flex items-center gap-2">
+              <button className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 font-semibold text-xs transition-all flex items-center gap-2">
                 <Settings className="w-3.5 h-3.5" /> Edit Settings
               </button>
             </Link>
@@ -83,65 +97,68 @@ const Profile = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
-            <div className="flex justify-between items-center text-xs text-zinc-400">
+          <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 p-5 rounded-xl space-y-3 shadow-sm dark:shadow-none">
+            <div className="flex justify-between items-center text-xs text-zinc-600 dark:text-zinc-400 font-medium">
               <span>Problems Solved</span>
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <div className="text-2xl font-extrabold text-white">{solvedCount} <span className="text-xs text-zinc-500 font-normal">/ 150</span></div>
-            <Progress value={Math.round((solvedCount / 150) * 100)} className="h-1.5 bg-zinc-950" />
+            <div className="text-2xl font-extrabold text-zinc-900 dark:text-white">{solvedCount} <span className="text-xs text-zinc-500 font-normal">/ 150</span></div>
+            <Progress value={Math.round((solvedCount / 150) * 100)} className="h-1.5 bg-zinc-100 dark:bg-zinc-950" />
           </Card>
 
-          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
-            <div className="flex justify-between items-center text-xs text-zinc-400">
+          <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 p-5 rounded-xl space-y-3 shadow-sm dark:shadow-none">
+            <div className="flex justify-between items-center text-xs text-zinc-600 dark:text-zinc-400 font-medium">
               <span>Current Streak</span>
-              <Flame className="w-4 h-4 text-amber-400" />
+              <Flame className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-extrabold text-white">7 <span className="text-xs text-zinc-500 font-normal">Days</span></div>
-            <p className="text-[11px] text-emerald-400">Active Daily Practice</p>
+            <div className="text-2xl font-extrabold text-zinc-900 dark:text-white">7 <span className="text-xs text-zinc-500 font-normal">Days</span></div>
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Active Daily Practice</p>
           </Card>
 
-          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
-            <div className="flex justify-between items-center text-xs text-zinc-400">
+          <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 p-5 rounded-xl space-y-3 shadow-sm dark:shadow-none">
+            <div className="flex justify-between items-center text-xs text-zinc-600 dark:text-zinc-400 font-medium">
               <span>Global Rank</span>
-              <Trophy className="w-4 h-4 text-amber-400" />
+              <Trophy className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             </div>
-            <div className="text-2xl font-extrabold text-white">#12</div>
-            <p className="text-[11px] text-zinc-400">Top 5% Developers</p>
+            <div className="text-2xl font-extrabold text-zinc-900 dark:text-white">#12</div>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400">Top 5% Developers</p>
           </Card>
 
-          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
-            <div className="flex justify-between items-center text-xs text-zinc-400">
+          <Card className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 p-5 rounded-xl space-y-3 shadow-sm dark:shadow-none">
+            <div className="flex justify-between items-center text-xs text-zinc-600 dark:text-zinc-400 font-medium">
               <span>Patterns Completed</span>
-              <Target className="w-4 h-4 text-indigo-400" />
+              <Target className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div className="text-2xl font-extrabold text-white">4 <span className="text-xs text-zinc-500 font-normal">/ 15</span></div>
-            <p className="text-[11px] text-zinc-400">Roadmap Progress</p>
+            <div className="text-2xl font-extrabold text-zinc-900 dark:text-white">4 <span className="text-xs text-zinc-500 font-normal">/ 15</span></div>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400">Roadmap Progress</p>
           </Card>
         </div>
 
+        {/* Activity Heatmap Container */}
+        <ActivityHeatmap heatmapData={heatmapData} loading={loading} />
+
         {/* Quick Links */}
-        <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl space-y-4">
-          <h2 className="text-base font-bold text-white">Account Quick Actions</h2>
+        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 p-6 rounded-2xl space-y-4 shadow-sm dark:shadow-none">
+          <h2 className="text-base font-bold text-zinc-900 dark:text-white">Account Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <Link to="/patterns">
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-colors space-y-1">
-                <p className="font-semibold text-white">Practice Patterns →</p>
-                <p className="text-zinc-400">15 sequential DSA steps</p>
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors space-y-1">
+                <p className="font-semibold text-zinc-900 dark:text-white">Practice Patterns →</p>
+                <p className="text-zinc-600 dark:text-zinc-400">15 sequential DSA steps</p>
               </div>
             </Link>
 
             <Link to="/sheets">
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-colors space-y-1">
-                <p className="font-semibold text-white">Explore SDE Sheets →</p>
-                <p className="text-zinc-400">Striver, NeetCode & Blind 75</p>
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors space-y-1">
+                <p className="font-semibold text-zinc-900 dark:text-white">Explore SDE Sheets →</p>
+                <p className="text-zinc-600 dark:text-zinc-400">Striver, NeetCode & Blind 75</p>
               </div>
             </Link>
 
             <Link to="/rankings">
-              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-colors space-y-1">
-                <p className="font-semibold text-white">View Leaderboard →</p>
-                <p className="text-zinc-400">Compare college ranks</p>
+              <div className="p-4 rounded-xl bg-zinc-950 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors space-y-1">
+                <p className="font-semibold text-zinc-900 dark:text-white">View Leaderboard →</p>
+                <p className="text-zinc-600 dark:text-zinc-400">Compare college ranks</p>
               </div>
             </Link>
           </div>

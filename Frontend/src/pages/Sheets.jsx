@@ -58,36 +58,36 @@ const Sheets = () => {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header Hero */}
-        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+        <div className="border border-zinc-200 dark:border-zinc-800/80 rounded-2xl bg-white dark:bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4 shadow-sm dark:shadow-none">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider">
             <BookOpen className="w-3.5 h-3.5" />
             Curated SDE Problem Sheets
           </div>
           
           <div className="max-w-3xl space-y-2">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               SDE Sheet Collections
             </h1>
-            <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
+            <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base leading-relaxed">
               Handpicked problem collections by industry leaders including Striver SDE Sheet, NeetCode 150, Blind 75, and Love Babbar 450.
             </p>
           </div>
         </div>
 
         {/* Search */}
-        <div className="flex justify-between items-center bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800/80">
+        <div className="flex justify-between items-center bg-white dark:bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none">
           <div className="relative w-full sm:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
             <Input
               type="text"
               placeholder="Search sheets by title or author..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-zinc-950 border-zinc-800 text-xs h-9 rounded-lg"
+              className="pl-9 bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-xs h-9 rounded-lg"
             />
           </div>
         </div>
@@ -96,7 +96,7 @@ const Sheets = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-56 rounded-xl bg-zinc-900/40 border border-zinc-800 animate-pulse p-5"></div>
+              <div key={i} className="h-56 rounded-xl bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 animate-pulse p-5"></div>
             ))}
           </div>
         ) : (
@@ -109,36 +109,36 @@ const Sheets = () => {
               return (
                 <Card 
                   key={sheet.id}
-                  className="bg-zinc-900/60 border-zinc-800/80 hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between p-5 space-y-4 group"
+                  className="bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between p-5 space-y-4 group shadow-sm dark:shadow-none"
                 >
                   <CardContent className="p-0 space-y-4 flex-1 flex flex-col justify-between">
                     
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                        <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
                           {sheet.author || 'Curated'}
                         </Badge>
                         <span className="text-xs text-zinc-500 font-mono">{totalProblems} Questions</span>
                       </div>
 
-                      <h2 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                      <h2 className="text-lg font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {sheet.title}
                       </h2>
 
-                      <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed">
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3 leading-relaxed">
                         {sheet.description}
                       </p>
                     </div>
 
-                    <div className="space-y-3 pt-3 border-t border-zinc-800/80">
+                    <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
                       <div className="flex justify-between items-center text-[11px]">
                         <span className="text-zinc-500">Progress</span>
-                        <span className="font-semibold text-emerald-400">{solvedCount} / {totalProblems} Solved</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{solvedCount} / {totalProblems} Solved</span>
                       </div>
-                      <Progress value={progressPct} className="h-1.5 bg-zinc-950" />
+                      <Progress value={progressPct} className="h-1.5 bg-zinc-100 dark:bg-zinc-950" />
 
                       <Link to={`/sheets/${sheet.id}`} className="block pt-1">
-                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 text-xs font-semibold transition-all">
+                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-100 dark:bg-zinc-950 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-zinc-800 text-xs font-semibold transition-all">
                           <span>Open SDE Sheet</span>
                           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                         </button>

@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import { ArrowRight, Loader2, Mail, Lock, Eye, EyeOff, Layers, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Loader2, Mail, Lock, Eye, EyeOff, Layers } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -58,27 +58,27 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 subtle-grid">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 subtle-grid transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md space-y-6">
         
         {/* Brand Badge */}
         <div className="flex flex-col items-center justify-center space-y-3">
           <Link to="/" className="inline-flex items-center gap-2.5 group">
-            <div className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-indigo-400 group-hover:border-zinc-700 transition-colors">
+            <div className="p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-indigo-600 dark:text-indigo-400 group-hover:border-indigo-400 transition-colors shadow-sm">
               <Layers className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white">
+            <span className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
               RankQuest
             </span>
           </Link>
           <div className="text-center">
-            <h1 className="text-xl font-bold tracking-tight text-white">Welcome back</h1>
-            <p className="text-xs text-zinc-400 mt-1">Sign in to continue your DSA practice</p>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">Welcome back</h1>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Sign in to continue your DSA practice</p>
           </div>
         </div>
 
         {/* Auth Card */}
-        <Card className="bg-zinc-900/80 border-zinc-800/80 shadow-2xl backdrop-blur-sm rounded-2xl overflow-hidden">
+        <Card className="bg-white dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800/80 shadow-xl dark:shadow-2xl backdrop-blur-sm rounded-2xl overflow-hidden">
           <CardContent className="p-6 sm:p-8 space-y-6">
 
             {/* Native Google OAuth Button */}
@@ -114,10 +114,10 @@ const Login = () => {
             {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-800" />
+                <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-3 bg-zinc-900 text-zinc-400 font-medium">
+                <span className="px-3 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 font-medium">
                   or sign in with email
                 </span>
               </div>
@@ -126,45 +126,45 @@ const Login = () => {
             {/* Form */}
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-zinc-400" /> Email address
+                <Label htmlFor="email" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-zinc-500" /> Email address
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
-                  className={`bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-500 h-10 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-xs ${errors.email ? 'border-rose-500' : ''}`}
+                  className={`bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-xs ${errors.email ? 'border-rose-500' : ''}`}
                   placeholder="name@example.com"
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p className="text-[11px] text-rose-400 mt-1">{errors.email.message}</p>
+                  <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-1">{errors.email.message}</p>
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-zinc-400" /> Password
+                <Label htmlFor="password" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-zinc-500" /> Password
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
-                    className={`bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-500 h-10 rounded-xl pr-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-xs ${errors.password ? 'border-rose-500' : ''}`}
+                    className={`bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 h-10 rounded-xl pr-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-xs ${errors.password ? 'border-rose-500' : ''}`}
                     placeholder="••••••••"
                     {...register('password')}
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="text-[11px] text-rose-400 mt-1">{errors.password.message}</p>
+                  <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-1">{errors.password.message}</p>
                 )}
               </div>
 
@@ -181,10 +181,10 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="text-center pt-2 border-t border-zinc-800/60">
-              <p className="text-xs text-zinc-400">
+            <div className="text-center pt-2 border-t border-zinc-200 dark:border-zinc-800/60">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-semibold">
+                <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
                   Create an account
                 </Link>
               </p>

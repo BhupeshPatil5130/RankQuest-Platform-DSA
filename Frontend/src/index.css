@@ -6,49 +6,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    /* Light Mode Tokens — High Contrast & Crisp Legibility */
+    --background: 0 0% 98%;        /* #fafafa */
+    --foreground: 240 10% 3.9%;    /* #09090b */
+    --card: 0 0% 100%;             /* #ffffff */
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
+    --primary: 238.7 83.5% 66.7%;  /* #6366f1 Indigo */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;   /* #f4f4f5 */
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted-foreground: 240 3.8% 46.1%; /* #71717a */
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
+    --border: 240 5.9% 90%;        /* #e4e4e7 */
     --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --ring: 238.7 83.5% 66.7%;
     --radius: 0.75rem;
   }
 
   .dark {
-    /* Handcrafted Vercel/Linear Dark Theme Palette */
+    /* Dark Mode Tokens — Handcrafted Vercel/Linear Palette */
     --background: 240 10% 3.9%;   /* #09090b */
     --foreground: 0 0% 98%;       /* #fafafa */
     --card: 240 10% 5.5%;         /* #0e0e11 */
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 5.5%;
     --popover-foreground: 0 0% 98%;
-    --primary: 217.2 91.2% 59.8%; /* #3b82f6 */
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 238.7 83.5% 66.7%; /* #6366f1 Indigo */
+    --primary-foreground: 0 0% 100%;
     --secondary: 240 3.7% 12%;    /* #18181b */
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 12%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted-foreground: 240 5% 64.9%; /* #a1a1aa */
     --accent: 240 3.7% 15%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
     --border: 240 3.7% 15.9%;     /* #27272a */
     --input: 240 3.7% 15.9%;
-    --ring: 217.2 91.2% 59.8%;
+    --ring: 238.7 83.5% 66.7%;
   }
 }
 
@@ -57,21 +58,42 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-indigo-500/20 selection:text-indigo-400;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Custom Tactical Developer Utilities */
+/* Adaptive Theme Surface & Text Utilities */
+.app-surface {
+  @apply bg-white dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none transition-colors;
+}
+
+.app-surface-subtle {
+  @apply bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 transition-colors;
+}
+
+.text-heading {
+  @apply text-zinc-900 dark:text-white font-bold transition-colors;
+}
+
+.text-body {
+  @apply text-zinc-600 dark:text-zinc-400 transition-colors;
+}
+
+.text-subtle {
+  @apply text-zinc-500 dark:text-zinc-500 transition-colors;
+}
+
 .code-font {
   font-family: 'JetBrains Mono', monospace;
 }
 
 .subtle-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-.card-hover {
-  @apply transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900/80;
+.dark .subtle-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
