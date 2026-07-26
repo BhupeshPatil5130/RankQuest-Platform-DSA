@@ -11,7 +11,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 
 // ⚠️ Replace with your Google OAuth Client ID from https://console.cloud.google.com/
 // Set VITE_GOOGLE_CLIENT_ID in your .env file for production
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '123456789000-placeholder.apps.googleusercontent.com';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
