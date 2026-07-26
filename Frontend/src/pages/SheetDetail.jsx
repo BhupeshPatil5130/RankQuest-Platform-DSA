@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft, CheckCircle, Circle, Search, Play, StickyNote, X, Save, 
-  Bookmark, BookmarkCheck, ExternalLink, Building2, Tag, Loader2
+  Bookmark, ExternalLink, Building2, Tag, Loader2
 } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Card, CardContent } from '../components/ui/card'
@@ -398,7 +398,7 @@ const SheetDetail = () => {
                           className="text-muted-foreground hover:text-yellow-400 transition-colors"
                           title={isBm ? 'Bookmarked' : 'Bookmark for revision'}
                         >
-                          {isBm ? <BookmarkCheck className="h-5 w-5 text-yellow-400" /> : <Bookmark className="h-5 w-5 opacity-40 hover:opacity-100" />}
+                          {isBm ? <Bookmark className="h-5 w-5 text-yellow-400 fill-yellow-400" /> : <Bookmark className="h-5 w-5 opacity-40 hover:opacity-100" />}
                         </button>
                       </td>
                       <td className="px-6 py-4">

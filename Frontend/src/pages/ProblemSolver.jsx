@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
   Play, Send, RotateCcw, Code2, Terminal, Loader2, ArrowLeft, Tag, 
-  CheckCircle, XCircle, Bookmark, BookmarkCheck, ExternalLink, Copy, Download,
+  CheckCircle, XCircle, Bookmark, ExternalLink, Copy, Download,
   Building2, Youtube, Clock, Pause, RefreshCw, History, FileText
 } from 'lucide-react'
 import { Button } from '../components/ui/button'
@@ -385,7 +385,7 @@ const ProblemSolver = () => {
               onClick={toggleBookmark}
               className={`gap-2 border-white/10 ${isBookmarked ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'text-muted-foreground hover:text-foreground'}`}
             >
-              {isBookmarked ? <BookmarkCheck className="w-4 h-4 text-yellow-400" /> : <Bookmark className="w-4 h-4" />}
+              {isBookmarked ? <Bookmark className="w-4 h-4 text-yellow-400 fill-yellow-400" /> : <Bookmark className="w-4 h-4" />}
               {isBookmarked ? 'Bookmarked' : 'Bookmark'}
             </Button>
           </div>
