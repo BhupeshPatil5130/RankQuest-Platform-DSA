@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: rankquest-backend
+    runtime: docker
+    dockerfilePath: ./Backend/Dockerfile
+    dockerContext: ./Backend
+    # ── Health check ──────────────────────────────────
+    healthCheckPath: /api/health
+    envVars:
+      # Server port (Render auto-sets this, leave as 8080)
+      - key: PORT
+        value: 8080
+
+      # JWT secret — auto-generated on first deploy, rotated manually if needed
+      - key: JWT_SECRET
+        generateValue: true
+
+      # JWT token lifetime in milliseconds (86400000 = 24 hours)
+      - key: JWT_EXPIRATION
+        value: 86400000
+
+      # PostgreSQL connection URL
+      # Set this in the Render dashboard after creating a PostgreSQL service
+      # Format: jdbc:postgresql://<host>/<dbname>?user=<user>&password=<pass>&sslmode=require
+      - key: DATABASE_URL
+        sync: false
+
+      - key: DATABASE_USERNAME
+        sync: false
+
+      - key: DATABASE_PASSWORD
+        sync: false
+
+      # Google OAuth Client ID — set in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+
+      # CORS — set to your deployed frontend URL (e.g. https://rankquest.vercel.app)
+      - key: CORS_ORIGIN
+        sync: false
