@@ -45,7 +45,7 @@ public class SecurityConfig {
             )
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
-                // Fully public — no auth required
+                // Fully public — no auth required for data browsing
                 .requestMatchers(
                     "/api/auth/login",
                     "/api/auth/signup",
@@ -54,6 +54,9 @@ public class SecurityConfig {
                     "/api/patterns/**",
                     "/api/sheets/**",
                     "/api/rankings/**",
+                    "/api/users/**",
+                    "/api/submissions/**",
+                    "/api/activity/**",
                     "/h2-console/**"
                 ).permitAll()
                 // Admin-only APIs

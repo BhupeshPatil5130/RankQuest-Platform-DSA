@@ -123,7 +123,9 @@ const getEmail = () => {
 };
 
 export const getUserProfile = () => {
-    return cachedRequest(`/users/profile-by-email?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+    const email = getEmail();
+    if (!email) return Promise.resolve(null);
+    return cachedRequest(`/users/profile-by-email?email=${encodeURIComponent(email)}`, { method: 'GET' });
 };
 
 export const updateUserProfile = async (data) => {
@@ -193,10 +195,10 @@ export const submitSolution = async (problemId, submissionData) => {
 };
 
 export const getSolvedProblems = async () => {
-    const token = localStorage.getItem('rankquest_token');
-    if (!token) return [];
+    const email = getEmail();
+    if (!email) return [];
     try {
-        const res = await cachedRequest(`/submissions/my-solved?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+        const res = await cachedRequest(`/submissions/my-solved?email=${encodeURIComponent(email)}`, { method: 'GET' });
         return Array.isArray(res) ? res : [];
     } catch (e) {
         return [];
@@ -229,10 +231,10 @@ export const getCollegeRankings = (collegeName) => {
 // ───────────────────────────────────────────────
 
 export const getActivityHeatmap = async () => {
-    const token = localStorage.getItem('rankquest_token');
-    if (!token) return [];
+    const email = getEmail();
+    if (!email) return [];
     try {
-        const res = await cachedRequest(`/activity/heatmap?email=${encodeURIComponent(getEmail())}`, { method: 'GET' });
+        const res = await cachedRequest(`/activity/heatmap?email=${encodeURIComponent(email)}`, { method: 'GET' });
         return Array.isArray(res) ? res : [];
     } catch (e) {
         return [];
