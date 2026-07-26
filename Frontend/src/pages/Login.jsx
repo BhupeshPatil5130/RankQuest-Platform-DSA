@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
-import { Brain, ArrowRight, Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Brain, ArrowRight, Loader2, Mail, Lock, Eye, EyeOff, Layers } from 'lucide-react';
 import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';

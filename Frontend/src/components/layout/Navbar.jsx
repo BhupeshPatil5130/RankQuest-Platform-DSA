@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, User, Settings, LogOut, Code2, Trophy, BookOpen, Zap, Brain, Home, Moon, Sun, Target } from 'lucide-react';
+import { Menu, X, User, Settings, LogOut, Code2, Trophy, BookOpen, Zap, Brain, Home, Moon, Sun, Target, Layers } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
