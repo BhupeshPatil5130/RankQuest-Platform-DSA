@@ -13,6 +13,9 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import CodePlayground from './pages/CodePlayground';
 
+import Patterns from './pages/Patterns';
+import PatternDetail from './pages/PatternDetail';
+
 function App() {
   return (
     <div className="min-h-screen bg-background">
@@ -27,6 +30,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           {/* Public Pages */}
+          <Route path="/patterns" element={<Patterns />} />
+          <Route path="/patterns/:slug" element={<PatternDetail />} />
           <Route path="/sheets" element={<Sheets />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/resources" element={<Resources />} />

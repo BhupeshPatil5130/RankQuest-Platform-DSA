@@ -143,6 +143,23 @@ export const getProblemsBySheet = (slug) => {
 };
 
 // ───────────────────────────────────────────────
+// Patterns
+// ───────────────────────────────────────────────
+
+export const getAllPatterns = () => {
+    return request('/patterns', { method: 'GET' });
+};
+
+export const getPatternBySlug = (slug) => {
+    return request(`/patterns/${slug}`, { method: 'GET' });
+};
+
+export const getProblemsByPattern = (slug) => {
+    return request(`/patterns/${slug}/problems`, { method: 'GET' });
+};
+
+
+// ───────────────────────────────────────────────
 // Submissions
 // ───────────────────────────────────────────────
 

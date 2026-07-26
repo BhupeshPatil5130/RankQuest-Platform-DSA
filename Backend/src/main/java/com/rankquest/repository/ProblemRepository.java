@@ -11,6 +11,8 @@ public interface ProblemRepository extends JpaRepository<Problem, Long> {
 
     List<Problem> findBySheetSlug(String sheetSlug);
 
+    List<Problem> findByPatternSlug(String patternSlug);
+
     List<Problem> findBySheetSlugAndDifficulty(String sheetSlug, String difficulty);
 
     List<Problem> findBySheetSlugAndTopic(String sheetSlug, String topic);

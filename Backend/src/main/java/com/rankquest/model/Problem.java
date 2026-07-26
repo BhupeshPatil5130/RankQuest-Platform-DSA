@@ -35,6 +35,8 @@ public class Problem {
     @Column(nullable = false)
     private String sheetSlug; // FK reference to Sheet.slug
 
+    private String patternSlug; // FK reference to Pattern.slug (e.g., "two-pointers")
+
     private String leetcodeUrl;
 
     private String gfgUrl;
@@ -54,6 +56,22 @@ public class Problem {
         this.acceptance = acceptance;
         this.topic = topic;
         this.sheetSlug = sheetSlug;
+        this.leetcodeUrl = leetcodeUrl;
+        this.gfgUrl = gfgUrl;
+        this.companies = companies;
+        this.tags = tags;
+    }
+
+    public Problem(String title, String description, String difficulty, String acceptance,
+                   String topic, String sheetSlug, String patternSlug, String leetcodeUrl, String gfgUrl,
+                   String companies, String tags) {
+        this.title = title;
+        this.description = description;
+        this.difficulty = difficulty;
+        this.acceptance = acceptance;
+        this.topic = topic;
+        this.sheetSlug = sheetSlug;
+        this.patternSlug = patternSlug;
         this.leetcodeUrl = leetcodeUrl;
         this.gfgUrl = gfgUrl;
         this.companies = companies;
