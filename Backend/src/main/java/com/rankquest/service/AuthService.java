@@ -137,16 +137,18 @@ public class AuthService {
             }
 
             email = email.toLowerCase().trim();
+            final String finalEmail = email;
+            final String finalName = name;
 
             // Find existing user or create new one
-            User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
                 User newUser = new User();
-                newUser.setEmail(email);
+                newUser.setEmail(finalEmail);
                 // Generate a unique username from email prefix
-                String baseUsername = email.split("@")[0].replaceAll("[^a-zA-Z0-9_]", "_");
+                String baseUsername = finalEmail.split("@")[0].replaceAll("[^a-zA-Z0-9_]", "_");
                 String uniqueUsername = ensureUniqueUsername(baseUsername);
                 newUser.setUsername(uniqueUsername);
-                newUser.setFullName(name != null && !name.isEmpty() ? name : givenName);
+                newUser.setFullName(finalName != null && !finalName.isEmpty() ? finalName : givenName);
                 // Google users don't have a local password — set a random secure one
                 newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                 newUser.setRole(Role.USER);
