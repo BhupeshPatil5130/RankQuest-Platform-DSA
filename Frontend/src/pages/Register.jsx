@@ -127,7 +127,8 @@ const Register = () => {
   const handleGoogleSuccess = async (tokenResponse) => {
     setIsGoogleLoading(true);
     try {
-      const result = await googleLogin(tokenResponse.access_token);
+      const token = tokenResponse.credential || tokenResponse.access_token;
+      const result = await googleLogin(token);
       if (result.success) {
         toast({ title: 'Welcome!', description: 'Signed in with Google successfully.', variant: 'success' });
         navigate('/');

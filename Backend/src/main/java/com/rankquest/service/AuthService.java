@@ -105,38 +105,42 @@ public class AuthService {
     @Transactional
     public ApiResponse<LoginResponse> googleLogin(String idToken) {
         try {
-            // Verify token with Google's tokeninfo endpoint
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
-                    .GET()
-                    .build();
+            JsonNode tokenInfo = null;
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            // 1. Try Bearer token check via userinfo endpoint first (for access_token)
+            try {
+                HttpRequest userinfoRequest = HttpRequest.newBuilder()
+                        .uri(URI.create("https://www.googleapis.com/oauth2/v3/userinfo"))
+                        .header("Authorization", "Bearer " + idToken)
+                        .GET()
+                        .build();
+                HttpResponse<String> userinfoResponse = client.send(userinfoRequest, HttpResponse.BodyHandlers.ofString());
+                if (userinfoResponse.statusCode() == 200) {
+                    tokenInfo = objectMapper.readTree(userinfoResponse.body());
+                }
+            } catch (Exception ignored) {}
 
-            if (response.statusCode() != 200) {
-                return ApiResponse.error("Invalid Google token");
-            }
-
-            JsonNode tokenInfo = objectMapper.readTree(response.body());
-
-            // Verify the audience matches our client ID (skip check if client ID not configured)
-            if (!googleClientId.isEmpty()) {
-                String audience = tokenInfo.path("aud").asText();
-                if (!googleClientId.equals(audience)) {
-                    return ApiResponse.error("Token audience mismatch");
+            // 2. If userinfo didn't match, fallback to tokeninfo (for id_token)
+            if (tokenInfo == null || !tokenInfo.has("email")) {
+                HttpRequest tokeninfoRequest = HttpRequest.newBuilder()
+                        .uri(URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
+                        .GET()
+                        .build();
+                HttpResponse<String> tokeninfoResponse = client.send(tokeninfoRequest, HttpResponse.BodyHandlers.ofString());
+                if (tokeninfoResponse.statusCode() == 200) {
+                    tokenInfo = objectMapper.readTree(tokeninfoResponse.body());
                 }
             }
 
-            String email = tokenInfo.path("email").asText();
+            if (tokenInfo == null || !tokenInfo.has("email") || tokenInfo.path("email").asText().isEmpty()) {
+                return ApiResponse.error("Invalid Google token or email not provided");
+            }
+
+            String email = tokenInfo.path("email").asText().toLowerCase().trim();
             String name = tokenInfo.path("name").asText();
             String givenName = tokenInfo.path("given_name").asText();
 
-            if (email == null || email.isEmpty()) {
-                return ApiResponse.error("Email not provided by Google");
-            }
-
-            email = email.toLowerCase().trim();
             final String finalEmail = email;
             final String finalName = name;
 
@@ -144,12 +148,10 @@ public class AuthService {
             User user = userRepository.findByEmail(finalEmail).orElseGet(() -> {
                 User newUser = new User();
                 newUser.setEmail(finalEmail);
-                // Generate a unique username from email prefix
                 String baseUsername = finalEmail.split("@")[0].replaceAll("[^a-zA-Z0-9_]", "_");
                 String uniqueUsername = ensureUniqueUsername(baseUsername);
                 newUser.setUsername(uniqueUsername);
                 newUser.setFullName(finalName != null && !finalName.isEmpty() ? finalName : givenName);
-                // Google users don't have a local password — set a random secure one
                 newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                 newUser.setRole(Role.USER);
                 return userRepository.save(newUser);
@@ -159,8 +161,7 @@ public class AuthService {
             LoginResponse loginResponse = new LoginResponse(token, UserProfileResponse.fromUser(user));
             return ApiResponse.success("Google login successful", loginResponse);
 
-        } catch (IOException | InterruptedException e) {
-            Thread.currentThread().interrupt();
+        } catch (Exception e) {
             return ApiResponse.error("Failed to verify Google token: " + e.getMessage());
         }
     }

@@ -72,22 +72,8 @@ const Login = () => {
   const handleGoogleSuccess = async (tokenResponse) => {
     setIsGoogleLoading(true);
     try {
-      // Get user info using the access token
-      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-      });
-      const userInfo = await userInfoRes.json();
-      
-      // We need the ID token for backend verification — use implicit flow instead
-      // For now, we pass the access token and sub as a workaround
-      // Ideally use useGoogleLogin with { flow: 'implicit' } to get id_token directly
-      toast({
-        title: 'Google login',
-        description: 'Verifying with server...',
-      });
-
-      // Try to get ID token via the credential approach
-      const result = await googleLogin(tokenResponse.access_token);
+      const token = tokenResponse.credential || tokenResponse.access_token;
+      const result = await googleLogin(token);
       
       if (result.success) {
         toast({ title: 'Welcome!', description: 'Signed in with Google successfully.', variant: 'success' });
