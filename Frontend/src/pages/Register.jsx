@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin, GoogleLogin } from '@react-oauth/google';
 import {
   Eye, EyeOff, Mail, Lock, User, School, Brain,
   UserPlus, BookOpen, Calendar, Hash, ArrowRight, Loader2, CheckCircle2
@@ -185,22 +185,34 @@ const Register = () => {
           <CardContent className="p-8 relative z-10">
 
             {/* Google Button */}
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  googleLoginHook();
-                } catch (e) {
-                  console.error('Google login trigger failed:', e);
-                  toast({ title: 'Google Login Error', description: 'Could not launch Google popup.', variant: 'destructive' });
-                }
-              }}
-              disabled={isGoogleLoading}
-              className="w-full h-12 flex items-center justify-center gap-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 transition-all text-white font-medium text-sm mb-6 disabled:opacity-60 hover:border-white/40 cursor-pointer"
-            >
-              {isGoogleLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
-              {isGoogleLoading ? 'Signing in...' : 'Sign up with Google'}
-            </button>
+            <div className="w-full flex justify-center mb-6">
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  setIsGoogleLoading(true);
+                  try {
+                    const token = credentialResponse.credential;
+                    const result = await googleLogin(token);
+                    if (result.success) {
+                      toast({ title: 'Welcome!', description: 'Signed in with Google successfully.', variant: 'success' });
+                      navigate('/');
+                    } else {
+                      toast({ title: 'Google sign-in failed', description: result.error, variant: 'destructive' });
+                    }
+                  } catch (err) {
+                    toast({ title: 'Error', description: 'Google sign-in failed.', variant: 'destructive' });
+                  } finally {
+                    setIsGoogleLoading(false);
+                  }
+                }}
+                onError={() => {
+                  toast({ title: 'Google Sign-In Error', description: 'Failed to authenticate with Google.', variant: 'destructive' });
+                }}
+                theme="filled_black"
+                size="large"
+                width="100%"
+                shape="pill"
+              />
+            </div>
 
             {/* Divider */}
             <div className="relative mb-6">
