@@ -51,6 +51,7 @@ public class SecurityConfig {
                     "/api/auth/signup",
                     "/api/auth/google",
                     "/api/problems/**",
+                    "/api/patterns/**",
                     "/api/sheets/**",
                     "/api/rankings/**",
                     "/h2-console/**"
