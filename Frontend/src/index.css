@@ -6,49 +6,49 @@
 
 @layer base {
   :root {
-    /* Light Mode Tokens — High Contrast & Crisp Legibility */
-    --background: 0 0% 98%;        /* #fafafa */
-    --foreground: 240 10% 3.9%;    /* #09090b */
-    --card: 0 0% 100%;             /* #ffffff */
-    --card-foreground: 240 10% 3.9%;
+    /* Light Mode Tokens — Crisp & Vibrant Legibility */
+    --background: 210 40% 98%;      /* #f8fafc */
+    --foreground: 222.2 84% 4.9%;   /* #020817 */
+    --card: 0 0% 100%;              /* #ffffff */
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 238.7 83.5% 66.7%;  /* #6366f1 Indigo */
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 238.7 83.5% 66.7%;   /* #6366f1 Indigo */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;   /* #f4f4f5 */
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%; /* #71717a */
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;        /* #e4e4e7 */
-    --input: 240 5.9% 90%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;    /* #e2e8f0 */
+    --input: 214.3 31.8% 91.4%;
     --ring: 238.7 83.5% 66.7%;
-    --radius: 0.75rem;
+    --radius: 0.85rem;
   }
 
   .dark {
-    /* Dark Mode Tokens — Handcrafted Vercel/Linear Palette */
-    --background: 240 10% 3.9%;   /* #09090b */
-    --foreground: 0 0% 98%;       /* #fafafa */
-    --card: 240 10% 5.5%;         /* #0e0e11 */
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 5.5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 238.7 83.5% 66.7%; /* #6366f1 Indigo */
+    /* Dark Mode Tokens — Rich Slate/Indigo Dark Theme */
+    --background: 222.2 84% 4.9%;   /* #020817 */
+    --foreground: 210 40% 98%;      /* #f8fafc */
+    --card: 222.2 47.4% 7.5%;       /* #090e1a */
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 47.4% 7.5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 238.7 83.5% 66.7%;   /* #6366f1 Indigo */
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 12%;    /* #18181b */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 12%;
-    --muted-foreground: 240 5% 64.9%; /* #a1a1aa */
-    --accent: 240 3.7% 15%;
-    --accent-foreground: 0 0% 98%;
+    --secondary: 217.2 32.6% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 12%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 14%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-    --border: 240 3.7% 15.9%;     /* #27272a */
-    --input: 240 3.7% 15.9%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;    /* #1e293b */
+    --input: 217.2 32.6% 17.5%;
     --ring: 238.7 83.5% 66.7%;
   }
 }
@@ -63,25 +63,42 @@
   }
 }
 
-/* Adaptive Theme Surface & Text Utilities */
-.app-surface {
-  @apply bg-white dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 shadow-sm dark:shadow-none transition-colors;
+/* Vibrant Gradient Classes */
+.gradient-brand {
+  @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500;
 }
 
-.app-surface-subtle {
-  @apply bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 transition-colors;
+.gradient-emerald {
+  @apply bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500;
 }
 
-.text-heading {
-  @apply text-zinc-900 dark:text-white font-bold transition-colors;
+.gradient-amber {
+  @apply bg-gradient-to-r from-amber-500 via-orange-500 to-red-500;
 }
 
-.text-body {
-  @apply text-zinc-600 dark:text-zinc-400 transition-colors;
+.gradient-violet {
+  @apply bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500;
 }
 
-.text-subtle {
-  @apply text-zinc-500 dark:text-zinc-500 transition-colors;
+.gradient-cyan {
+  @apply bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500;
+}
+
+/* Tactile Color Card Surfaces */
+.card-color-indigo {
+  @apply bg-white dark:bg-slate-900/80 border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-400 dark:hover:border-indigo-400/60 shadow-sm transition-all;
+}
+
+.card-color-emerald {
+  @apply bg-white dark:bg-slate-900/80 border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-400 dark:hover:border-emerald-400/60 shadow-sm transition-all;
+}
+
+.card-color-amber {
+  @apply bg-white dark:bg-slate-900/80 border-amber-200 dark:border-amber-500/30 hover:border-amber-400 dark:hover:border-amber-400/60 shadow-sm transition-all;
+}
+
+.card-color-violet {
+  @apply bg-white dark:bg-slate-900/80 border-purple-200 dark:border-purple-500/30 hover:border-purple-400 dark:hover:border-purple-400/60 shadow-sm transition-all;
 }
 
 .code-font {
@@ -89,11 +106,6 @@
 }
 
 .subtle-grid {
-  background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-.dark .subtle-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
 }
