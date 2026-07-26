@@ -1,291 +1,160 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Code, Users, Star, Filter, Search, BookOpen, TrendingUp, ArrowRight, Sparkles, Zap, Target, Loader2 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Input } from '../components/ui/input'
-import { Badge } from '../components/ui/badge'
-import { Progress } from '../components/ui/progress'
-import { getSolvedProblems, getAllSheets, getAllProblems } from '../services/apiService'
-import { useAuth } from '../contexts/AuthContext'
-
-const sheetIconMap = {
-  'striver-sde': Code,
-  'love-babbar-450': Sparkles,
-  'neetcode-150': Zap,
-  'blind-75': Target,
-  'gfg-must-do': BookOpen,
-  'apna-college': Star,
-};
-
-const sheetColorMap = {
-  'striver-sde': 'from-blue-600 to-indigo-600',
-  'love-babbar-450': 'from-violet-600 to-purple-600',
-  'neetcode-150': 'from-emerald-500 to-teal-600',
-  'blind-75': 'from-red-500 to-orange-600',
-  'gfg-must-do': 'from-green-600 to-emerald-700',
-  'apna-college': 'from-cyan-500 to-blue-500',
-};
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { BookOpen, Search, ArrowRight, Layers, Sparkles, ShieldCheck } from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { Progress } from '../components/ui/progress';
+import { getSheets, getSolvedProblems } from '../services/apiService';
+import { useAuth } from '../contexts/AuthContext';
 
 const Sheets = () => {
-  const { user } = useAuth()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [mounted, setMounted] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  
-  const [sheetsList, setSheetsList] = useState([])
-  const [solvedSet, setSolvedSet] = useState(new Set())
-  const [sheetProblemMap, setSheetProblemMap] = useState({})
+  const { user } = useAuth();
+  const [sheets, setSheets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [solvedCountMap, setSolvedCountMap] = useState({});
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    const fetchSheetsData = async () => {
       try {
-        const [sheetsData, problemsData, solvedIds] = await Promise.allSettled([
-          getAllSheets(),
-          getAllProblems(),
-          user ? getSolvedProblems() : Promise.resolve([]),
-        ]);
+        setLoading(true);
+        const data = await getSheets();
+        if (data && Array.isArray(data)) {
+          setSheets(data);
 
-        if (solvedIds.status === 'fulfilled' && solvedIds.value) {
-          setSolvedSet(new Set(solvedIds.value));
-        }
+          if (user) {
+            try {
+              const solvedIds = await getSolvedProblems();
+              const solvedSet = new Set(solvedIds || []);
 
-        let fetchedProblems = [];
-        if (problemsData.status === 'fulfilled' && problemsData.value) {
-          fetchedProblems = Array.isArray(problemsData.value) ? problemsData.value : (problemsData.value.data || []);
-        }
-
-        // Build problem list map per sheet
-        const map = {};
-        fetchedProblems.forEach(p => {
-          if (!map[p.sheetSlug]) map[p.sheetSlug] = [];
-          map[p.sheetSlug].push(p.id);
-        });
-        setSheetProblemMap(map);
-
-        if (sheetsData.status === 'fulfilled' && sheetsData.value) {
-          const apiSheets = Array.isArray(sheetsData.value) ? sheetsData.value : (sheetsData.value.data || []);
-          if (apiSheets.length > 0) {
-            setSheetsList(apiSheets);
+              const countMap = {};
+              for (const sheet of data) {
+                if (sheet.problems && Array.isArray(sheet.problems)) {
+                  const count = sheet.problems.filter(p => solvedSet.has(p.id)).length;
+                  countMap[sheet.id] = count;
+                }
+              }
+              setSolvedCountMap(countMap);
+            } catch (err) {
+              console.error('Failed to get sheet solved count:', err);
+            }
           }
         }
       } catch (err) {
-        console.error("Failed to load sheets data:", err);
+        console.error('Error fetching sheets:', err);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    fetchData();
+
+    fetchSheetsData();
   }, [user]);
 
-  // Fallback sheet list if API returns empty
-  const fallbackSheets = [
-    { slug: 'striver-sde', name: 'Striver SDE Sheet', author: 'Raj Vikramaditya', description: 'The ultimate roadmap for SDE roles. Covers every major topic needed for top-tier interviews.', totalProblems: 190, difficulty: 'Hard', category: 'Interview Prep', rating: 4.9 },
-    { slug: 'love-babbar-450', name: 'Love Babbar 450', author: 'Love Babbar', description: 'A comprehensive list of 450 problems to build a rock-solid foundation in DSA.', totalProblems: 450, difficulty: 'Mixed', category: 'Complete DSA', rating: 4.8 },
-    { slug: 'neetcode-150', name: 'NeetCode 150', author: 'NeetCode', description: 'Highly curated list focusing on patterns. The most efficient way to learn.', totalProblems: 150, difficulty: 'Medium', category: 'LeetCode', rating: 4.7 },
-    { slug: 'blind-75', name: 'Blind 75', author: 'Blind Community', description: 'The legendary list. 75 most asked questions at FAANG companies.', totalProblems: 75, difficulty: 'Hard', category: 'FAANG Prep', rating: 4.9 },
-    { slug: 'gfg-must-do', name: 'GFG Must Do', author: 'GeeksforGeeks', description: 'Essential problems for campus placements and service-based companies.', totalProblems: 100, difficulty: 'Easy', category: 'Placement', rating: 4.6 },
-    { slug: 'apna-college', name: 'Apna College DSA', author: 'Shradha Khapra', description: 'Beginner friendly sheet with excellent explanations for every problem.', totalProblems: 120, difficulty: 'Easy', category: 'Beginner', rating: 4.5 }
-  ];
-
-  const activeSheets = sheetsList.length > 0 ? sheetsList : fallbackSheets;
-
-  const categories = ['all', 'Interview Prep', 'Complete DSA', 'Pattern Based', 'FAANG Prep', 'Placement Prep', 'Beginner Friendly']
-  const difficulties = ['all', 'Easy', 'Medium', 'Hard', 'Mixed']
-
-  const filteredSheets = activeSheets.filter(sheet => {
-    const name = sheet.name || sheet.title || '';
-    const author = sheet.author || '';
-    const diff = sheet.difficulty || 'Mixed';
-    const cat = sheet.category || 'Interview Prep';
-
-    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         author.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesDifficulty = selectedDifficulty === 'all' || diff === selectedDifficulty
-    const matchesCategory = selectedCategory === 'all' || cat === selectedCategory
-    return matchesSearch && matchesDifficulty && matchesCategory
-  });
-
-  const getSheetSolvedCount = (slug) => {
-    const problemIds = sheetProblemMap[slug] || [];
-    return problemIds.filter(id => solvedSet.has(id)).length;
-  };
-
-  const getSheetTotalProblems = (sheet) => {
-    const fromMap = (sheetProblemMap[sheet.slug] || []).length;
-    return fromMap > 0 ? fromMap : (sheet.totalProblems || 50);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading DSA sheets from API...</p>
-        </div>
-      </div>
-    );
-  }
+  const filteredSheets = sheets.filter(sheet => 
+    sheet.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sheet.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sheet.author?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
-      <div className="absolute top-1/2 -left-24 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-      
-      <div className="relative z-10 py-12">
-        <div className="container mx-auto px-4 max-w-6xl">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header Hero */}
+        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+            <BookOpen className="w-3.5 h-3.5" />
+            Curated SDE Problem Sheets
+          </div>
           
-          <div className={`text-center mb-16 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 border border-primary/20">
-              <Sparkles className="w-4 h-4" />
-              <span>Curated by Experts</span>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              Master Data Structures <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-                & Algorithms
-              </span>
+          <div className="max-w-3xl space-y-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+              SDE Sheet Collections
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Choose your path to mastery with hand-picked DSA sheets directly synced from our Spring Boot API.
+            <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
+              Handpicked problem collections by industry leaders including Striver SDE Sheet, NeetCode 150, Blind 75, and Love Babbar 450.
             </p>
           </div>
+        </div>
 
-          <div className={`max-w-5xl mx-auto mb-12 ${mounted ? 'animate-slide-up' : 'opacity-0'}`}>
-            <div className="p-2 bg-background/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex flex-col md:flex-row gap-2">
-              <div className="flex-1 relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
-                <Input
-                  type="text"
-                  placeholder="Search sheets..."
-                  className="pl-12 h-12 bg-transparent border-transparent focus:bg-background/50 rounded-xl text-lg transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 px-2">
-                 <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    <select 
-                      className="h-12 pl-10 pr-8 bg-background/80 border border-white/10 rounded-xl appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 font-medium text-sm min-w-[140px]"
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    >
-                      {categories.map(c => <option key={c} value={c} className="bg-background">{c === 'all' ? 'All Categories' : c}</option>)}
-                    </select>
-                 </div>
-                 <div className="relative">
-                    <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                     <select 
-                      className="h-12 pl-10 pr-8 bg-background/80 border border-white/10 rounded-xl appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/50 font-medium text-sm min-w-[140px]"
-                      value={selectedDifficulty}
-                      onChange={(e) => setSelectedDifficulty(e.target.value)}
-                    >
-                      {difficulties.map(d => <option key={d} value={d} className="bg-background">{d === 'all' ? 'All Difficulties' : d}</option>)}
-                    </select>
-                 </div>
-              </div>
-            </div>
+        {/* Search */}
+        <div className="flex justify-between items-center bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800/80">
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Input
+              type="text"
+              placeholder="Search sheets by title or author..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-zinc-950 border-zinc-800 text-xs h-9 rounded-lg"
+            />
           </div>
+        </div>
 
-          <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-6 ${mounted ? 'animate-stagger-in' : 'opacity-0'}`}>
+        {/* Sheets Grid */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-56 rounded-xl bg-zinc-900/40 border border-zinc-800 animate-pulse p-5"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredSheets.map((sheet) => {
-               const slug = sheet.slug || sheet.id;
-               const total = getSheetTotalProblems(sheet);
-               const solved = getSheetSolvedCount(slug);
-               const progress = total > 0 ? Math.round((solved / total) * 100) : 0;
-               const SheetIcon = sheetIconMap[slug] || Code;
-               const colorGrad = sheetColorMap[slug] || 'from-blue-600 to-indigo-600';
+              const solvedCount = solvedCountMap[sheet.id] || 0;
+              const totalProblems = sheet.problemCount || sheet.problems?.length || 0;
+              const progressPct = totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
 
-               return (
-              <Link key={slug} to={`/sheets/${slug}`} className="group block h-full">
-                <Card className="h-full border-0 bg-card/50 backdrop-blur-sm hover:bg-card transition-all duration-300 hover:-translate-y-1 shadow-lg overflow-hidden flex flex-col">
-                  
-                  <div className={`h-2 w-full bg-gradient-to-r ${colorGrad}`}></div>
-                  
-                  <CardHeader className="pb-4 relative">
-                    <div className="flex justify-between items-start mb-2">
-                       <div className={`p-3 rounded-2xl bg-gradient-to-br ${colorGrad} text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
-                          <SheetIcon className="h-6 w-6" />
-                       </div>
-                       {progress > 0 && (
-                         <Badge className="bg-primary/10 text-primary border-primary/20">
-                           {progress === 100 ? 'Completed' : 'In Progress'}
-                         </Badge>
-                       )}
-                    </div>
+              return (
+                <Card 
+                  key={sheet.id}
+                  className="bg-zinc-900/60 border-zinc-800/80 hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between p-5 space-y-4 group"
+                >
+                  <CardContent className="p-0 space-y-4 flex-1 flex flex-col justify-between">
                     
-                    <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
-                      {sheet.name}
-                    </CardTitle>
-                    <div className="text-sm font-medium text-muted-foreground mt-1">
-                      by <span className="text-foreground">{sheet.author}</span>
-                    </div>
-                  </CardHeader>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                          {sheet.author || 'Curated'}
+                        </Badge>
+                        <span className="text-xs text-zinc-500 font-mono">{totalProblems} Questions</span>
+                      </div>
 
-                  <CardContent className="flex-1 flex flex-col gap-6">
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                      {sheet.description}
-                    </p>
+                      <h2 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                        {sheet.title}
+                      </h2>
 
-                    <div className="mt-auto space-y-3">
-                       <div className="flex justify-between text-sm font-medium">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className={progress === 100 ? "text-green-400" : "text-foreground"}>
-                            {progress}%
-                          </span>
-                       </div>
-                       <Progress value={progress} className="h-2" />
-                       <div className="flex justify-between text-xs text-muted-foreground pt-1">
-                          <span>{solved} / {total} Solved</span>
-                       </div>
+                      <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed">
+                        {sheet.description}
+                      </p>
                     </div>
 
-                    <div className="pt-4 border-t border-border/50 flex items-center justify-between text-sm">
-                       <div className="flex gap-3">
-                          <div className="flex items-center gap-1 text-yellow-500 font-medium">
-                             <Star className="w-3.5 h-3.5 fill-current" /> {sheet.rating || '4.8'}
-                          </div>
-                       </div>
-                       
-                       <div className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                          Explore Sheet <ArrowRight className="w-3 h-3 ml-1" />
-                       </div>
+                    <div className="space-y-3 pt-3 border-t border-zinc-800/80">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-zinc-500">Progress</span>
+                        <span className="font-semibold text-emerald-400">{solvedCount} / {totalProblems} Solved</span>
+                      </div>
+                      <Progress value={progressPct} className="h-1.5 bg-zinc-950" />
+
+                      <Link to={`/sheets/${sheet.id}`} className="block pt-1">
+                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 text-xs font-semibold transition-all">
+                          <span>Open SDE Sheet</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      </Link>
                     </div>
+
                   </CardContent>
                 </Card>
-              </Link>
-            )})}
+              );
+            })}
           </div>
+        )}
 
-          {filteredSheets.length === 0 && (
-            <div className="text-center py-20">
-              <div className="p-6 bg-muted/30 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                <Search className="h-10 w-10 text-muted-foreground/50" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">No sheets found</h3>
-              <p className="text-muted-foreground">Try adjusting your filters to find what you're looking for.</p>
-              <Button 
-                variant="link" 
-                onClick={() => {setSearchTerm(''); setSelectedCategory('all'); setSelectedDifficulty('all')}}
-                className="mt-4 text-primary"
-              >
-                Clear all filters
-              </Button>
-            </div>
-          )}
-        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Sheets
+export default Sheets;

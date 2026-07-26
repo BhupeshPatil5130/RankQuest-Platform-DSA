@@ -1,64 +1,48 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { 
-  ArrowLeft, CheckCircle, Circle, ExternalLink, Building2, Tag, Loader2,
-  Bookmark, Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2,
-  GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network, Code2, Sparkles, Check
+  ArrowLeft, CheckCircle, Circle, ExternalLink, Code2, Sparkles, 
+  Layers, Target, ShieldCheck, ChevronRight, BookOpen, Search
 } from 'lucide-react';
-import { Button } from '../components/ui/button';
+import { getPatternBySlug, getProblemsByPattern, toggleSolveStatus, getSolvedProblems } from '../services/apiService';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../hooks/useToast';
 import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
-import { getPatternBySlug, getProblemsByPattern, getSolvedProblems, submitSolution } from '../services/apiService';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../hooks/useToast';
-
-const iconMap = {
-  Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2,
-  GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network
-};
 
 const PatternDetail = () => {
   const { slug } = useParams();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { toast } = useToast();
-
+  
   const [pattern, setPattern] = useState(null);
   const [problems, setProblems] = useState([]);
+  const [solvedIds, setSolvedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [solvedSet, setSolvedSet] = useState(new Set());
-  const [bookmarkedSet, setBookmarkedSet] = useState(new Set());
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const patternData = await getPatternBySlug(slug);
-        const problemData = await getProblemsByPattern(slug);
+        const [patternData, problemsData] = await Promise.all([
+          getPatternBySlug(slug),
+          getProblemsByPattern(slug)
+        ]);
 
-        if (patternData) {
-          setPattern(patternData.data || patternData);
-        }
-        if (problemData && Array.isArray(problemData)) {
-          setProblems(problemData);
-        }
+        setPattern(patternData);
+        setProblems(problemsData || []);
 
-        // Fetch user solved problems if logged in
         if (user) {
-          const solvedIds = await getSolvedProblems();
-          setSolvedSet(new Set(solvedIds || []));
+          try {
+            const solved = await getSolvedProblems();
+            setSolvedIds(new Set(solved || []));
+          } catch (err) {
+            console.error('Failed to fetch solved problems:', err);
+          }
         }
-
-        // Load bookmarks from local storage
-        const savedBm = localStorage.getItem(`rankquest_bm_${slug}`);
-        if (savedBm) {
-          setBookmarkedSet(new Set(JSON.parse(savedBm)));
-        }
-
       } catch (err) {
         console.error('Error fetching pattern details:', err);
-        toast({ title: 'Error', description: 'Failed to load pattern details.', variant: 'destructive' });
       } finally {
         setLoading(false);
       }
@@ -67,275 +51,195 @@ const PatternDetail = () => {
     fetchData();
   }, [slug, user]);
 
-  const toggleSolve = async (problemId) => {
+  const handleToggleSolved = async (problemId) => {
     if (!user) {
-      toast({ title: 'Login Required', description: 'Please login to track solved problems.', variant: 'destructive' });
+      toast({ title: 'Sign In Required', description: 'Please sign in to track your progress.' });
       return;
     }
 
-    const isSolved = solvedSet.has(problemId);
-    const newSolved = new Set(solvedSet);
-    
-    if (isSolved) {
-      newSolved.delete(problemId);
-    } else {
-      newSolved.add(problemId);
-    }
-    setSolvedSet(newSolved);
-
     try {
-      await submitSolution(problemId, {
-        language: 'java',
-        code: '// Solved directly from Pattern Roadmap',
-        verdict: 'ACCEPTED',
-        executionTimeMs: 10,
-        memoryUsedKb: 256
+      const newSolvedState = !solvedIds.has(problemId);
+      await toggleSolveStatus(problemId, newSolvedState);
+      
+      setSolvedIds(prev => {
+        const next = new Set(prev);
+        if (newSolvedState) next.add(problemId);
+        else next.delete(problemId);
+        return next;
       });
-      toast({ 
-        title: isSolved ? 'Marked Unsolved' : 'Problem Solved! 🎉', 
-        description: isSolved ? 'Progress updated.' : 'Great job! Keep grinding.',
-        variant: isSolved ? 'default' : 'success'
+
+      toast({
+        title: newSolvedState ? 'Problem Marked Solved!' : 'Problem Unmarked',
+        variant: 'success'
       });
     } catch (err) {
-      console.error('Error recording submission:', err);
+      toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
     }
-  };
-
-  const toggleBookmark = (problemId) => {
-    const newBm = new Set(bookmarkedSet);
-    if (newBm.has(problemId)) {
-      newBm.delete(problemId);
-    } else {
-      newBm.add(problemId);
-    }
-    setBookmarkedSet(newBm);
-    localStorage.setItem(`rankquest_bm_${slug}`, JSON.stringify(Array.from(newBm)));
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-zinc-950 py-12 px-4 max-w-7xl mx-auto space-y-6">
+        <div className="h-40 rounded-xl bg-zinc-900/40 border border-zinc-800 animate-pulse"></div>
+        <div className="h-96 rounded-xl bg-zinc-900/40 border border-zinc-800 animate-pulse"></div>
       </div>
     );
   }
 
   if (!pattern) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4">
-        <h2 className="text-2xl font-bold mb-2">Pattern Not Found</h2>
-        <Link to="/patterns">
-          <Button variant="outline"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Roadmap</Button>
+      <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center space-y-4">
+        <h2 className="text-xl font-bold">Pattern Not Found</h2>
+        <Link to="/patterns" className="text-indigo-400 hover:underline text-xs flex items-center gap-1">
+          <ArrowLeft className="w-4 h-4" /> Back to Roadmaps
         </Link>
       </div>
     );
   }
 
-  const IconComponent = iconMap[pattern.icon] || Target;
-  const solvedCount = problems.filter(p => solvedSet.has(p.id)).length;
-  const totalCount = problems.length || 10;
-  const progressPct = Math.round((solvedCount / totalCount) * 100);
+  const solvedCount = problems.filter(p => solvedIds.has(p.id)).length;
+  const progressPct = problems.length ? Math.round((solvedCount / problems.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Back Link */}
-        <Link to="/patterns" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Pattern Roadmap
+        {/* Navigation Breadcrumb */}
+        <Link to="/patterns" className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Patterns Roadmap
         </Link>
 
-        {/* Pattern Header Card */}
-        <div className="relative overflow-hidden rounded-3xl bg-card border border-white/10 p-8 shadow-xl">
-          <div className="flex flex-col md:flex-row gap-6 md:items-center justify-between">
-            <div className="flex items-start gap-5">
-              <div className={`p-4 rounded-2xl bg-gradient-to-br from-${pattern.colorFrom || 'blue-500'} to-${pattern.colorTo || 'indigo-600'} text-white shadow-lg shrink-0`}>
-                <IconComponent className="w-8 h-8" />
+        {/* Pattern Header Box */}
+        <Card className="bg-zinc-900/60 border-zinc-800/80 rounded-2xl overflow-hidden p-6 md:p-8 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 code-font uppercase">
+                  Step {String(pattern.sequenceOrder).padStart(2, '0')}
+                </span>
+                <Badge variant="outline" className="border-zinc-800 text-zinc-400 text-xs">
+                  {pattern.difficulty}
+                </Badge>
+                <span className="text-xs text-zinc-500">{pattern.category}</span>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 uppercase">
-                    Step {String(pattern.sequenceOrder).padStart(2, '0')} of 15
-                  </span>
-                  <Badge variant="outline" className="border-white/10 text-muted-foreground">
-                    {pattern.category}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-secondary">
-                    {pattern.difficulty}
-                  </Badge>
-                </div>
-                <h1 className="text-3xl md:text-4xl font-extrabold">{pattern.name}</h1>
-                <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-3xl">
-                  {pattern.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress Card */}
-            <div className="bg-background/60 border border-white/10 p-5 rounded-2xl shrink-0 min-w-[240px] space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Pattern Progress</span>
-                <span className="font-bold text-primary">{solvedCount} / {totalCount} ({progressPct}%)</span>
-              </div>
-              <Progress value={progressPct} className="h-2.5" />
-              <p className="text-xs text-muted-foreground text-center">
-                {progressPct === 100 ? '🎉 Pattern Mastered!' : `${totalCount - solvedCount} problems remaining`}
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+                {pattern.name}
+              </h1>
+              <p className="text-xs md:text-sm text-zinc-400 leading-relaxed max-w-3xl">
+                {pattern.description}
               </p>
             </div>
+
+            {/* Overall Progress Badge */}
+            <div className="bg-zinc-950 border border-zinc-800/80 p-4 rounded-xl min-w-[220px] space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-zinc-400">Pattern Solved</span>
+                <span className="font-bold text-indigo-400">{solvedCount} / {problems.length}</span>
+              </div>
+              <Progress value={progressPct} className="h-2 bg-zinc-900" />
+              <p className="text-[11px] text-zinc-500 text-right">{progressPct}% Completed</p>
+            </div>
           </div>
 
-          {/* Key Strategy Formula Box */}
-          {pattern.keyStrategy && (
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <h3 className="text-sm font-semibold text-primary flex items-center gap-2 mb-2">
-                <Sparkles className="w-4 h-4" /> When to Use & Strategy Formula:
-              </h3>
-              <pre className="text-xs md:text-sm font-mono bg-background/80 p-4 rounded-xl border border-white/5 text-slate-300 whitespace-pre-wrap leading-relaxed">
-                {pattern.keyStrategy}
-              </pre>
+          {/* Strategy Formula Card */}
+          {pattern.strategyPattern && (
+            <div className="bg-zinc-950/80 border border-zinc-800 p-4 md:p-5 rounded-xl space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                <Sparkles className="w-4 h-4" /> Strategy & Recognition Formula
+              </div>
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                {pattern.strategyPattern}
+              </p>
+              {pattern.keyIdentifiers && (
+                <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-zinc-400">
+                  <span className="font-semibold text-zinc-300">Key Triggers:</span> {pattern.keyIdentifiers}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* 10 Curated Problems Table */}
-        <div className="space-y-4">
+        {/* Problems List Table */}
+        <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl overflow-hidden p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Code2 className="w-5 h-5 text-primary" /> Curated Pattern Problems ({problems.length})
-            </h2>
-            <span className="text-xs text-muted-foreground">Click checkboxes to mark progress</span>
+            <div>
+              <h2 className="text-lg font-bold text-white">Curated Problem Set (10 Questions)</h2>
+              <p className="text-xs text-zinc-400 mt-0.5">Solve questions on LeetCode / GFG or directly in RankQuest Playground</p>
+            </div>
           </div>
 
-          <div className="bg-card rounded-2xl border border-white/10 overflow-hidden shadow-lg">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground border-b border-white/10">
-                  <tr>
-                    <th className="py-4 px-4 text-center w-12">Status</th>
-                    <th className="py-4 px-4 text-center w-12">★</th>
-                    <th className="py-4 px-6">Problem</th>
-                    <th className="py-4 px-4">Companies</th>
-                    <th className="py-4 px-4">Difficulty</th>
-                    <th className="py-4 px-6 text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {problems.map((problem, idx) => {
-                    const isSolved = solvedSet.has(problem.id);
-                    const isBookmarked = bookmarkedSet.has(problem.id);
+          <div className="divide-y divide-zinc-800/60">
+            {problems.map((problem, index) => {
+              const isSolved = solvedIds.has(problem.id);
+              
+              return (
+                <div 
+                  key={problem.id}
+                  className="py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-900/40 px-3 rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3.5 flex-1">
+                    <button 
+                      onClick={() => handleToggleSolved(problem.id)}
+                      className="text-zinc-500 hover:text-emerald-400 transition-colors"
+                      title={isSolved ? "Mark as unsolved" : "Mark as solved"}
+                    >
+                      {isSolved ? (
+                        <CheckCircle className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-zinc-600" />
+                      )}
+                    </button>
 
-                    return (
-                      <tr key={problem.id} className="hover:bg-white/[0.02] transition-colors group">
-                        
-                        {/* Solved Checkbox */}
-                        <td className="py-4 px-4 text-center">
-                          <button
-                            onClick={() => toggleSolve(problem.id)}
-                            className="text-muted-foreground hover:text-emerald-400 transition-colors focus:outline-none"
-                            title={isSolved ? "Mark unsolved" : "Mark solved"}
-                          >
-                            {isSolved ? (
-                              <CheckCircle className="w-5 h-5 text-emerald-500 fill-emerald-500/20" />
-                            ) : (
-                              <Circle className="w-5 h-5 opacity-40 hover:opacity-100" />
-                            )}
-                          </button>
-                        </td>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-500 font-mono">#{index + 1}</span>
+                        <h3 className={`text-sm font-semibold ${isSolved ? 'line-through text-zinc-500' : 'text-zinc-100 hover:text-indigo-400'}`}>
+                          {problem.title}
+                        </h3>
+                        <Badge variant="outline" className={`text-[10px] ${
+                          problem.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10' :
+                          problem.difficulty === 'Medium' ? 'border-amber-500/30 text-amber-400 bg-amber-500/10' :
+                          'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                        }`}>
+                          {problem.difficulty}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
 
-                        {/* Bookmark Button */}
-                        <td className="py-4 px-4 text-center">
-                          <button
-                            onClick={() => toggleBookmark(problem.id)}
-                            className="text-muted-foreground hover:text-amber-400 transition-colors focus:outline-none"
-                            title={isBookmarked ? "Bookmarked" : "Bookmark problem"}
-                          >
-                            <Bookmark className={`w-4 h-4 ${isBookmarked ? 'text-amber-400 fill-amber-400' : 'opacity-40 hover:opacity-100'}`} />
-                          </button>
-                        </td>
+                  {/* Problem Action Links */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {problem.leetcodeUrl && (
+                      <a 
+                        href={problem.leetcodeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-amber-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        LeetCode <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
 
-                        {/* Problem Title & Description */}
-                        <td className="py-4 px-6">
-                          <div className="font-semibold text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-                            <span>{idx + 1}. {problem.title}</span>
-                          </div>
-                          {problem.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 font-normal">
-                              {problem.description}
-                            </p>
-                          )}
-                        </td>
+                    {problem.gfgUrl && (
+                      <a 
+                        href={problem.gfgUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        GFG <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
 
-                        {/* Company Tags */}
-                        <td className="py-4 px-4">
-                          <div className="flex flex-wrap gap-1">
-                            {problem.companies ? (
-                              problem.companies.split(',').slice(0, 2).map((comp, i) => (
-                                <Badge key={i} variant="outline" className="text-[10px] bg-secondary/50 border-white/5">
-                                  {comp.trim()}
-                                </Badge>
-                              ))
-                            ) : (
-                              <span className="text-xs text-muted-foreground">—</span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Difficulty Badge */}
-                        <td className="py-4 px-4">
-                          <Badge className={
-                            problem.difficulty === 'Easy' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            problem.difficulty === 'Medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                            'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                          }>
-                            {problem.difficulty}
-                          </Badge>
-                        </td>
-
-                        {/* External Action Links (LeetCode & GFG) */}
-                        <td className="py-4 px-6 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            
-                            {/* LeetCode Button */}
-                            {problem.leetcodeUrl ? (
-                              <a
-                                href={problem.leetcodeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold transition-all hover:scale-105"
-                                title="Solve on LeetCode"
-                              >
-                                LeetCode <ExternalLink className="w-3 h-3" />
-                              </a>
-                            ) : null}
-
-                            {/* GFG Button */}
-                            {problem.gfgUrl ? (
-                              <a
-                                href={problem.gfgUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-semibold transition-all hover:scale-105"
-                                title="Solve on GeeksforGeeks"
-                              >
-                                GFG <ExternalLink className="w-3 h-3" />
-                              </a>
-                            ) : null}
-
-                            {/* In-App Playground Solver */}
-                            <Link to={`/problem/${problem.id}`}>
-                              <Button size="sm" variant="secondary" className="h-8 text-xs gap-1">
-                                <Code2 className="w-3.5 h-3.5" /> Solve
-                              </Button>
-                            </Link>
-                          </div>
-                        </td>
-
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                    <Link to={`/playground?problem=${problem.id}`}>
+                      <button className="px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-400 hover:text-indigo-300 text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                        Solve In App <Code2 className="w-3 h-3" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

@@ -1,284 +1,184 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
-  Zap, Target, Trophy, Flame, ArrowRight, 
-  Activity, Calendar, BookOpen, Star, ChevronRight, Bookmark, Building2, Sparkles 
-} from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Progress } from '../components/ui/progress'
-import { Badge } from '../components/ui/badge' 
-import { useAuth } from '../contexts/AuthContext'
-import { getSolvedProblems, getActivityHeatmap, getAllProblems, getAllSheets } from '../services/apiService'
-import ActivityHeatmap from '../components/features/ActivityHeatmap'
+  Trophy, Flame, CheckCircle, Target, ArrowRight, Code2, BookOpen, 
+  TrendingUp, Activity, Sparkles, Award, Layers
+} from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { Progress } from '../components/ui/progress';
+import { useAuth } from '../contexts/AuthContext';
+import { getSolvedProblems, getActivityHeatmap, getAllPatterns, getSheets } from '../services/apiService';
 
 const Dashboard = () => {
-  const { user, loading } = useAuth()
-  const navigate = useNavigate()
-  const [mounted, setMounted] = useState(false)
-  
-  const [stats, setStats] = useState({ Easy: 0, Medium: 0, Hard: 0, Total: 0 });
-  const [activityData, setActivityData] = useState({ currentStreak: 0, maxStreak: 0, totalActiveDays: 0, heatmapData: {} });
-  const [solvedSet, setSolvedSet] = useState(new Set());
-  const [sheetMapping, setSheetMapping] = useState({});
-  const [bookmarkedCount, setBookmarkedCount] = useState(0);
+  const { user } = useAuth();
+  const [solvedCount, setSolvedCount] = useState(0);
+  const [heatmapData, setHeatmapData] = useState([]);
+  const [patterns, setPatterns] = useState([]);
+  const [sheets, setSheets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true)
-    const bookmarks = JSON.parse(localStorage.getItem('rankquest_bookmarks') || '[]');
-    setBookmarkedCount(bookmarks.length);
-  }, [])
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [solvedIds, heatmap, patternList, sheetList] = await Promise.all([
+          getSolvedProblems().catch(() => []),
+          getActivityHeatmap().catch(() => []),
+          getAllPatterns().catch(() => []),
+          getSheets().catch(() => [])
+        ]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (user) {
-        try {
-          const [solvedIds, allProblems, allSheets] = await Promise.all([
-            getSolvedProblems(),
-            getAllProblems(),
-            getAllSheets()
-          ]);
-
-          if (solvedIds && allProblems && allSheets) {
-             const solved = new Set(solvedIds);
-             setSolvedSet(solved);
-
-             // Calculate dynamic stats from all DB problems
-             let easy = 0, med = 0, hard = 0;
-             allProblems.forEach(p => {
-               if (solved.has(p.id)) {
-                 if (p.difficulty === 'Easy') easy++;
-                 else if (p.difficulty === 'Medium') med++;
-                 else if (p.difficulty === 'Hard') hard++;
-               }
-             });
-             setStats({ Easy: easy, Medium: med, Hard: hard, Total: solvedIds.length });
-
-             // Build dynamic sheet mapping
-             const mapping = {};
-             allSheets.forEach(sheet => {
-               mapping[sheet.slug] = {
-                 name: sheet.name,
-                 ids: allProblems.filter(p => p.sheetSlug === sheet.slug).map(p => p.id),
-                 total: sheet.totalProblems
-               };
-             });
-             setSheetMapping(mapping);
-          }
-        } catch (error) {
-          console.error("Failed to fetch stats", error);
-        }
-
-        try {
-          const actResp = await getActivityHeatmap();
-          if (actResp && actResp.success && actResp.data) {
-            setActivityData(actResp.data);
-          }
-        } catch (e) { /* optional */ }
+        setSolvedCount(solvedIds?.length || 0);
+        setHeatmapData(heatmap || []);
+        setPatterns(patternList || []);
+        setSheets(sheetList || []);
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+      } finally {
+        setLoading(false);
       }
-    }
-    if (user) fetchStats();
-  }, [user]);
+    };
 
-  const getSheetSolved = (ids) => ids.filter(id => solvedSet.has(id)).length;
+    fetchDashboardData();
+  }, []);
 
-  const LandingView = () => (
-    <div className="relative min-h-screen bg-black text-white flex flex-col items-center justify-center overflow-hidden selection:bg-purple-500/30">
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-purple-600/30 rounded-full blur-[120px] opacity-50 animate-pulse"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-blue-600/30 rounded-full blur-[120px] opacity-50 animate-pulse delay-1000"></div>
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-
-      <div className={`relative z-10 max-w-5xl px-6 text-center space-y-8 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors cursor-default">
-          <Sparkles className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm font-medium bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">
-            The #1 Platform for DSA Mastery
-          </span>
-        </div>
-        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-tight">
-          Code Your Way <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-            To The Top.
-          </span>
-        </h1>
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-          RankQuest gives you the structured roadmap you need. Solve curated problems, track your stats, and compete on the global leaderboard.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8">
-          <Link to="/register">
-            <Button size="lg" className="h-14 px-10 text-lg border-0 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white rounded-full font-bold shadow-[0_0_30px_rgba(16,185,129,0.3)] transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(16,185,129,0.5)]">
-              Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link to="/sheets">
-            <Button size="lg" variant="outline" className="h-14 px-10 text-lg border-2 border-white/30 text-white bg-transparent hover:bg-white/10 hover:border-white/50 rounded-full font-medium backdrop-blur-sm transition-all">
-              Explore Sheets
-            </Button>
-          </Link>
-        </div>
-
-        {/* Stats Row */}
-        <div className="flex flex-wrap justify-center gap-8 pt-8 border-t border-white/10">
-          {[
-            { label: 'Problems', value: '500+' },
-            { label: 'Students', value: '10K+' },
-            { label: 'DSA Sheets', value: '6' },
-            { label: 'Languages', value: '4' },
-          ].map(stat => (
-            <div key={stat.label} className="text-center">
-              <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-sm text-gray-400">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-
-  const UserDashboardView = () => {
-    const rankLevel = Math.floor(stats.Total / 10) + 1;
-
-    return (
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 flex items-center gap-3">
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">{user?.fullName || user?.username || "Developer"}</span> 👋
-            </h1>
-            <p className="text-muted-foreground text-lg">You've solved <span className="text-primary font-bold">{stats.Total}</span> problems. Keep pushing!</p>
-          </div>
-          <div className="flex gap-3">
-             <Button variant="outline" className="gap-2" onClick={() => navigate('/sheets')}><BookOpen className="w-4 h-4" /> Browse Sheets</Button>
-             <Button className="gap-2 bg-primary hover:bg-primary/90 font-bold" onClick={() => navigate('/problem/1')}><Zap className="w-4 h-4" /> Quick Solve</Button>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-          <StatsCard title="Easy Solved" value={stats.Easy} icon={Zap} color="text-emerald-400" bg="bg-emerald-400/10" border="border-emerald-400/20" />
-          <StatsCard title="Medium Solved" value={stats.Medium} icon={Target} color="text-yellow-400" bg="bg-yellow-400/10" border="border-yellow-400/20" />
-          <StatsCard title="Hard Solved" value={stats.Hard} icon={Flame} color="text-red-400" bg="bg-red-400/10" border="border-red-400/20" />
-          <StatsCard title="Current Streak" value={`${activityData.currentStreak}d`} subValue={`Best: ${activityData.maxStreak}d`} icon={Flame} color="text-orange-400" bg="bg-orange-400/10" border="border-orange-400/20" />
-          <StatsCard title="Revision List" value={`${bookmarkedCount}`} subValue="Saved" icon={Bookmark} color="text-purple-400" bg="bg-purple-400/10" border="border-purple-400/20" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            
-            {/* Activity Heatmap */}
-            <Card className="glass-dark border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-emerald-400" /> 
-                  Activity Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ActivityHeatmap heatmapData={activityData.heatmapData} />
-              </CardContent>
-            </Card>
-
-            {/* Sheet Progress Overview */}
-            <Card className="glass-dark border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Activity className="w-5 h-5 text-blue-400" /> Sheet Progress</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {Object.keys(sheetMapping).length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-4">Start solving problems to see your sheet progress!</p>
-                ) : (
-                  Object.entries(sheetMapping).map(([id, sheet]) => {
-                    const solved = getSheetSolved(sheet.ids);
-                    const pct = sheet.total > 0 ? Math.round((solved / sheet.total) * 100) : 0;
-                    return (
-                      <div key={id} className="group cursor-pointer" onClick={() => navigate(`/sheets/${id}`)}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium group-hover:text-primary transition-colors">{sheet.name}</span>
-                            {pct === 100 && <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">✓</Badge>}
-                          </div>
-                          <span className="text-xs text-muted-foreground">{solved}/{sheet.total}</span>
-                        </div>
-                        <Progress value={pct} className="h-1.5" />
-                      </div>
-                    );
-                  })
-                )}
-              </CardContent>
-            </Card>
-
-          </div>
-
-          <div className="space-y-6">
-            <Card className="glass-dark border-0 shadow-xl">
-              <CardHeader><CardTitle className="flex items-center gap-2 text-base"><Star className="w-4 h-4 text-yellow-400" /> Recommended Sheets</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                {[{ name: "Love Babbar 450", id: 'love-babbar-450', diff: "Hard" }, { name: "Blind 75", id: 'blind-75', diff: "Medium" }].map((sheet) => (
-                  <div key={sheet.id} className="group flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all cursor-pointer" onClick={() => navigate(`/sheets/${sheet.id}`)}>
-                    <div><div className="font-medium text-sm group-hover:text-primary transition-colors">{sheet.name}</div><div className="text-xs text-muted-foreground">{sheet.diff}</div></div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-            
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                <h3 className="font-bold text-lg mb-2 relative z-10">Pro Tip 💡</h3>
-                <p className="text-sm text-white/80 leading-relaxed relative z-10 mb-4">Consistency is key! Solving just 1 problem a day keeps the streak alive.</p>
-                <Button variant="secondary" size="sm" className="w-full bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm" onClick={() => navigate('/problem/1')}>Solve Daily Challenge</Button>
-            </div>
-
-            {/* Streak Card */}
-            <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-600/20 to-red-600/20 border border-orange-500/20 relative overflow-hidden">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 rounded-lg bg-orange-500/20 ${activityData.currentStreak >= 3 ? 'animate-pulse' : ''}`}>
-                  <Flame className="w-5 h-5 text-orange-500" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg text-orange-400">{activityData.currentStreak}-Day Streak</h3>
-                  <p className="text-xs text-orange-400/60">Personal best: {activityData.maxStreak} days</p>
-                </div>
-              </div>
-              <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                <div 
-                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-1000"
-                  style={{ width: `${Math.min((activityData.currentStreak / Math.max(activityData.maxStreak, 7)) * 100, 100)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>
-  }
+  const totalProblems = 150;
+  const overallProgress = Math.round((solvedCount / totalProblems) * 100);
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-      {user && <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-primary/5 via-background to-background"></div>}
-      <div className="relative z-10">
-        {user ? <UserDashboardView /> : <LandingView />}
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* User Welcome Banner */}
+        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-8 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5" />
+              Welcome back, {user?.fullName || user?.username || 'Developer'}!
+            </div>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-white">
+              Ready to solve today's DSA pattern?
+            </h1>
+            <p className="text-xs md:text-sm text-zinc-400">
+              Track your pattern-wise problem solving streak and compete on college leaderboards.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <Link to="/patterns">
+              <button className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md transition-all flex items-center gap-2">
+                <Target className="w-4 h-4" /> Practice Patterns
+              </button>
+            </Link>
+            <Link to="/playground">
+              <button className="px-4 py-2.5 rounded-xl bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-300 font-semibold text-xs transition-all flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-emerald-400" /> Playground
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
+            <div className="flex justify-between items-center text-xs text-zinc-400">
+              <span>Total Solved</span>
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white">{solvedCount} <span className="text-xs text-zinc-500 font-normal">/ {totalProblems}</span></div>
+            <Progress value={overallProgress} className="h-1.5 bg-zinc-950" />
+          </Card>
+
+          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
+            <div className="flex justify-between items-center text-xs text-zinc-400">
+              <span>Day Streak</span>
+              <Flame className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white">7 <span className="text-xs text-zinc-500 font-normal">Days</span></div>
+            <p className="text-[11px] text-emerald-400 flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Active streak</p>
+          </Card>
+
+          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
+            <div className="flex justify-between items-center text-xs text-zinc-400">
+              <span>Pattern Progress</span>
+              <Layers className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white">{patterns.length} <span className="text-xs text-zinc-500 font-normal">Patterns</span></div>
+            <p className="text-[11px] text-zinc-400">15 Sequential Steps</p>
+          </Card>
+
+          <Card className="bg-zinc-900/60 border-zinc-800/80 p-5 rounded-xl space-y-3">
+            <div className="flex justify-between items-center text-xs text-zinc-400">
+              <span>Global Rank</span>
+              <Trophy className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="text-2xl font-extrabold text-white">#12 <span className="text-xs text-zinc-500 font-normal">in College</span></div>
+            <p className="text-[11px] text-zinc-400">Top 5% Developers</p>
+          </Card>
+        </div>
+
+        {/* Quick Links Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Pattern Roadmap Summary */}
+          <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-bold text-white">Sequential Pattern Roadmap</h2>
+                <p className="text-xs text-zinc-400">Beginner to Advanced DSA steps</p>
+              </div>
+              <Link to="/patterns" className="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                View All <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {patterns.slice(0, 4).map((p, idx) => (
+                <Link key={p.id} to={`/patterns/${p.slug}`}>
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition-colors flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span className="font-mono text-indigo-400 font-bold">Step 0{idx + 1}</span>
+                      <span className="font-semibold text-zinc-200">{p.name}</span>
+                    </div>
+                    <span className="text-zinc-500">{p.difficulty}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Curated SDE Sheets */}
+          <div className="bg-zinc-900/60 border border-zinc-800/80 p-6 rounded-2xl space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-base font-bold text-white">Curated SDE Sheets</h2>
+                <p className="text-xs text-zinc-400">Striver SDE, NeetCode 150 & Blind 75</p>
+              </div>
+              <Link to="/sheets" className="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                View All <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {sheets.slice(0, 4).map((sheet) => (
+                <Link key={sheet.id} to={`/sheets/${sheet.id}`}>
+                  <div className="p-3 rounded-xl bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 transition-colors flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <BookOpen className="w-4 h-4 text-emerald-400" />
+                      <span className="font-semibold text-zinc-200">{sheet.title}</span>
+                    </div>
+                    <span className="text-zinc-500">{sheet.problemCount} Qs</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
-  )
-}
+  );
+};
 
-const StatsCard = ({ title, value, subValue, icon: Icon, color, bg, border }) => (
-  <Card className={`glass-dark border-0 shadow-lg relative overflow-hidden group`}>
-    <div className={`absolute top-0 right-0 p-3 opacity-20 group-hover:opacity-100 transition-opacity duration-500`}><Icon className={`w-12 h-12 ${color}`} /></div>
-    <CardContent className="p-6">
-      <div className={`w-10 h-10 rounded-lg ${bg} ${border} border flex items-center justify-center mb-4`}><Icon className={`w-5 h-5 ${color}`} /></div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="flex items-baseline gap-2"><h2 className="text-2xl font-bold text-foreground">{value}</h2>{subValue && <span className="text-xs text-muted-foreground">{subValue}</span>}</div>
-      </div>
-    </CardContent>
-  </Card>
-)
-
-export default Dashboard
+export default Dashboard;

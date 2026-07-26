@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, 
   GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network,
-  Sparkles, BookOpen, CheckCircle2, ArrowRight, Compass, ShieldCheck
+  Sparkles, BookOpen, ArrowRight, Compass, ShieldCheck, CheckCircle2
 } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
@@ -12,23 +12,9 @@ import { Progress } from '../components/ui/progress';
 import { getAllPatterns, getSolvedProblems, getProblemsByPattern } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
-// Dynamic Icon Mapping
 const iconMap = {
-  Target: Target,
-  Zap: Zap,
-  Activity: Activity,
-  Layers: Layers,
-  RotateCcw: RotateCcw,
-  GitCompare: GitCompare,
-  Share2: Share2,
-  GitFork: GitFork,
-  Scale: Scale,
-  Box: Box,
-  Search: Search,
-  Award: Award,
-  GitMerge: GitMerge,
-  Briefcase: Briefcase,
-  Network: Network
+  Target, Zap, Activity, Layers, RotateCcw, GitCompare, Share2, 
+  GitFork, Scale, Box, Search, Award, GitMerge, Briefcase, Network
 };
 
 const categoryTiers = [
@@ -54,7 +40,6 @@ const Patterns = () => {
         if (data && Array.isArray(data)) {
           setPatterns(data);
 
-          // Calculate solve progress per pattern if user logged in
           if (user) {
             try {
               const solvedIds = await getSolvedProblems();
@@ -93,54 +78,52 @@ const Patterns = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-10">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+      <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-purple-900/40 border border-primary/20 p-8 md:p-12 shadow-2xl backdrop-blur-xl">
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold uppercase tracking-wider">
-              <Compass className="w-4 h-4 animate-spin-slow" />
-              Sequential Beginner-to-Advanced Roadmap
-            </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+        {/* Header Hero Section */}
+        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-10 backdrop-blur-sm space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+            <Compass className="w-3.5 h-3.5" />
+            Sequential Learning Path (Steps 01 to 15)
+          </div>
+          
+          <div className="max-w-3xl space-y-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
               Pattern-Wise DSA Roadmap
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-              Don't solve randomly. Learn DSA in the optimal sequence (Steps 01 to 15). Master 15 core algorithmic patterns with 10 handpicked problems per pattern—complete with LeetCode & GeeksforGeeks links.
+            <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
+              Learn algorithms in the proven order of difficulty. Master 15 core patterns with 10 handpicked questions per pattern, linked directly to LeetCode and GeeksforGeeks.
             </p>
-            <div className="flex flex-wrap gap-4 pt-2">
-              <div className="flex items-center gap-2 text-sm text-slate-300 bg-background/50 px-3 py-1.5 rounded-lg border border-white/10">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                15 Sequential Steps
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300 bg-background/50 px-3 py-1.5 rounded-lg border border-white/10">
-                <BookOpen className="w-4 h-4 text-cyan-400" />
-                150 Curated Questions
-              </div>
-              <div className="flex items-center gap-2 text-sm text-slate-300 bg-background/50 px-3 py-1.5 rounded-lg border border-white/10">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                LeetCode & GFG Links
-              </div>
-            </div>
           </div>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 opacity-10 pointer-events-none hidden md:block">
-            <Target className="w-96 h-96 text-primary" />
+
+          <div className="flex flex-wrap gap-4 pt-2 text-xs text-zinc-300">
+            <div className="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              15 Sequential Steps
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800">
+              <BookOpen className="w-4 h-4 text-indigo-400" />
+              150 Handpicked Problems
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-950 px-3 py-1.5 rounded-lg border border-zinc-800">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              LeetCode & GFG Integration
+            </div>
           </div>
         </div>
 
-        {/* Filter Controls & Search Bar */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-card/50 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-          {/* Category Tabs */}
+        {/* Filter Controls Bar */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800/80">
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
             {categoryTiers.map(tier => (
               <button
                 key={tier.id}
                 onClick={() => setSelectedCategory(tier.id)}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   selectedCategory === tier.id
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]'
-                    : 'bg-background/60 text-muted-foreground hover:bg-background hover:text-foreground border border-white/5'
+                    ? 'bg-zinc-800 text-white font-semibold border border-zinc-700 shadow-sm'
+                    : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800'
                 }`}
               >
                 {tier.label}
@@ -148,40 +131,27 @@ const Patterns = () => {
             ))}
           </div>
 
-          {/* Search Box */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <Input
               type="text"
-              placeholder="Search pattern or concept..."
+              placeholder="Search pattern..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-background/60 border-white/10 focus:border-primary rounded-xl"
+              className="pl-9 bg-zinc-950 border-zinc-800 text-xs h-9 rounded-lg"
             />
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Pattern Cards Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-64 rounded-2xl bg-card/30 border border-white/10 animate-pulse p-6 space-y-4">
-                <div className="h-8 w-2/3 bg-white/10 rounded-lg"></div>
-                <div className="h-4 w-full bg-white/5 rounded"></div>
-                <div className="h-4 w-4/5 bg-white/5 rounded"></div>
-                <div className="h-10 w-full bg-white/10 rounded-xl mt-auto"></div>
-              </div>
+              <div key={i} className="h-56 rounded-xl bg-zinc-900/40 border border-zinc-800 animate-pulse p-5"></div>
             ))}
           </div>
-        ) : filteredPatterns.length === 0 ? (
-          <div className="text-center py-16 bg-card/20 rounded-3xl border border-white/10">
-            <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-bold">No patterns found</h3>
-            <p className="text-muted-foreground mt-1">Try adjusting your search term or category filter.</p>
-          </div>
         ) : (
-          /* Sequential Pattern Cards Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredPatterns.map((pattern) => {
               const IconComponent = iconMap[pattern.icon] || Target;
               const solvedCount = patternSolveMap[pattern.slug] || 0;
@@ -191,58 +161,57 @@ const Patterns = () => {
               return (
                 <Card 
                   key={pattern.id}
-                  className="group relative overflow-hidden bg-card/60 hover:bg-card/90 border-white/10 hover:border-primary/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 rounded-2xl flex flex-col"
+                  className="bg-zinc-900/60 border-zinc-800/80 hover:border-zinc-700 transition-all rounded-xl flex flex-col justify-between group p-5 space-y-4"
                 >
-                  <CardContent className="p-6 flex flex-col flex-1 justify-between space-y-5">
+                  <CardContent className="p-0 space-y-4 flex-1 flex flex-col justify-between">
                     
-                    {/* Top Row: Step Badge + Category */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold tracking-wider px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary uppercase">
-                        Step {String(pattern.sequenceOrder).padStart(2, '0')}
-                      </span>
-                      <Badge variant="outline" className="text-xs border-white/10 text-muted-foreground">
-                        {pattern.difficulty}
-                      </Badge>
+                    {/* Header */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold px-2.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 code-font uppercase">
+                          Step {String(pattern.sequenceOrder).padStart(2, '0')}
+                        </span>
+                        <Badge variant="outline" className="text-[11px] border-zinc-800 text-zinc-400">
+                          {pattern.difficulty}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 text-indigo-400 shrink-0 group-hover:border-zinc-700 transition-colors">
+                          <IconComponent className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h2 className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors">
+                            {pattern.name}
+                          </h2>
+                          <p className="text-[11px] text-zinc-500 mt-0.5">
+                            {pattern.category}
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-zinc-400 line-clamp-3 leading-relaxed">
+                        {pattern.description}
+                      </p>
                     </div>
 
-                    {/* Header: Icon + Pattern Title */}
-                    <div className="flex items-start gap-4">
-                      <div className={`p-3.5 rounded-2xl bg-gradient-to-br from-${pattern.colorFrom || 'blue-500'} to-${pattern.colorTo || 'indigo-600'} text-white shadow-lg shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
-                          {pattern.name}
-                        </h2>
-                        <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                          {pattern.category}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Pattern Description */}
-                    <p className="text-sm text-slate-300/80 line-clamp-3 leading-relaxed">
-                      {pattern.description}
-                    </p>
-
-                    {/* Progress Bar & Problems Count */}
-                    <div className="space-y-2 pt-2 border-t border-white/5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground">Progress</span>
-                        <span className="font-semibold text-primary">
+                    {/* Progress & CTA */}
+                    <div className="space-y-3 pt-3 border-t border-zinc-800/80">
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-zinc-500">Progress</span>
+                        <span className="font-semibold text-indigo-400">
                           {solvedCount} / {totalProblems} Solved ({progressPct}%)
                         </span>
                       </div>
-                      <Progress value={progressPct} className="h-2 bg-secondary" />
-                    </div>
+                      <Progress value={progressPct} className="h-1.5 bg-zinc-950" />
 
-                    {/* Action CTA Button */}
-                    <Link to={`/patterns/${pattern.slug}`}>
-                      <button className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-secondary hover:bg-primary text-secondary-foreground hover:text-primary-foreground font-semibold text-sm transition-all duration-300 group-hover:shadow-md">
-                        <span>Practice Pattern</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </Link>
+                      <Link to={`/patterns/${pattern.slug}`} className="block pt-1">
+                        <button className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-zinc-950 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 text-xs font-semibold transition-all">
+                          <span>Practice Pattern</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      </Link>
+                    </div>
 
                   </CardContent>
                 </Card>

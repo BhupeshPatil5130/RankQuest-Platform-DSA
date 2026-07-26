@@ -1,25 +1,22 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Trophy, Medal, Award, Crown, Zap, Target, Loader2, AlertCircle, Shield, Star, Sparkles, Search } from 'lucide-react'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Input } from '../components/ui/input'
-import { Badge } from '../components/ui/badge'
-import { useAuth } from '../contexts/AuthContext'
-import { getGlobalRankings, getCollegeRankings } from '../services/apiService'
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Trophy, Medal, Crown, Zap, Search, Shield, Star, Sparkles, AlertCircle, 
+  Flame, CheckCircle, School
+} from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+import { useAuth } from '../contexts/AuthContext';
+import { getGlobalRankings, getCollegeRankings } from '../services/apiService';
 
 const Rankings = () => {
-  const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('global')
-  const [rankings, setRankings] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('global');
+  const [rankings, setRankings] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchRankings = async () => {
@@ -28,18 +25,18 @@ const Rankings = () => {
       try {
         let data = [];
         if (activeTab === 'global') {
-            data = await getGlobalRankings();
+          data = await getGlobalRankings();
         } else if (activeTab === 'college') {
-            if (user?.college) {
-                data = await getCollegeRankings(user.college);
-            } else {
-                setError("Please update your College in your Profile settings to view College Rankings.");
-                setRankings([]);
-                setLoading(false);
-                return;
-            }
+          if (user?.college) {
+            data = await getCollegeRankings(user.college);
+          } else {
+            setError("Please update your College in Profile settings to view College Rankings.");
+            setRankings([]);
+            setLoading(false);
+            return;
+          }
         }
-        if (data) setRankings(data);
+        setRankings(data || []);
       } catch (err) {
         console.error("Rankings error:", err);
         setError("Failed to load rankings.");
@@ -47,241 +44,186 @@ const Rankings = () => {
         setLoading(false);
       }
     };
+
     fetchRankings();
   }, [activeTab, user]);
 
-  const renderRankBadge = (rank) => {
-    if (rank === 1) return (
-      <div className="relative flex items-center justify-center w-10 h-10 bg-gradient-to-b from-yellow-300 to-yellow-600 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.5)] border-2 border-yellow-200">
-        <Crown className="w-5 h-5 text-white fill-white" />
-        <div className="absolute -bottom-2 bg-yellow-900 text-yellow-100 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-yellow-500">#1</div>
-      </div>
-    );
-    if (rank === 2) return (
-      <div className="relative flex items-center justify-center w-9 h-9 bg-gradient-to-b from-slate-300 to-slate-500 rounded-full shadow-[0_0_10px_rgba(148,163,184,0.5)] border-2 border-slate-200">
-        <Medal className="w-4 h-4 text-white fill-white" />
-        <div className="absolute -bottom-2 bg-slate-800 text-slate-100 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-slate-500">#2</div>
-      </div>
-    );
-    if (rank === 3) return (
-      <div className="relative flex items-center justify-center w-9 h-9 bg-gradient-to-b from-orange-300 to-orange-600 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.5)] border-2 border-orange-200">
-        <Award className="w-4 h-4 text-white fill-white" />
-        <div className="absolute -bottom-2 bg-orange-900 text-orange-100 text-[9px] font-bold px-1.5 py-0.2 rounded-full border border-orange-500">#3</div>
-      </div>
-    );
-    return (
-      <div className="flex items-center justify-center w-8 h-8 bg-white/5 rounded-full border border-white/10 font-mono font-bold text-muted-foreground text-xs">
-        #{rank}
-      </div>
-    );
-  };
-
-  // Filter rankings by search term
-  const filteredRankings = rankings.filter(u => 
-    (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (u.college || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRankings = rankings.filter(r => 
+    r.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.college?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Top 3 Podium Component
-  const TopPodium = ({ topUsers }) => {
-    if (!topUsers || topUsers.length === 0) return null;
-    
-    const podiumOrder = [topUsers[1], topUsers[0], topUsers[2]].filter(Boolean);
-    
-    return (
-      <div className="flex justify-center items-end gap-4 md:gap-8 mb-10 mt-28">
-        {podiumOrder.map((u) => {
-          const rank = u === topUsers[0] ? 1 : u === topUsers[1] ? 2 : 3;
-          const height = rank === 1 ? 'h-60' : rank === 2 ? 'h-48' : 'h-40';
-          const color = rank === 1 ? 'from-yellow-500/20 to-yellow-600/5 border-yellow-500/30' : 
-                        rank === 2 ? 'from-slate-400/20 to-slate-500/5 border-slate-400/30' : 
-                        'from-orange-500/20 to-orange-600/5 border-orange-500/30';
-          
-          return (
-            <div key={u.id} className="relative flex flex-col items-center group">
-               <div className="absolute -top-16 transition-all duration-500 group-hover:-translate-y-2 z-20">
-                  <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center bg-background shadow-xl ${rank === 1 ? 'border-yellow-500' : rank === 2 ? 'border-slate-400' : 'border-orange-500'}`}>
-                     <span className="text-xl font-bold text-foreground">{(u.name || 'U').charAt(0).toUpperCase()}</span>
-                  </div>
-                  {rank === 1 && <Crown className="absolute -top-5 left-1/2 -translate-x-1/2 w-6 h-6 text-yellow-400 fill-yellow-400 animate-bounce" />}
-               </div>
-
-               <div className={`w-28 md:w-36 ${height} rounded-t-2xl bg-gradient-to-b ${color} border-t border-x backdrop-blur-sm flex flex-col justify-end pb-5 items-center relative overflow-hidden`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-50" />
-                  
-                  <div className="text-center z-10 px-2">
-                    <div className="font-bold text-foreground text-sm truncate max-w-[90px] md:max-w-full">{u.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate max-w-[90px] md:max-w-full">{u.college || 'Developer'}</div>
-                    <div className="mt-2 font-mono font-bold text-lg text-primary">{u.totalScore?.toLocaleString()}</div>
-                    <div className="text-[9px] text-muted-foreground uppercase tracking-wider">Points</div>
-                  </div>
-               </div>
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-      <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-primary/5 via-background to-background"></div>
-      
-      <div className="relative z-10 py-12">
-        <div className="container mx-auto px-4 max-w-5xl">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 py-10 px-4 sm:px-6 lg:px-8 subtle-grid">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header */}
+        <div className="border border-zinc-800/80 rounded-2xl bg-zinc-900/60 p-6 md:p-8 backdrop-blur-sm space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-wider">
+            <Trophy className="w-3.5 h-3.5" />
+            Competitive Leaderboards
+          </div>
           
-          <div className={`text-center mb-6 ${mounted ? 'animate-fade-in' : 'opacity-0'}`}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-4">
-               <Trophy className="w-4 h-4 text-yellow-400" /> Season 1 Leaderboard
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-              Global <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-500">Rankings</span>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
+              Developer Rankings
             </h1>
-            <p className="text-muted-foreground text-base max-w-2xl mx-auto">
-              Compete with top developers around the world. Solve problems, earn points, and climb the leaderboard.
+            <p className="text-xs md:text-sm text-zinc-400">
+              See where you stand among thousands of developers solving DSA patterns.
             </p>
           </div>
+        </div>
 
-          {/* Controls: Tab Switcher & Search */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-            <div className="p-1 bg-background/60 backdrop-blur-xl border border-white/10 rounded-full shadow-lg flex gap-1">
-              {['global', 'college'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-5 py-2 rounded-full text-xs font-semibold transition-all duration-300 ${
-                    activeTab === tab 
-                      ? 'bg-primary text-primary-foreground shadow-md' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                  }`}
-                >
-                  {tab === 'global' ? '🌐 Global' : '🎓 College'} Leaderboard
-                </button>
-              ))}
-            </div>
+        {/* Tab & Search Bar */}
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-zinc-900/40 p-3.5 rounded-xl border border-zinc-800/80">
+          <div className="flex gap-2 w-full md:w-auto">
+            <button
+              onClick={() => setActiveTab('global')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'global'
+                  ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
+                  : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800'
+              }`}
+            >
+              Global Leaderboard
+            </button>
 
-            {/* Leaderboard Search */}
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search user or college..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-10 bg-white/5 border-white/10 rounded-full text-xs"
-              />
-            </div>
+            <button
+              onClick={() => setActiveTab('college')}
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === 'college'
+                  ? 'bg-zinc-800 text-white border border-zinc-700 shadow-sm'
+                  : 'bg-zinc-950 text-zinc-400 hover:text-white border border-zinc-800'
+              }`}
+            >
+              College Leaderboard {user?.college && `(${user.college})`}
+            </button>
           </div>
 
-          {/* Loading & Error States */}
-          {loading && (
-             <div className="flex flex-col items-center justify-center py-20">
-                 <Loader2 className="h-10 w-10 animate-spin text-primary mb-3" />
-                 <p className="text-muted-foreground text-sm animate-pulse">Fetching leaderboard rankings...</p>
-             </div>
-          )}
-
-          {!loading && error && (
-              <div className="flex flex-col items-center justify-center py-12 text-center bg-red-500/5 border border-red-500/20 rounded-2xl">
-                  <AlertCircle className="h-10 w-10 text-red-500 mb-3" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">College Not Set</h3>
-                  <p className="text-muted-foreground text-sm mb-5">{error}</p>
-                  <Link to="/settings">
-                      <Button variant="outline" size="sm">Update Profile Settings</Button>
-                  </Link>
-              </div>
-          )}
-
-          {!loading && !error && (
-            <>
-              {/* Top 3 Podium */}
-              {!searchTerm && <TopPodium topUsers={rankings.slice(0, 3)} />}
-
-              {/* Leaderboard Table */}
-              <Card className="glass-dark border-0 shadow-2xl overflow-hidden backdrop-blur-xl relative z-20">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-white/5 border-b border-white/5">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider w-20">Rank</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hacker</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Score</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Solved</th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Institution</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {filteredRankings.length === 0 ? (
-                          <tr><td colSpan="5" className="text-center py-12 text-muted-foreground text-sm">No developers found matching "{searchTerm}".</td></tr>
-                      ) : (
-                        filteredRankings.map((rankUser, index) => {
-                            const isCurrentUser = user && user.email === rankUser.email;
-                            const originalRank = rankings.findIndex(r => r.id === rankUser.id) + 1;
-                            return (
-                            <tr
-                              key={rankUser.id}
-                              className={`group transition-all duration-200 ${
-                                isCurrentUser 
-                                  ? 'bg-primary/10 hover:bg-primary/15' 
-                                  : 'hover:bg-white/5'
-                              }`}
-                            >
-                              <td className="px-6 py-4">
-                                {renderRankBadge(originalRank || index + 1)}
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center">
-                                  <div className={`flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-inner ${
-                                    ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500'][index % 4]
-                                  }`}>
-                                    {(rankUser.name || 'U').charAt(0).toUpperCase()}
-                                  </div>
-                                  <div className="ml-3">
-                                    <div className={`text-sm font-bold flex items-center gap-2 ${
-                                      isCurrentUser ? 'text-primary' : 'text-foreground'
-                                    }`}>
-                                      {rankUser.name}
-                                      {isCurrentUser && (
-                                        <span className="text-[9px] bg-primary text-primary-foreground px-1.5 py-0.3 rounded-full font-bold">YOU</span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <Shield className="w-3 h-3 text-purple-400" /> Level {Math.floor((rankUser.problemsSolved || 0) / 5) + 1}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="font-mono text-base font-bold text-primary">
-                                  {(rankUser.totalScore || 0).toLocaleString()}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-1.5">
-                                  <Target className="w-4 h-4 text-emerald-500" />
-                                  <span className="text-sm font-semibold text-emerald-400">{rankUser.problemsSolved || 0}</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <span className="text-xs text-muted-foreground truncate max-w-[160px] block" title={rankUser.college}>
-                                  {rankUser.college || '-'}
-                                </span>
-                              </td>
-                            </tr>
-                            )
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-            </>
-          )}
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+            <Input
+              type="text"
+              placeholder="Search developer or college..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 bg-zinc-950 border-zinc-800 text-xs h-9 rounded-lg"
+            />
+          </div>
         </div>
+
+        {/* Leaderboard Table Container */}
+        {error ? (
+          <div className="bg-zinc-900/60 border border-zinc-800 p-8 rounded-2xl text-center space-y-3">
+            <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+            <p className="text-xs text-zinc-300">{error}</p>
+            <Link to="/profile" className="inline-block text-xs font-semibold text-indigo-400 hover:underline">
+              Update Profile Settings →
+            </Link>
+          </div>
+        ) : loading ? (
+          <div className="bg-zinc-900/40 border border-zinc-800 rounded-2xl h-80 animate-pulse"></div>
+        ) : (
+          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-950 border-b border-zinc-800/80 text-zinc-400 uppercase font-semibold text-[11px] tracking-wider">
+                  <tr>
+                    <th className="py-3.5 px-4 text-center">Rank</th>
+                    <th className="py-3.5 px-4">Developer</th>
+                    <th className="py-3.5 px-4">College</th>
+                    <th className="py-3.5 px-4 text-center">Streak</th>
+                    <th className="py-3.5 px-4 text-center">Problems Solved</th>
+                    <th className="py-3.5 px-4 text-right">Points</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {filteredRankings.map((row, index) => {
+                    const isCurrentUser = user && (user.username === row.username || user.email === row.email);
+                    const rankNum = index + 1;
+
+                    return (
+                      <tr 
+                        key={row.username || index}
+                        className={`hover:bg-zinc-900/80 transition-colors ${
+                          isCurrentUser ? 'bg-indigo-500/10 font-semibold border-l-2 border-indigo-500' : ''
+                        }`}
+                      >
+                        {/* Rank Badge */}
+                        <td className="py-3.5 px-4 text-center font-bold text-sm">
+                          {rankNum === 1 ? (
+                            <span className="inline-flex items-center gap-1 text-amber-400">
+                              <Crown className="w-4 h-4 fill-amber-400/20" /> #1
+                            </span>
+                          ) : rankNum === 2 ? (
+                            <span className="inline-flex items-center gap-1 text-zinc-300">
+                              <Medal className="w-4 h-4 text-zinc-300" /> #2
+                            </span>
+                          ) : rankNum === 3 ? (
+                            <span className="inline-flex items-center gap-1 text-amber-600">
+                              <Medal className="w-4 h-4 text-amber-600" /> #3
+                            </span>
+                          ) : (
+                            <span className="text-zinc-500">#{rankNum}</span>
+                          )}
+                        </td>
+
+                        {/* Developer Info */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-zinc-950 border border-zinc-800 text-indigo-400 font-bold flex items-center justify-center text-xs">
+                              {(row.fullName || row.username || 'D').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-zinc-100 flex items-center gap-1.5">
+                                {row.fullName || row.username}
+                                {isCurrentUser && <Badge className="bg-indigo-500/20 text-indigo-400 text-[9px] border-indigo-500/30">You</Badge>}
+                              </p>
+                              <p className="text-[11px] text-zinc-500">@{row.username}</p>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* College */}
+                        <td className="py-3.5 px-4 text-zinc-400">
+                          {row.college ? (
+                            <span className="flex items-center gap-1 text-zinc-300">
+                              <School className="w-3.5 h-3.5 text-zinc-500" /> {row.college}
+                            </span>
+                          ) : (
+                            <span className="text-zinc-600">-</span>
+                          )}
+                        </td>
+
+                        {/* Streak */}
+                        <td className="py-3.5 px-4 text-center">
+                          <span className="inline-flex items-center gap-1 text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                            <Flame className="w-3 h-3 fill-amber-400" /> {row.streakDays || row.streak || 0}d
+                          </span>
+                        </td>
+
+                        {/* Problems Solved */}
+                        <td className="py-3.5 px-4 text-center font-semibold text-emerald-400">
+                          {row.problemsSolved || row.solvedCount || 0}
+                        </td>
+
+                        {/* Points */}
+                        <td className="py-3.5 px-4 text-right font-extrabold text-white">
+                          {(row.problemsSolved || row.solvedCount || 0) * 10} pts
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Rankings
+export default Rankings;
