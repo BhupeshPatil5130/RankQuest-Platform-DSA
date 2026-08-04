@@ -90,15 +90,15 @@ export default function Rankings() {
         {/* Podium Top 3 */}
         {!loading && !error && filtered.length >= 3 && (
           <div className="flex flex-col sm:flex-row items-end justify-center gap-3 py-2">
-            {[1, 0, 2].map(pos => {
-              const r = filtered[pos];
+            {[
+              { pos: 1, height: 'h-32', grad: 'from-slate-400 to-slate-500', emoji: '🥈' },
+              { pos: 0, height: 'h-40', grad: 'from-amber-400 to-yellow-500', emoji: '🥇' },
+              { pos: 2, height: 'h-24', grad: 'from-amber-700 to-orange-700', emoji: '🥉' },
+            ].map(spot => {
+              const r = filtered[spot.pos];
               if (!r) return null;
-              const rank = pos + 1;
-              const heights = ['h-32', 'h-40', 'h-24'];
-              const grads = ['from-slate-400 to-slate-500', 'from-amber-400 to-yellow-500', 'from-amber-700 to-orange-700'];
-              const emojis = ['🥈', '🥇', '🥉'];
               return (
-                <div key={pos} className="flex flex-col items-center gap-2">
+                <div key={spot.pos} className="flex flex-col items-center gap-2">
                   <div className="text-center">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-extrabold text-lg flex items-center justify-center shadow-lg mx-auto">
                       {(r.fullName || r.username || 'D').charAt(0).toUpperCase()}
@@ -106,8 +106,8 @@ export default function Rankings() {
                     <p className="text-xs font-bold text-slate-900 dark:text-white mt-1 max-w-[90px] truncate">{r.fullName || r.username}</p>
                     <p className="text-[10px] text-slate-500">{r.problemsSolved ?? r.totalSolved ?? 0} solved</p>
                   </div>
-                  <div className={`w-24 ${heights[pos]} rounded-t-xl bg-gradient-to-b ${grads[pos]} flex items-start justify-center pt-3`}>
-                    <span className="text-2xl">{emojis[pos]}</span>
+                  <div className={`w-24 ${spot.height} rounded-t-xl bg-gradient-to-b ${spot.grad} flex items-start justify-center pt-3`}>
+                    <span className="text-2xl">{spot.emoji}</span>
                   </div>
                 </div>
               );
