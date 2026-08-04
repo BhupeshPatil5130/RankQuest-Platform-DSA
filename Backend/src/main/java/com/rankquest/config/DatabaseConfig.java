@@ -13,7 +13,7 @@ import java.net.URI;
 /**
  * Dynamic DataSource configuration for seamless cloud deployment (Render, Railway, Heroku, AWS).
  * Automatically converts postgres:// or postgresql:// URLs into valid JDBC URLs with HikariCP.
- * Defaults to H2 in-memory database when no DATABASE_URL is supplied.
+ * Defaults to H2 in-memory database when no DATABASE_URL is supplied or if connection fails.
  */
 @Configuration
 public class DatabaseConfig {
@@ -27,17 +27,21 @@ public class DatabaseConfig {
     @Value("${DATABASE_PASSWORD:#{null}}")
     private String rawPassword;
 
+    private DataSource createH2Fallback() {
+        System.out.println("ℹ️ Using H2 in-memory database fallback.");
+        return DataSourceBuilder.create()
+                .driverClassName("org.h2.Driver")
+                .url("jdbc:h2:mem:rankquest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
+                .username("sa")
+                .password("")
+                .build();
+    }
+
     @Bean
     @Primary
     public DataSource dataSource() {
         if (rawDatabaseUrl == null || rawDatabaseUrl.trim().isEmpty()) {
-            // Default: H2 in-memory database for dev or light deployments
-            return DataSourceBuilder.create()
-                    .driverClassName("org.h2.Driver")
-                    .url("jdbc:h2:mem:rankquest;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE")
-                    .username("sa")
-                    .password("")
-                    .build();
+            return createH2Fallback();
         }
 
         String dbUrl = rawDatabaseUrl.trim();
@@ -47,12 +51,11 @@ public class DatabaseConfig {
         // Convert postgres:// or postgresql:// format (used by Render, Heroku, Railway)
         if (dbUrl.startsWith("postgres://") || dbUrl.startsWith("postgresql://")) {
             try {
-                // Strip "jdbc:" if already present to parse URI cleanly
                 String cleanUrl = dbUrl.startsWith("jdbc:") ? dbUrl.substring(5) : dbUrl;
                 if (cleanUrl.startsWith("postgres://")) {
                     cleanUrl = "postgresql://" + cleanUrl.substring(11);
                 }
-                
+
                 URI uri = new URI(cleanUrl);
                 String host = uri.getHost();
                 int port = uri.getPort() == -1 ? 5432 : uri.getPort();
@@ -79,20 +82,25 @@ public class DatabaseConfig {
                 if (username != null) ds.setUsername(username);
                 if (password != null) ds.setPassword(password);
                 ds.setConnectionTimeout(10000);
-                ds.setInitializationFailTimeout(10000);
+                ds.setInitializationFailTimeout(-1); // Prevent startup crash if DB is slow
                 return ds;
             } catch (Exception e) {
-                System.err.println("⚠️ Error parsing DATABASE_URL, using raw URL: " + e.getMessage());
+                System.err.println("⚠️ Error parsing DATABASE_URL, falling back to H2: " + e.getMessage());
+                return createH2Fallback();
             }
         }
 
-        // Standard JDBC URL
-        HikariDataSource ds = new HikariDataSource();
-        ds.setJdbcUrl(dbUrl);
-        if (username != null && !username.trim().isEmpty()) ds.setUsername(username.trim());
-        if (password != null && !password.trim().isEmpty()) ds.setPassword(password.trim());
-        ds.setConnectionTimeout(10000);
-        ds.setInitializationFailTimeout(10000);
-        return ds;
+        try {
+            HikariDataSource ds = new HikariDataSource();
+            ds.setJdbcUrl(dbUrl);
+            if (username != null && !username.trim().isEmpty()) ds.setUsername(username.trim());
+            if (password != null && !password.trim().isEmpty()) ds.setPassword(password.trim());
+            ds.setConnectionTimeout(10000);
+            ds.setInitializationFailTimeout(-1); // Prevent startup crash if DB is slow
+            return ds;
+        } catch (Exception e) {
+            System.err.println("⚠️ Error initializing DataSource, falling back to H2: " + e.getMessage());
+            return createH2Fallback();
+        }
     }
 }
