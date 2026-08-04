@@ -24,7 +24,24 @@ public class JwtUtil {
         @Value("${jwt.secret:RankQuestSuperSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm2024}") String secret,
         @Value("${jwt.expiration-ms:86400000}") long expirationMs
     ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        byte[] keyBytes = (secret != null && !secret.trim().isEmpty())
+                ? secret.getBytes(StandardCharsets.UTF_8)
+                : "RankQuestSuperSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm2024".getBytes(StandardCharsets.UTF_8);
+
+        // Ensure key is at least 256 bits (32 bytes) for HS256 algorithm without WeakKeyException
+        if (keyBytes.length < 32) {
+            try {
+                java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+                keyBytes = digest.digest(keyBytes);
+            } catch (Exception e) {
+                // Fallback to default 256-bit byte array
+                byte[] padded = new byte[32];
+                System.arraycopy(keyBytes, 0, padded, 0, Math.min(keyBytes.length, 32));
+                keyBytes = padded;
+            }
+        }
+
+        this.key = Keys.hmacShaKeyFor(keyBytes);
         this.expirationMs = expirationMs;
     }
 
