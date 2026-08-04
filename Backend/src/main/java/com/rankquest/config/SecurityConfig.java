@@ -61,6 +61,7 @@ public class SecurityConfig {
                     "/api/users/**",
                     "/api/submissions/**",
                     "/api/activity/**",
+                    "/api/placement/**",
                     "/h2-console/**"
                 ).permitAll()
                 // Admin-only APIs
