@@ -57,8 +57,22 @@ public class SubmissionService {
                 submissionRepository.delete(existing.get());
                 if (user.getTotalSolved() > 0) {
                     user.setTotalSolved(user.getTotalSolved() - 1);
-                    userRepository.save(user);
                 }
+
+                // Decrement or remove today's activity log entry
+                LocalDate today = LocalDate.now();
+                Optional<ActivityLog> todayLog = activityLogRepository.findByUserIdAndDate(user.getId(), today);
+                if (todayLog.isPresent()) {
+                    ActivityLog log = todayLog.get();
+                    if (log.getProblemsSolved() > 1) {
+                        log.setProblemsSolved(log.getProblemsSolved() - 1);
+                        activityLogRepository.save(log);
+                    } else {
+                        activityLogRepository.delete(log);
+                    }
+                }
+
+                userRepository.save(user);
                 return ApiResponse.success("Problem unmarked as solved");
             }
             return ApiResponse.success("Already unsolved");
@@ -72,6 +86,8 @@ public class SubmissionService {
                 s.setLanguage(request.getLanguage());
             }
             submissionRepository.save(s);
+            updateStreakAndActivity(user);
+            userRepository.save(user);
             return ApiResponse.success("Submission updated!");
         }
 
@@ -119,12 +135,16 @@ public class SubmissionService {
 
         // Calculate streak
         LocalDate lastSolved = user.getLastSolvedDate();
-        if (lastSolved == null || lastSolved.isBefore(today.minusDays(1))) {
+        if (lastSolved == null) {
             user.setCurrentStreak(1);
         } else if (lastSolved.equals(today.minusDays(1))) {
             user.setCurrentStreak(user.getCurrentStreak() + 1);
+        } else if (lastSolved.isBefore(today.minusDays(1))) {
+            user.setCurrentStreak(1);
         }
+        // Note: if lastSolved equals today, user already incremented streak today; currentStreak stays unchanged.
 
+        user.setMaxStreak(Math.max(user.getMaxStreak(), user.getCurrentStreak()));
         user.setLastSolvedDate(today);
     }
 }

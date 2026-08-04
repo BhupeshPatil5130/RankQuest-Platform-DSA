@@ -29,7 +29,10 @@ export default function ActivityHeatmap({ heatmapData = {}, loading = false }) {
     let cur  = new Date(startDate);
     let week = [];
     while (cur <= endDate) {
-      const ds    = cur.toISOString().split('T')[0];
+      const year  = cur.getFullYear();
+      const month = String(cur.getMonth() + 1).padStart(2, '0');
+      const day   = String(cur.getDate()).padStart(2, '0');
+      const ds    = `${year}-${month}-${day}`;
       const count = heatmapData[ds] || 0;
       week.push({ date: ds, count: cur > today ? -1 : count, day: cur.getDay() });
       if (cur.getDay() === 6 || cur >= endDate) { weeks.push([...week]); week = []; }

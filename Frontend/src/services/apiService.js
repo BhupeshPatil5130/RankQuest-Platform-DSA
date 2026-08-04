@@ -217,12 +217,9 @@ export const getSolvedProblems = async () => {
 };
 
 export const toggleSolveStatus = async (problemId, isSolved) => {
-  // Invalidate solved-problems cache key only
+  // Clear API cache so solved list and activity heatmap update instantly
+  clearApiCache();
   const email = getEmail();
-  const solvedKey = `/submissions/my-solved?email=${encodeURIComponent(email)}_${localStorage.getItem('rankquest_token') || 'guest'}`;
-  memCache.delete(solvedKey);
-  try { sessionStorage.removeItem(SESSION_PREFIX + solvedKey); } catch { /* ignore */ }
-
   return request(`/submissions/${problemId}?email=${encodeURIComponent(email)}`, {
     method: 'POST',
     body: JSON.stringify({ status: isSolved ? 'ACCEPTED' : 'UNSOLVED' }),
@@ -237,12 +234,16 @@ export const getCollegeRankings = (college) =>
 // ─── Activity & Heatmap ───────────────────────────────────────────────────────
 export const getActivityHeatmap = async () => {
   const email = getEmail();
-  if (!email) return [];
+  if (!email) return {};
   try {
     const res = await cachedGet(
       `/activity/heatmap?email=${encodeURIComponent(email)}`,
       CACHE_TTL.dynamic
     );
-    return Array.isArray(res) ? res : [];
-  } catch { return []; }
+    if (res && res.heatmapData) {
+      return res.heatmapData;
+    }
+    return (typeof res === 'object' && res && !Array.isArray(res)) ? res : {};
+  } catch { return {}; }
 };
+

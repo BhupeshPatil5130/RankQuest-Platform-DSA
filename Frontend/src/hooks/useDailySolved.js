@@ -5,7 +5,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { getActivityHeatmap, getSolvedProblems, getGlobalRankings } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 
-const todayKey = () => new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+const formatLocalKey = (d = new Date()) => {
+  const year  = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day   = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const todayKey = () => formatLocalKey(new Date());
 
 /**
  * Computes the current streak from a heatmap object { "YYYY-MM-DD": count }
@@ -16,7 +23,7 @@ const computeStreak = (heatmap) => {
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().split('T')[0];
+    const key = formatLocalKey(d);
     if (heatmap[key] && heatmap[key] > 0) {
       streak++;
     } else if (i > 0) {
