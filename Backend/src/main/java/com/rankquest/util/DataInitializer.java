@@ -11,18 +11,20 @@ import com.rankquest.repository.ProblemRepository;
 import com.rankquest.repository.ResourceRepository;
 import com.rankquest.repository.SheetRepository;
 import com.rankquest.repository.UserRepository;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * Seeds the database with real problem sheets, beginner-to-advanced patterns,
- * 150+ pattern questions with LeetCode/GFG links, resources, and default user accounts.
+ * Seeds the database asynchronously upon ApplicationReadyEvent so web server
+ * startup and health check endpoints open instantly without blocking.
  */
 @Component
-public class DataInitializer implements CommandLineRunner {
+public class DataInitializer {
 
     private final SheetRepository sheetRepository;
     private final PatternRepository patternRepository;
@@ -42,14 +44,20 @@ public class DataInitializer implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
-    public void run(String... args) {
-        seedSheets();
-        seedPatterns();
-        seedProblems();
-        seedResources();
-        seedDefaultAdmin();
-        seedDemoUser();
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                seedSheets();
+                seedPatterns();
+                seedProblems();
+                seedResources();
+                seedDefaultAdmin();
+                seedDemoUser();
+            } catch (Exception e) {
+                System.err.println("⚠️ Data seeding warning: " + e.getMessage());
+            }
+        });
     }
 
     // ── Sheet Seeding ─────────────────────────────────────────────────────────

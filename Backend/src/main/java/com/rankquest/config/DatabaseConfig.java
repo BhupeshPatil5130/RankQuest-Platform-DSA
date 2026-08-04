@@ -78,6 +78,8 @@ public class DatabaseConfig {
                 ds.setJdbcUrl(jdbcUrl);
                 if (username != null) ds.setUsername(username);
                 if (password != null) ds.setPassword(password);
+                ds.setConnectionTimeout(10000);
+                ds.setInitializationFailTimeout(10000);
                 return ds;
             } catch (Exception e) {
                 System.err.println("⚠️ Error parsing DATABASE_URL, using raw URL: " + e.getMessage());
@@ -89,6 +91,8 @@ public class DatabaseConfig {
         ds.setJdbcUrl(dbUrl);
         if (username != null && !username.trim().isEmpty()) ds.setUsername(username.trim());
         if (password != null && !password.trim().isEmpty()) ds.setPassword(password.trim());
+        ds.setConnectionTimeout(10000);
+        ds.setInitializationFailTimeout(10000);
         return ds;
     }
 }
