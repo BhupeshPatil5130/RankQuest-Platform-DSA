@@ -176,8 +176,9 @@ export const updateUserProfile = async (data) => {
   });
 };
 
-// ─── Problems ─────────────────────────────────────────────────────────────────
+// ─── Problems & Placement ──────────────────────────────────────────────────
 export const getAllProblems = () => cachedGet('/problems', CACHE_TTL.static);
+export const getPlacementTopics = () => cachedGet('/placement/topics', CACHE_TTL.static);
 export const getProblemById = (id) => cachedGet(`/problems/${id}`, CACHE_TTL.static);
 
 // ─── Sheets ───────────────────────────────────────────────────────────────────

@@ -65,12 +65,29 @@ export default function Sheets() {
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">SDE Sheet Collections</h1>
           <p className="text-emerald-100 text-sm max-w-2xl leading-relaxed">
-            Handpicked problem collections — Striver SDE Sheet, NeetCode 150, Blind 75, Love Babbar 450, GFG Must-Do, Apna College, Grind 75 and more.
+            Handpicked problem collections — Placement 10x10 Master Sheet, Striver SDE Sheet, NeetCode 150, Blind 75, Love Babbar 450, GFG Must-Do, Apna College, Grind 75 and more.
           </p>
           <div className="flex flex-wrap gap-3 text-xs text-white font-semibold">
             <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><Sparkles className="w-4 h-4 text-yellow-300" /> {sheets.reduce((a, s) => a + (s.problemCount || 0), 0)}+ Problems</div>
             <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><BookOpen className="w-4 h-4 text-emerald-300" /> {sheets.length} Sheets</div>
           </div>
+        </div>
+
+        {/* Featured Placement Master Sheet Banner */}
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1.5 text-center md:text-left">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
+              🔥 Featured Placement Special
+            </div>
+            <h2 className="text-xl md:text-2xl font-black">10x10 Data Structure Interview Master Sheet</h2>
+            <p className="text-xs text-indigo-100 max-w-xl">
+              Covers all Data Structures (Arrays, Linked Lists, Trees, Graphs, DP, Tries, etc.) with 10 Easy, 10 Medium, and 10 Hard questions per topic!
+            </p>
+          </div>
+          <Link to="/placement" 
+            className="px-5 py-2.5 rounded-xl bg-white text-indigo-700 font-extrabold text-xs shadow-lg hover:scale-105 transition-all shrink-0 flex items-center gap-2">
+            Explore Placement Prep <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
         {/* Search */}

@@ -15,6 +15,7 @@ import Settings from './pages/Settings';
 import CodePlayground from './pages/CodePlayground';
 import Patterns from './pages/Patterns';
 import PatternDetail from './pages/PatternDetail';
+import PlacementSheet from './pages/PlacementSheet';
 import { useAuth } from './contexts/AuthContext';
 
 /**
@@ -45,6 +46,7 @@ function App() {
           {/* Public Pages */}
           <Route path="/patterns"      element={<Patterns />} />
           <Route path="/sheets"        element={<Sheets />} />
+          <Route path="/placement"     element={<PlacementSheet />} />
           <Route path="/rankings"      element={<Rankings />} />
           <Route path="/resources"     element={<Resources />} />
           <Route path="/playground"    element={<CodePlayground />} />

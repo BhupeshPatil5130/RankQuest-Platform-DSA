@@ -9,6 +9,7 @@ const navigation = [
   { name: 'Dashboard',       href: '/',           icon: Home,    activeColor: 'text-indigo-500',   bg: 'bg-indigo-500/10 border-indigo-300 dark:border-indigo-700' },
   { name: 'Patterns',        href: '/patterns',   icon: Target,  activeColor: 'text-purple-500',   bg: 'bg-purple-500/10 border-purple-300 dark:border-purple-700' },
   { name: 'DSA Sheets',      href: '/sheets',     icon: BookOpen,activeColor: 'text-emerald-500',  bg: 'bg-emerald-500/10 border-emerald-300 dark:border-emerald-700' },
+  { name: 'Placement Prep',  href: '/placement',  icon: Trophy,  activeColor: 'text-rose-500',     bg: 'bg-rose-500/10 border-rose-300 dark:border-rose-700' },
   { name: 'Rankings',        href: '/rankings',   icon: Trophy,  activeColor: 'text-amber-500',    bg: 'bg-amber-500/10 border-amber-300 dark:border-amber-700' },
   { name: 'Resources',       href: '/resources',  icon: Zap,     activeColor: 'text-cyan-500',     bg: 'bg-cyan-500/10 border-cyan-300 dark:border-cyan-700' },
   { name: 'Playground',      href: '/playground', icon: Code2,   activeColor: 'text-pink-500',     bg: 'bg-pink-500/10 border-pink-300 dark:border-pink-700' },
