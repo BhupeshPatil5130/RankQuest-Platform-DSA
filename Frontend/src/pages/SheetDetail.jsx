@@ -12,6 +12,7 @@ import { Progress } from '../components/ui/progress'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../hooks/useToast'
 import { getSolvedProblems, getProblemsBySheet, getSheetBySlug } from '../services/apiService'
+import { mockSheets, getProblemsBySheet as getMockProblemsBySheet } from '../services/mockData'
 
 // Notes stored in localStorage per problem
 const getNoteKey = (problemId) => `rankquest_note_${problemId}`;
@@ -63,73 +64,7 @@ const NoteModal = ({ problem, onClose }) => {
   );
 };
 
-// Rich fallback problem dataset from original sheets
-const defaultSheetProblems = [
-  // Striver SDE Sheet
-  { id: 1, sheetSlug: 'striver-sde', title: 'Set Matrix Zeroes', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Microsoft, Meta' },
-  { id: 2, sheetSlug: 'striver-sde', title: "Pascal's Triangle", difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Apple, Bloomberg' },
-  { id: 3, sheetSlug: 'striver-sde', title: 'Next Permutation', difficulty: 'Medium', topic: 'Arrays', companies: 'Meta, Amazon, Microsoft' },
-  { id: 4, sheetSlug: 'striver-sde', title: "Kadane's Algorithm", difficulty: 'Medium', topic: 'Arrays', companies: 'Google, Amazon, Meta' },
-  { id: 5, sheetSlug: 'striver-sde', title: 'Sort Colors (0s, 1s, 2s)', difficulty: 'Medium', topic: 'Arrays', companies: 'Microsoft, Amazon, Meta' },
-  { id: 6, sheetSlug: 'striver-sde', title: 'Stock Buy and Sell', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft, Meta' },
-  { id: 7, sheetSlug: 'striver-sde', title: 'Rotate Image (2D Matrix)', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Microsoft, Apple' },
-  { id: 8, sheetSlug: 'striver-sde', title: 'Merge Intervals', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Google, Meta' },
-  { id: 9, sheetSlug: 'striver-sde', title: 'Reverse Linked List', difficulty: 'Easy', topic: 'Linked List', companies: 'Amazon, Apple, Bloomberg' },
-  { id: 10, sheetSlug: 'striver-sde', title: 'Middle of the Linked List', difficulty: 'Easy', topic: 'Linked List', companies: 'Amazon, Apple' },
-  { id: 11, sheetSlug: 'striver-sde', title: 'Merge Two Sorted Lists', difficulty: 'Easy', topic: 'Linked List', companies: 'Amazon, Microsoft, Apple' },
-  { id: 12, sheetSlug: 'striver-sde', title: 'Trapping Rain Water', difficulty: 'Hard', topic: 'Stack & Queue', companies: 'Amazon, Google, Meta' },
-  { id: 13, sheetSlug: 'striver-sde', title: 'Subsets II', difficulty: 'Medium', topic: 'Recursion', companies: 'Amazon, Google, Meta' },
-  { id: 14, sheetSlug: 'striver-sde', title: 'N-Queens', difficulty: 'Hard', topic: 'Backtracking', companies: 'Amazon, Google, Microsoft' },
-  { id: 15, sheetSlug: 'striver-sde', title: 'LRU Cache', difficulty: 'Medium', topic: 'Design', companies: 'Amazon, Google, Microsoft' },
-
-  // Love Babbar 450
-  { id: 16, sheetSlug: 'love-babbar-450', title: 'Reverse the Array', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft' },
-  { id: 17, sheetSlug: 'love-babbar-450', title: 'Find Min and Max in Array', difficulty: 'Easy', topic: 'Arrays', companies: 'Adobe, Amazon' },
-  { id: 18, sheetSlug: 'love-babbar-450', title: 'Kth Smallest Element', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Microsoft, VMWare' },
-  { id: 19, sheetSlug: 'love-babbar-450', title: 'Move Negative Numbers to Front', difficulty: 'Easy', topic: 'Arrays', companies: 'Adobe, Amazon' },
-  { id: 20, sheetSlug: 'love-babbar-450', title: 'Union of Two Arrays', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft' },
-  { id: 21, sheetSlug: 'love-babbar-450', title: 'Cyclically Rotate Array by One', difficulty: 'Easy', topic: 'Arrays', companies: 'Adobe, Amazon' },
-  { id: 22, sheetSlug: 'love-babbar-450', title: 'Detect Loop in Linked List', difficulty: 'Medium', topic: 'Linked List', companies: 'Amazon, Microsoft' },
-  { id: 23, sheetSlug: 'love-babbar-450', title: 'Balanced Parenthesis', difficulty: 'Easy', topic: 'Stack & Queue', companies: 'Amazon, Microsoft' },
-  { id: 24, sheetSlug: 'love-babbar-450', title: 'Height of Binary Tree', difficulty: 'Easy', topic: 'Trees', companies: 'Amazon, Microsoft' },
-  { id: 25, sheetSlug: 'love-babbar-450', title: '0-1 Knapsack Problem', difficulty: 'Medium', topic: 'Dynamic Programming', companies: 'Amazon, Google, Microsoft' },
-
-  // NeetCode 150
-  { id: 26, sheetSlug: 'neetcode-150', title: 'Contains Duplicate', difficulty: 'Easy', topic: 'Arrays & Hashing', companies: 'Amazon, Apple' },
-  { id: 27, sheetSlug: 'neetcode-150', title: 'Valid Anagram', difficulty: 'Easy', topic: 'Arrays & Hashing', companies: 'Google, Amazon, Microsoft' },
-  { id: 28, sheetSlug: 'neetcode-150', title: 'Two Sum', difficulty: 'Easy', topic: 'Arrays & Hashing', companies: 'Amazon, Google, Apple' },
-  { id: 29, sheetSlug: 'neetcode-150', title: 'Group Anagrams', difficulty: 'Medium', topic: 'Arrays & Hashing', companies: 'Amazon, Google, Meta' },
-  { id: 30, sheetSlug: 'neetcode-150', title: 'Top K Frequent Elements', difficulty: 'Medium', topic: 'Arrays & Hashing', companies: 'Amazon, Google, Microsoft' },
-  { id: 31, sheetSlug: 'neetcode-150', title: 'Product of Array Except Self', difficulty: 'Medium', topic: 'Arrays & Hashing', companies: 'Amazon, Apple, Meta' },
-  { id: 32, sheetSlug: 'neetcode-150', title: 'Valid Palindrome', difficulty: 'Easy', topic: 'Two Pointers', companies: 'Meta, Microsoft, Uber' },
-  { id: 33, sheetSlug: 'neetcode-150', title: '3Sum', difficulty: 'Medium', topic: 'Two Pointers', companies: 'Amazon, Meta, Microsoft' },
-  { id: 34, sheetSlug: 'neetcode-150', title: 'Container With Most Water', difficulty: 'Medium', topic: 'Two Pointers', companies: 'Amazon, Google, Microsoft' },
-  { id: 35, sheetSlug: 'neetcode-150', title: 'Longest Substring Without Repeating', difficulty: 'Medium', topic: 'Sliding Window', companies: 'Amazon, Google, Microsoft' },
-
-  // Blind 75
-  { id: 36, sheetSlug: 'blind-75', title: 'Two Sum', difficulty: 'Easy', topic: 'Array', companies: 'Amazon, Google, Apple' },
-  { id: 37, sheetSlug: 'blind-75', title: 'Best Time to Buy Stock', difficulty: 'Easy', topic: 'Array', companies: 'Amazon, Microsoft, Meta' },
-  { id: 38, sheetSlug: 'blind-75', title: 'Contains Duplicate', difficulty: 'Easy', topic: 'Array', companies: 'Amazon, Apple' },
-  { id: 39, sheetSlug: 'blind-75', title: 'Maximum Product Subarray', difficulty: 'Medium', topic: 'Array', companies: 'Google, Amazon, Meta' },
-  { id: 40, sheetSlug: 'blind-75', title: 'Search in Rotated Sorted Array', difficulty: 'Medium', topic: 'Binary Search', companies: 'Amazon, Microsoft, Meta' },
-  { id: 41, sheetSlug: 'blind-75', title: 'Invert Binary Tree', difficulty: 'Easy', topic: 'Tree', companies: 'Amazon, Apple, Google' },
-  { id: 42, sheetSlug: 'blind-75', title: 'Binary Tree Maximum Path Sum', difficulty: 'Hard', topic: 'Tree', companies: 'Amazon, Google, Microsoft' },
-  { id: 43, sheetSlug: 'blind-75', title: 'Number of Islands', difficulty: 'Medium', topic: 'Graph', companies: 'Amazon, Microsoft, Bloomberg' },
-
-  // GFG Must Do
-  { id: 44, sheetSlug: 'gfg-must-do', title: 'Missing Number in Array', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft' },
-  { id: 45, sheetSlug: 'gfg-must-do', title: 'Subarray with Given Sum', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Microsoft, Meta' },
-  { id: 46, sheetSlug: 'gfg-must-do', title: 'Leaders in an Array', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft' },
-  { id: 47, sheetSlug: 'gfg-must-do', title: 'Majority Element (Moore Voting)', difficulty: 'Medium', topic: 'Arrays', companies: 'Amazon, Google, Microsoft' },
-  { id: 48, sheetSlug: 'gfg-must-do', title: 'Equilibrium Point', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Adobe' },
-
-  // Apna College DSA
-  { id: 49, sheetSlug: 'apna-college', title: 'Search Element in Array', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Microsoft' },
-  { id: 50, sheetSlug: 'apna-college', title: 'Chocolate Distribution Problem', difficulty: 'Easy', topic: 'Arrays', companies: 'Amazon, Flipkart' },
-  { id: 51, sheetSlug: 'apna-college', title: 'Trapping Rain Water', difficulty: 'Hard', topic: 'Arrays', companies: 'Amazon, Google, Meta' },
-  { id: 52, sheetSlug: 'apna-college', title: 'Spiral Matrix Traversal', difficulty: 'Medium', topic: 'Matrix', companies: 'Amazon, Microsoft' },
-  { id: 53, sheetSlug: 'apna-college', title: 'Search in a 2D Matrix', difficulty: 'Medium', topic: 'Matrix', companies: 'Google, Amazon, Meta' },
-];
+// Fallback problems are imported from the shared mockData service (150+ problems).
 
 const SheetDetail = () => {
   const { sheetId } = useParams()
@@ -209,25 +144,29 @@ const SheetDetail = () => {
     localStorage.setItem('rankquest_bookmarks', JSON.stringify(updated));
   };
 
-  // Fallback sheet metadata
-  const sheetFallback = {
-    'striver-sde': { name: 'Striver SDE Sheet', author: 'Raj Vikramaditya', description: 'Top 190 problems to crack SDE interviews. Carefully curated from FAANG interviews.', color: 'bg-gradient-to-r from-blue-500 to-blue-600' },
-    'love-babbar-450': { name: 'Love Babbar 450', author: 'Love Babbar', description: 'Comprehensive 450 DSA problems for product-based companies. Most popular sheet for placements.', color: 'bg-gradient-to-r from-purple-500 to-purple-600' },
-    'neetcode-150': { name: 'NeetCode 150', author: 'NeetCode', description: 'Top 150 LeetCode problems grouped by patterns. Best for systematic interview preparation.', color: 'bg-gradient-to-r from-green-500 to-green-600' },
-    'blind-75': { name: 'Blind 75', author: 'Blind Community', description: 'The original 75 most frequently asked LeetCode questions. The classic starting point.', color: 'bg-gradient-to-r from-red-500 to-red-600' },
-    'gfg-must-do': { name: 'GFG Must Do', author: 'GeeksforGeeks', description: 'Topic-wise must-do coding questions for campus placements. GFG curated list.', color: 'bg-gradient-to-r from-orange-500 to-orange-600' },
-    'apna-college': { name: 'Apna College DSA', author: 'Apna College', description: 'Curated DSA sheet for college students and beginners. Perfect for structured learning.', color: 'bg-gradient-to-r from-teal-500 to-teal-600' },
+  // Fallback sheet metadata — sourced from shared mockData (8 sheets)
+  const sheetGradients = {
+    'striver-sde':       'bg-gradient-to-r from-blue-500 to-indigo-600',
+    'love-babbar-450':   'bg-gradient-to-r from-purple-500 to-violet-600',
+    'neetcode-150':      'bg-gradient-to-r from-emerald-500 to-teal-600',
+    'blind-75':          'bg-gradient-to-r from-rose-500 to-red-600',
+    'gfg-must-do':       'bg-gradient-to-r from-orange-500 to-amber-600',
+    'apna-college':      'bg-gradient-to-r from-teal-500 to-cyan-600',
+    'leetcode-top-150':  'bg-gradient-to-r from-yellow-500 to-orange-500',
+    'grind-75':          'bg-gradient-to-r from-pink-500 to-rose-600',
   };
 
-  const currentSheet = sheetInfo || sheetFallback[sheetId] || sheetFallback['striver-sde'];
-  const sheetColor = sheetInfo?.colorFrom
-    ? `bg-gradient-to-r from-${sheetInfo.colorFrom} to-${sheetInfo.colorTo || sheetInfo.colorFrom}`
-    : (sheetFallback[sheetId]?.color || 'bg-gradient-to-r from-blue-500 to-blue-600');
+  const mockSheetMeta = mockSheets.find(s => s.id === sheetId);
+  const currentSheet = sheetInfo || mockSheetMeta || mockSheets[0];
+  const sheetColor = sheetGradients[sheetId] || 'bg-gradient-to-r from-blue-500 to-indigo-600';
 
-  // If backend returns problems use them, otherwise filter default catalog by sheetSlug
-  const sheetProblems = problems.length > 0 
-    ? problems 
-    : defaultSheetProblems.filter(p => p.sheetSlug === sheetId);
+  // Backend-first: use API data; fallback to the shared 150-problem mock catalog
+  const sheetProblems = problems.length > 0
+    ? problems
+    : getMockProblemsBySheet(sheetId).map(p => ({
+        ...p,
+        companies: Array.isArray(p.companies) ? p.companies.join(', ') : p.companies,
+      }));
 
   const solvedInSheet = sheetProblems.filter(p => solvedProblems.has(p.id)).length;
   const totalInSheet = sheetProblems.length;

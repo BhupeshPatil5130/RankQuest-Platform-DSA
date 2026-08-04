@@ -1,242 +1,248 @@
 // src/services/apiService.js
+// Enhanced with 3-layer caching: memory (instant) → sessionStorage (tab-persist) → network
 
-// API base URL — set VITE_API_URL in your .env file
-// Local:      http://localhost:8080/api
-// Production: https://rankquest-platform-dsa.onrender.com/api
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://rankquest-platform-dsa.onrender.com/api';
-
-// Judge0 API Key — set VITE_JUDGE0_API_KEY in your .env file
 const JUDGE0_API_KEY = import.meta.env.VITE_JUDGE0_API_KEY || '';
-
 export { JUDGE0_API_KEY };
 
-// High-speed in-memory cache map for sub-1ms instant responses
-const cacheMap = new Map();
-const DEFAULT_TTL_MS = 120 * 1000; // 2 minute cache for GET endpoints
-
-export const clearApiCache = () => cacheMap.clear();
-
-/**
- * Core request helper with JWT token injection and error handling.
- */
-const request = async (endpoint, options = {}) => {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const token = localStorage.getItem('rankquest_token');
-
-    const headers = {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-    };
-
-    const config = { ...options, headers };
-
-    try {
-        const response = await fetch(url, config);
-
-        if (response.status === 401 || response.status === 403) {
-            return null;
-        }
-
-        const contentType = response.headers.get('content-type');
-        if (!response.ok) {
-            if (contentType && contentType.includes('application/json')) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'An error occurred');
-            }
-            throw new Error(response.statusText || 'Request failed');
-        }
-
-        if (response.status === 204) return null;
-
-        if (contentType && contentType.includes('application/json')) {
-            return response.json();
-        }
-        return null;
-    } catch (error) {
-        console.error('API request error:', error);
-        return null;
-    }
+// ─── Cache Configuration ──────────────────────────────────────────────────────
+// TTL per endpoint type (ms)
+const CACHE_TTL = {
+  static:   10 * 60 * 1000,  // 10 min — patterns, sheets (rarely change)
+  dynamic:   2 * 60 * 1000,  // 2 min  — user profile, solved lists
+  live:      30 * 1000,       // 30 sec — rankings (changes frequently)
+  session:  60 * 60 * 1000,  // 1 hr   — sessionStorage TTL
 };
 
-/**
- * High-speed cached request wrapper for GET endpoints.
- */
-const cachedRequest = async (endpoint, options = {}, ttlMs = DEFAULT_TTL_MS) => {
-    const isGet = !options.method || options.method.toUpperCase() === 'GET';
-    const token = localStorage.getItem('rankquest_token') || 'guest';
-    const cacheKey = `${endpoint}_${token}`;
+// ─── Layer 1: In-Memory Map (sub-millisecond, clears on tab close) ─────────────
+const memCache = new Map();
 
-    if (isGet && cacheMap.has(cacheKey)) {
-        const cached = cacheMap.get(cacheKey);
-        if (Date.now() - cached.timestamp < ttlMs) {
-            return cached.data;
-        }
-    }
+// ─── Layer 2: sessionStorage (persists across renders, clears on tab close) ───
+const SESSION_PREFIX = 'rq_cache_';
 
-    const data = await request(endpoint, options);
-    if (isGet && data !== null) {
-        cacheMap.set(cacheKey, { data, timestamp: Date.now() });
-    }
+function sessionRead(key) {
+  try {
+    const raw = sessionStorage.getItem(SESSION_PREFIX + key);
+    if (!raw) return null;
+    const { data, expires } = JSON.parse(raw);
+    if (Date.now() > expires) { sessionStorage.removeItem(SESSION_PREFIX + key); return null; }
     return data;
+  } catch { return null; }
+}
+
+function sessionWrite(key, data, ttlMs) {
+  try {
+    sessionStorage.setItem(SESSION_PREFIX + key, JSON.stringify({ data, expires: Date.now() + ttlMs }));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+// ─── Request Deduplication ────────────────────────────────────────────────────
+// Prevent parallel fetches for the same key
+const inflight = new Map();
+
+export const clearApiCache = () => {
+  memCache.clear();
+  try {
+    Object.keys(sessionStorage)
+      .filter(k => k.startsWith(SESSION_PREFIX))
+      .forEach(k => sessionStorage.removeItem(k));
+  } catch { /* ignore */ }
 };
 
-// ───────────────────────────────────────────────
-// Authentication
-// ───────────────────────────────────────────────
+// ─── Core Fetch ───────────────────────────────────────────────────────────────
+const request = async (endpoint, options = {}) => {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const token = localStorage.getItem('rankquest_token');
 
-export const signupUser = async (userData) => {
-    clearApiCache();
-    return request('/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify(userData),
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+
+  try {
+    const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401 || response.status === 403) {
+      // Auto-logout for expired tokens is handled by AuthContext
+      const err = new Error(`${response.status}`);
+      throw err;
+    }
+
+    if (response.status === 204) return null;
+
+    const contentType = response.headers.get('content-type');
+    if (!response.ok) {
+      const errorData = contentType?.includes('application/json')
+        ? await response.json()
+        : { message: response.statusText };
+      throw new Error(errorData.message || 'Request failed');
+    }
+
+    if (contentType?.includes('application/json')) return response.json();
+    return null;
+  } catch (error) {
+    console.warn(`[API] ${options.method || 'GET'} ${endpoint}:`, error.message);
+    throw error; // re-throw so callers can decide to use fallback
+  }
+};
+
+// ─── Multi-Layer Cached GET ───────────────────────────────────────────────────
+/**
+ * Fetches data with 3-layer cache: memory → sessionStorage → network.
+ * @param {string} endpoint
+ * @param {number} memTtl   - in-memory TTL ms
+ * @param {number} sessTtl  - sessionStorage TTL ms
+ */
+const cachedGet = async (endpoint, memTtl = CACHE_TTL.dynamic, sessTtl = CACHE_TTL.session) => {
+  const token  = localStorage.getItem('rankquest_token') || 'guest';
+  const cacheKey = `${endpoint}_${token}`;
+
+  // Layer 1: Memory hit (sub-ms)
+  if (memCache.has(cacheKey)) {
+    const { data, expires } = memCache.get(cacheKey);
+    if (Date.now() < expires) return data;
+    memCache.delete(cacheKey);
+  }
+
+  // Layer 2: sessionStorage hit (avoids network on same tab re-renders)
+  const sessData = sessionRead(cacheKey);
+  if (sessData !== null) {
+    memCache.set(cacheKey, { data: sessData, expires: Date.now() + memTtl });
+    return sessData;
+  }
+
+  // Layer 3: Deduplication — if same request already in-flight, wait for it
+  if (inflight.has(cacheKey)) return inflight.get(cacheKey);
+
+  const promise = request(endpoint, { method: 'GET' })
+    .then(data => {
+      if (data !== null && data !== undefined) {
+        memCache.set(cacheKey, { data, expires: Date.now() + memTtl });
+        sessionWrite(cacheKey, data, sessTtl);
+      }
+      inflight.delete(cacheKey);
+      return data;
+    })
+    .catch(err => {
+      inflight.delete(cacheKey);
+      throw err;
     });
+
+  inflight.set(cacheKey, promise);
+  return promise;
+};
+
+// ─── Prefetch (fire-and-forget warm-up) ──────────────────────────────────────
+export const prefetch = (...endpoints) => {
+  endpoints.forEach(ep => cachedGet(ep, CACHE_TTL.static, CACHE_TTL.session).catch(() => {}));
+};
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+export const signupUser = async (userData) => {
+  clearApiCache();
+  return request('/auth/signup', { method: 'POST', body: JSON.stringify(userData) });
 };
 
 export const loginUser = async (credentials) => {
-    clearApiCache();
-    return request('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-    });
+  clearApiCache();
+  return request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
 };
 
 export const googleSignin = async (idToken) => {
-    clearApiCache();
-    return request('/auth/google', {
-        method: 'POST',
-        body: JSON.stringify({ idToken }),
-    });
+  clearApiCache();
+  return request('/auth/google', { method: 'POST', body: JSON.stringify({ idToken }) });
 };
 
-export const getCurrentUser = () => {
-    return cachedRequest('/auth/me', { method: 'GET' });
-};
+export const getCurrentUser = () => cachedGet('/auth/me', CACHE_TTL.dynamic);
 
-// ───────────────────────────────────────────────
-// User Profile
-// ───────────────────────────────────────────────
-
+// ─── User Profile ─────────────────────────────────────────────────────────────
 const getEmail = () => {
-    const savedUser = localStorage.getItem('rankquest_user');
-    return savedUser ? JSON.parse(savedUser).email : '';
+  try { return JSON.parse(localStorage.getItem('rankquest_user') || '{}').email || ''; }
+  catch { return ''; }
 };
 
 export const getUserProfile = () => {
-    const email = getEmail();
-    if (!email) return Promise.resolve(null);
-    return cachedRequest(`/users/profile-by-email?email=${encodeURIComponent(email)}`, { method: 'GET' });
+  const email = getEmail();
+  if (!email) return Promise.resolve(null);
+  return cachedGet(`/users/profile-by-email?email=${encodeURIComponent(email)}`, CACHE_TTL.dynamic);
 };
 
 export const updateUserProfile = async (data) => {
-    clearApiCache();
-    return request(`/users/profile?email=${encodeURIComponent(getEmail())}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-    });
+  clearApiCache();
+  return request(`/users/profile?email=${encodeURIComponent(getEmail())}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
 };
 
-// ───────────────────────────────────────────────
-// Problems
-// ───────────────────────────────────────────────
+// ─── Problems ─────────────────────────────────────────────────────────────────
+export const getAllProblems = () => cachedGet('/problems', CACHE_TTL.static);
+export const getProblemById = (id) => cachedGet(`/problems/${id}`, CACHE_TTL.static);
 
-export const getAllProblems = () => {
-    return cachedRequest('/problems', { method: 'GET' });
-};
+// ─── Sheets ───────────────────────────────────────────────────────────────────
+export const getAllSheets   = () => cachedGet('/sheets', CACHE_TTL.static);
+export const getSheets     = getAllSheets;
+export const getSheetBySlug = (slug) => cachedGet(`/sheets/${slug}`, CACHE_TTL.static);
+export const getProblemsBySheet = (slug) => cachedGet(`/sheets/${slug}/problems`, CACHE_TTL.static);
 
-export const getProblemById = (id) => {
-    return cachedRequest(`/problems/${id}`, { method: 'GET' });
-};
+// ─── Patterns ─────────────────────────────────────────────────────────────────
+export const getAllPatterns = () => cachedGet('/patterns', CACHE_TTL.static);
+export const getPatternBySlug = (slug) => cachedGet(`/patterns/${slug}`, CACHE_TTL.static);
+export const getProblemsByPattern = (slug) => cachedGet(`/patterns/${slug}/problems`, CACHE_TTL.static);
 
-// ───────────────────────────────────────────────
-// Sheets
-// ───────────────────────────────────────────────
+// ─── Resources ────────────────────────────────────────────────────────────────
+export const getResources = (category = 'all') =>
+  cachedGet(`/resources?category=${encodeURIComponent(category)}`, CACHE_TTL.static);
 
-export const getAllSheets = () => {
-    return cachedRequest('/sheets', { method: 'GET' });
-};
-
-export const getSheets = getAllSheets;
-
-export const getSheetBySlug = (slug) => {
-    return cachedRequest(`/sheets/${slug}`, { method: 'GET' });
-};
-
-export const getProblemsBySheet = (slug) => {
-    return cachedRequest(`/sheets/${slug}/problems`, { method: 'GET' });
-};
-
-// ───────────────────────────────────────────────
-// Patterns
-// ───────────────────────────────────────────────
-
-export const getAllPatterns = () => {
-    return cachedRequest('/patterns', { method: 'GET' });
-};
-
-export const getPatternBySlug = (slug) => {
-    return cachedRequest(`/patterns/${slug}`, { method: 'GET' });
-};
-
-export const getProblemsByPattern = (slug) => {
-    return cachedRequest(`/patterns/${slug}/problems`, { method: 'GET' });
-};
-
-// ───────────────────────────────────────────────
-// Submissions
-// ───────────────────────────────────────────────
-
+// ─── Submissions ──────────────────────────────────────────────────────────────
 export const submitSolution = async (problemId, submissionData) => {
-    clearApiCache();
-    return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
-        method: 'POST',
-        body: JSON.stringify(submissionData),
-    });
+  clearApiCache();
+  return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
+    method: 'POST',
+    body: JSON.stringify(submissionData),
+  });
 };
 
 export const getSolvedProblems = async () => {
-    const email = getEmail();
-    if (!email) return [];
-    try {
-        const res = await cachedRequest(`/submissions/my-solved?email=${encodeURIComponent(email)}`, { method: 'GET' });
-        return Array.isArray(res) ? res : [];
-    } catch (e) {
-        return [];
-    }
+  const email = getEmail();
+  if (!email) return [];
+  try {
+    const res = await cachedGet(
+      `/submissions/my-solved?email=${encodeURIComponent(email)}`,
+      CACHE_TTL.dynamic
+    );
+    return Array.isArray(res) ? res : [];
+  } catch { return []; }
 };
 
 export const toggleSolveStatus = async (problemId, isSolved) => {
-    clearApiCache();
-    return request(`/submissions/${problemId}?email=${encodeURIComponent(getEmail())}`, {
-        method: 'POST',
-        body: JSON.stringify({ status: isSolved ? 'ACCEPTED' : 'UNSOLVED' }),
-    });
+  // Invalidate solved-problems cache key only
+  const email = getEmail();
+  const solvedKey = `/submissions/my-solved?email=${encodeURIComponent(email)}_${localStorage.getItem('rankquest_token') || 'guest'}`;
+  memCache.delete(solvedKey);
+  try { sessionStorage.removeItem(SESSION_PREFIX + solvedKey); } catch { /* ignore */ }
+
+  return request(`/submissions/${problemId}?email=${encodeURIComponent(email)}`, {
+    method: 'POST',
+    body: JSON.stringify({ status: isSolved ? 'ACCEPTED' : 'UNSOLVED' }),
+  });
 };
 
-// ───────────────────────────────────────────────
-// Rankings
-// ───────────────────────────────────────────────
+// ─── Rankings ─────────────────────────────────────────────────────────────────
+export const getGlobalRankings  = () => cachedGet('/rankings/global',  CACHE_TTL.live);
+export const getCollegeRankings = (college) =>
+  cachedGet(`/rankings/college?college=${encodeURIComponent(college)}`, CACHE_TTL.live);
 
-export const getGlobalRankings = () => {
-    return cachedRequest('/rankings/global', { method: 'GET' });
-};
-
-export const getCollegeRankings = (collegeName) => {
-    const encodedCollege = encodeURIComponent(collegeName);
-    return cachedRequest(`/rankings/college?college=${encodedCollege}`, { method: 'GET' });
-};
-
-// ───────────────────────────────────────────────
-// Activity & Heatmap
-// ───────────────────────────────────────────────
-
+// ─── Activity & Heatmap ───────────────────────────────────────────────────────
 export const getActivityHeatmap = async () => {
-    const email = getEmail();
-    if (!email) return [];
-    try {
-        const res = await cachedRequest(`/activity/heatmap?email=${encodeURIComponent(email)}`, { method: 'GET' });
-        return Array.isArray(res) ? res : [];
-    } catch (e) {
-        return [];
-    }
+  const email = getEmail();
+  if (!email) return [];
+  try {
+    const res = await cachedGet(
+      `/activity/heatmap?email=${encodeURIComponent(email)}`,
+      CACHE_TTL.dynamic
+    );
+    return Array.isArray(res) ? res : [];
+  } catch { return []; }
 };

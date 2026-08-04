@@ -23,13 +23,8 @@ public class PatternController {
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<ApiResponse<Pattern>> getPatternBySlug(@PathVariable String slug) {
-        try {
-            Pattern pattern = patternService.getPatternBySlug(slug);
-            return ResponseEntity.ok(ApiResponse.success("Pattern found", pattern));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
-        }
+    public ResponseEntity<Pattern> getPatternBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(patternService.getPatternBySlug(slug));
     }
 
     @GetMapping("/{slug}/problems")

@@ -5,8 +5,10 @@ import com.rankquest.model.Problem;
 import com.rankquest.model.Role;
 import com.rankquest.model.Sheet;
 import com.rankquest.model.User;
+import com.rankquest.model.Resource;
 import com.rankquest.repository.PatternRepository;
 import com.rankquest.repository.ProblemRepository;
+import com.rankquest.repository.ResourceRepository;
 import com.rankquest.repository.SheetRepository;
 import com.rankquest.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -17,7 +19,7 @@ import java.util.List;
 
 /**
  * Seeds the database with real problem sheets, beginner-to-advanced patterns,
- * 150+ pattern questions with LeetCode/GFG links, and default user accounts.
+ * 150+ pattern questions with LeetCode/GFG links, resources, and default user accounts.
  */
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -25,15 +27,17 @@ public class DataInitializer implements CommandLineRunner {
     private final SheetRepository sheetRepository;
     private final PatternRepository patternRepository;
     private final ProblemRepository problemRepository;
+    private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(SheetRepository sheetRepository, PatternRepository patternRepository,
-                           ProblemRepository problemRepository, UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+                           ProblemRepository problemRepository, ResourceRepository resourceRepository,
+                           UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.sheetRepository = sheetRepository;
         this.patternRepository = patternRepository;
         this.problemRepository = problemRepository;
+        this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -43,6 +47,7 @@ public class DataInitializer implements CommandLineRunner {
         seedSheets();
         seedPatterns();
         seedProblems();
+        seedResources();
         seedDefaultAdmin();
         seedDemoUser();
     }
@@ -50,7 +55,7 @@ public class DataInitializer implements CommandLineRunner {
     // ── Sheet Seeding ─────────────────────────────────────────────────────────
 
     private void seedSheets() {
-        if (sheetRepository.count() >= 6) return;
+        if (sheetRepository.count() >= 8) return;
         sheetRepository.deleteAll();
 
         sheetRepository.saveAll(List.of(
@@ -71,9 +76,15 @@ public class DataInitializer implements CommandLineRunner {
                 "Mixed", "Topic Wise", 4.7, "2-3 months", "gfg", "orange-600", "yellow-600"),
             new Sheet("apna-college", "Apna College DSA Sheet", "Shradha Khapra",
                 "Beginner-friendly 375 DSA problem sheet covering all basic to advanced concepts.", 375,
-                "Mixed", "Beginner Friendly", 4.8, "3-4 months", "apna", "cyan-600", "blue-600")
+                "Mixed", "Beginner Friendly", 4.8, "3-4 months", "apna", "cyan-600", "blue-600"),
+            new Sheet("leetcode-top-150", "LeetCode Top Interview 150", "LeetCode",
+                "LeetCode official top 150 interview questions selected based on frequency and importance.", 150,
+                "Mixed", "Official", 4.9, "2-3 months", "leetcode", "yellow-500", "orange-500"),
+            new Sheet("grind-75", "Grind 75", "Yangshun Tay",
+                "A customizable study plan based on Blind 75 created by ex-Meta engineer Yangshun Tay.", 75,
+                "Mixed", "Customizable", 4.8, "1-2 months", "grind", "pink-500", "rose-600")
         ));
-        System.out.println("✅ Seeded 6 problem sheets.");
+        System.out.println("✅ Seeded 8 problem sheets.");
     }
 
     // ── Pattern Roadmap Seeding (Beginner to Advanced Sequence) ───────────────
@@ -378,6 +389,76 @@ public class DataInitializer implements CommandLineRunner {
         ));
 
         System.out.println("✅ Seeded 150 pattern problems across 15 patterns.");
+    }
+
+    // ── Resource Seeding ──────────────────────────────────────────────────────
+
+    private void seedResources() {
+        if (resourceRepository.count() >= 10) return;
+        resourceRepository.deleteAll();
+
+        resourceRepository.saveAll(List.of(
+            new Resource("Introduction to Algorithms (CLRS)", "book", "algorithms",
+                "The comprehensive bible of algorithms and data structures. Used in university courses worldwide.",
+                "Cormen, Leiserson, Rivest, Stein", 4.8, 15420,
+                "https://mitpress.mit.edu/books/introduction-algorithms-third-edition", "Advanced", "Algorithms,Data Structures,Theory"),
+
+            new Resource("Striver A2Z DSA Course", "video", "course",
+                "Complete DSA course — Step-by-Step from basics to advanced with detailed explanations and coding.",
+                "Raj Vikramaditya (Striver)", 4.9, 89500,
+                "https://takeuforward.org/strivers-a2z-dsa-course/", "Beginner to Advanced", "Complete DSA,Interview Prep,Coding"),
+
+            new Resource("NeetCode.io", "course", "patterns",
+                "Categorized LeetCode solutions with video explanations. Best for pattern-by-pattern learning.",
+                "NeetCode", 4.9, 125000,
+                "https://neetcode.io/", "Intermediate", "Patterns,LeetCode,Video"),
+
+            new Resource("LeetCode Patterns by Sean Prashad", "article", "patterns",
+                "14 patterns to ace any coding interview question. Curated problem list by pattern.",
+                "Sean Prashad", 4.7, 23400,
+                "https://seanprashad.com/leetcode-patterns/", "Intermediate", "Patterns,Interview Prep,Problem Solving"),
+
+            new Resource("GeeksforGeeks DSA Course", "course", "course",
+                "Self-paced DSA course with practice problems, theory, and certificate.",
+                "GeeksforGeeks", 4.5, 45600,
+                "https://www.geeksforgeeks.org/dsa-self-paced-course/", "Beginner to Intermediate", "DSA Fundamentals,Practice,Theory"),
+
+            new Resource("Cracking the Coding Interview", "book", "interview",
+                "189 programming questions and solutions covering all major topics asked in FAANG interviews.",
+                "Gayle Laakmann McDowell", 4.6, 67800,
+                "https://www.crackingthecodinginterview.com/", "Intermediate", "Interview Questions,Problem Solving,System Design"),
+
+            new Resource("Abdul Bari Algorithms (YouTube)", "video", "algorithms",
+                "Algorithm analysis and design — one of the best free courses for understanding algorithm complexity.",
+                "Abdul Bari", 4.8, 34500,
+                "https://www.youtube.com/watch?v=0IAPZzGSbME&list=PLDN4rrl48XKpZkf03iYFl-O29szjTrs_O", "Intermediate", "Algorithm Analysis,Complexity,Design Patterns"),
+
+            new Resource("Dynamic Programming by Aditya Verma", "video", "patterns",
+                "Complete guide to DP patterns — knapsack, LCS, MCM, and more. Best DP playlist on YouTube.",
+                "Aditya Verma", 4.9, 12300,
+                "https://www.youtube.com/watch?v=nqowUJzG-iM&list=PL_z_8CaSLPWekqhdCPmFohncHwz8TY2Go", "Advanced", "Dynamic Programming,Optimization"),
+
+            new Resource("System Design Primer", "article", "system-design",
+                "Learn how to design large-scale systems. 250k+ GitHub stars. The go-to system design resource.",
+                "Donne Martin", 4.7, 89200,
+                "https://github.com/donnemartin/system-design-primer", "Advanced", "System Design,Scalability,Architecture"),
+
+            new Resource("CS50 — Harvard Introduction to CS", "course", "fundamentals",
+                "Harvard's legendary CS intro course — free, comprehensive, covers C, Python, Web, SQL.",
+                "David J. Malan", 4.9, 156000,
+                "https://cs50.harvard.edu/x/", "Beginner", "Computer Science,Programming,Fundamentals"),
+
+            new Resource("Competitive Programming Handbook", "book", "competitive",
+                "Guide to competitive programming and contests. Available free as PDF from author.",
+                "Antti Laaksonen", 4.6, 23400,
+                "https://cses.fi/book/book.pdf", "Advanced", "Competitive Programming,Algorithms,Mathematics"),
+
+            new Resource("CSES Problem Set", "article", "competitive",
+                "300 curated competitive programming problems. Best for building algorithmic thinking.",
+                "CSES Finland", 4.8, 41000,
+                "https://cses.fi/problemset/", "Intermediate", "Competitive Programming,Practice,Algorithms")
+        ));
+        System.out.println("✅ Seeded 12 learning resources.");
     }
 
     // ── Default User Accounts ────────────────────────────────────────────────

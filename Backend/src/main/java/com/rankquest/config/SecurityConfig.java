@@ -47,6 +47,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Fully public — no auth required for data browsing
                 .requestMatchers(
+                    "/",
+                    "/health",
+                    "/api/health",
                     "/api/auth/login",
                     "/api/auth/signup",
                     "/api/auth/google",
@@ -54,6 +57,7 @@ public class SecurityConfig {
                     "/api/patterns/**",
                     "/api/sheets/**",
                     "/api/rankings/**",
+                    "/api/resources/**",
                     "/api/users/**",
                     "/api/submissions/**",
                     "/api/activity/**",

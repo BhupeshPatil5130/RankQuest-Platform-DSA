@@ -1,4 +1,3 @@
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -7,7 +6,13 @@ import App from './App.jsx'
 import './index.css'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './components/ToastProvider'
-import { ThemeProvider } from './contexts/ThemeContext' 
+import { ThemeProvider } from './contexts/ThemeContext'
+import { prefetch } from './services/apiService'
+
+// Eagerly warm the cache for the most-visited static endpoints
+// This runs in the background and doesn't block rendering
+prefetch('/sheets', '/patterns', '/rankings/global');
+
 
 // ⚠️ Replace with your Google OAuth Client ID from https://console.cloud.google.com/
 // Set VITE_GOOGLE_CLIENT_ID in your .env file for production

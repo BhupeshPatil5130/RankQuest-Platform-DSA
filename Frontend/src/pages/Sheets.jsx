@@ -4,6 +4,7 @@ import { BookOpen, Search, ArrowRight, Sparkles } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { Input } from '../components/ui/input';
 import { getSheets, getSolvedProblems } from '../services/apiService';
+import { mockSheets } from '../services/mockData';
 import { useAuth } from '../contexts/AuthContext';
 
 const sheetColors = [
@@ -37,7 +38,13 @@ export default function Sheets() {
             }
             setSolvedCountMap(m);
           }
+        } else {
+          // Backend returned no sheets — use expanded mock catalog
+          setSheets(mockSheets);
         }
+      } catch {
+        // Network error — use expanded mock catalog
+        setSheets(mockSheets);
       } finally { setLoading(false); }
     })();
   }, [user]);
@@ -52,15 +59,18 @@ export default function Sheets() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-7xl mx-auto space-y-8">
 
-        {/* Hero */}
         <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl p-7 md:p-10 shadow-xl shadow-emerald-500/20 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-extrabold uppercase tracking-widest">
-            <BookOpen className="w-3.5 h-3.5" /> Curated SDE Problem Sheets
+            <BookOpen className="w-3.5 h-3.5" /> {sheets.length}+ Curated SDE Problem Sheets
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">SDE Sheet Collections</h1>
           <p className="text-emerald-100 text-sm max-w-2xl leading-relaxed">
-            Handpicked problem collections — Striver SDE Sheet, NeetCode 150, Blind 75, and Love Babbar 450.
+            Handpicked problem collections — Striver SDE Sheet, NeetCode 150, Blind 75, Love Babbar 450, GFG Must-Do, Apna College, Grind 75 and more.
           </p>
+          <div className="flex flex-wrap gap-3 text-xs text-white font-semibold">
+            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><Sparkles className="w-4 h-4 text-yellow-300" /> {sheets.reduce((a, s) => a + (s.problemCount || 0), 0)}+ Problems</div>
+            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><BookOpen className="w-4 h-4 text-emerald-300" /> {sheets.length} Sheets</div>
+          </div>
         </div>
 
         {/* Search */}
@@ -75,7 +85,7 @@ export default function Sheets() {
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1,2,3].map(i => <div key={i} className="h-56 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-56 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

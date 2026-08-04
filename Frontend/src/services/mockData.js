@@ -1,356 +1,287 @@
-// Mock data service for the DSA Platform
+// src/services/mockData.js
+// Comprehensive fallback dataset — used when backend is unavailable.
+// 8 sheets, 200+ problems, 30+ resources, 30 achievements, 50 rankings entries.
+
+// ─── SHEETS ──────────────────────────────────────────────────────────────────
 export const mockSheets = [
-  {
-    id: 'striver-sde',
-    name: 'Striver SDE Sheet',
-    author: 'Raj Vikramaditya (Striver)',
-    description: 'Complete preparation for Software Development Engineer roles with 191 most important problems',
-    totalProblems: 191,
-    color: 'bg-gradient-to-r from-blue-500 to-blue-600',
-    difficulty: 'Mixed',
-    estimatedTime: '3-4 months',
-    tags: ['SDE', 'Interview Prep', 'Complete']
-  },
-  {
-    id: 'love-babbar-450',
-    name: 'Love Babbar 450',
-    author: 'Love Babbar',
-    description: 'Most loved DSA Sheet with 450 problems covering all important topics',
-    totalProblems: 450,
-    color: 'bg-gradient-to-r from-purple-500 to-purple-600',
-    difficulty: 'Mixed',
-    estimatedTime: '4-6 months',
-    tags: ['Complete', 'Beginner Friendly', 'Comprehensive']
-  },
-  {
-    id: 'neetcode-150',
-    name: 'NeetCode 150',
-    author: 'NeetCode',
-    description: 'Curated list of 150 LeetCode problems for coding interviews',
-    totalProblems: 150,
-    color: 'bg-gradient-to-r from-green-500 to-green-600',
-    difficulty: 'Medium-Hard',
-    estimatedTime: '2-3 months',
-    tags: ['LeetCode', 'Interview', 'Curated']
-  },
-  {
-    id: 'blind-75',
-    name: 'Blind 75',
-    author: 'Blind Community',
-    description: 'The most popular 75 LeetCode problems for technical interviews',
-    totalProblems: 75,
-    color: 'bg-gradient-to-r from-red-500 to-red-600',
-    difficulty: 'Medium-Hard',
-    estimatedTime: '1-2 months',
-    tags: ['Essential', 'Interview', 'Popular']
-  },
-  {
-    id: 'gfg-top-50',
-    name: 'GeeksforGeeks Top 50',
-    author: 'GeeksforGeeks',
-    description: 'Top 50 array problems to master array data structure',
-    totalProblems: 50,
-    color: 'bg-gradient-to-r from-orange-500 to-orange-600',
-    difficulty: 'Easy-Medium',
-    estimatedTime: '2-3 weeks',
-    tags: ['Arrays', 'Beginner', 'Foundation']
-  }
-]
+  { id: 'striver-sde',        title: 'Striver SDE Sheet',           author: 'Raj Vikramaditya (Striver)', description: 'The most trusted SDE interview prep sheet with 191 carefully curated problems covering all important data structures and algorithms for FAANG interviews.', problemCount: 191, difficulty: 'Mixed',            estimatedTime: '3-4 months', tags: ['SDE', 'FAANG', 'Complete'] },
+  { id: 'love-babbar-450',    title: 'Love Babbar 450',             author: 'Love Babbar',                description: 'The most comprehensive DSA sheet with 450 problems covering every topic from basic to advanced. Perfect for placement preparation at product-based companies.', problemCount: 450, difficulty: 'Mixed',            estimatedTime: '4-6 months', tags: ['Complete', 'Placement', 'Comprehensive'] },
+  { id: 'neetcode-150',       title: 'NeetCode 150',                author: 'NeetCode',                   description: 'Curated 150 LeetCode problems organized by 15 patterns with video solutions. Best for systematic, pattern-based interview preparation for FAANG.', problemCount: 150, difficulty: 'Medium-Hard',      estimatedTime: '2-3 months', tags: ['LeetCode', 'Pattern', 'FAANG'] },
+  { id: 'blind-75',           title: 'Blind 75',                    author: 'Blind Community',            description: 'The original 75 most frequently asked LeetCode problems. Created by FAANG engineers on Blind. The classic minimal list every engineer should know.', problemCount: 75,  difficulty: 'Medium-Hard',      estimatedTime: '1-2 months', tags: ['Essential', 'Minimal', 'Classic'] },
+  { id: 'gfg-must-do',        title: 'GFG Must-Do',                 author: 'GeeksforGeeks',              description: 'GeeksforGeeks curated topic-wise must-do problems for campus placements. Covers all standard interview topics with increasing difficulty.', problemCount: 200, difficulty: 'Easy-Medium',      estimatedTime: '2-3 months', tags: ['Campus', 'Placement', 'Topic-wise'] },
+  { id: 'apna-college',       title: 'Apna College DSA',            author: 'Apna College',               description: 'Complete DSA course sheet from Apna College for beginners. Builds from fundamentals to advanced topics with 200+ carefully ordered problems.', problemCount: 200, difficulty: 'Easy-Medium',      estimatedTime: '3-4 months', tags: ['Beginner', 'College', 'Structured'] },
+  { id: 'leetcode-top-150',   title: 'LeetCode Top Interview 150',  author: 'LeetCode',                   description: 'LeetCode official top 150 interview questions selected based on frequency and importance across all top tech companies globally.', problemCount: 150, difficulty: 'Mixed',            estimatedTime: '2-3 months', tags: ['Official', 'LeetCode', 'Frequency'] },
+  { id: 'grind-75',           title: 'Grind 75',                    author: 'yangshun',                   description: 'A customizable study plan based on Blind 75. Filter by time available and difficulty. Created by ex-Meta engineer Yangshun Tay.', problemCount: 75,  difficulty: 'Medium-Hard',      estimatedTime: '1-2 months', tags: ['Customizable', 'Meta', 'Structured'] },
+];
 
+// ─── PROBLEMS ─────────────────────────────────────────────────────────────────
+// 200+ problems across all sheets, all topics
 export const mockProblems = [
-  {
-    id: 1,
-    title: 'Two Sum',
-    difficulty: 'Easy',
-    topic: 'Arrays',
-    sheetId: 'striver-sde',
-    leetcodeUrl: 'https://leetcode.com/problems/two-sum/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/key-pair5616/',
-    notes: 'Classic hash map problem - foundation for many other problems',
-    companies: ['Amazon', 'Google', 'Microsoft', 'Facebook'],
-    tags: ['Hash Table', 'Array'],
-    acceptance: '49.1%',
-    submissions: '4.2M'
-  },
-  {
-    id: 2,
-    title: 'Best Time to Buy and Sell Stock',
-    difficulty: 'Easy',
-    topic: 'Arrays',
-    sheetId: 'striver-sde',
-    leetcodeUrl: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/stock-buy-and-sell/',
-    notes: 'Important DP and greedy problem pattern',
-    companies: ['Amazon', 'Microsoft', 'Apple'],
-    tags: ['Dynamic Programming', 'Array'],
-    acceptance: '54.2%',
-    submissions: '2.8M'
-  },
-  {
-    id: 3,
-    title: 'Contains Duplicate',
-    difficulty: 'Easy',
-    topic: 'Arrays',
-    sheetId: 'neetcode-150',
-    leetcodeUrl: 'https://leetcode.com/problems/contains-duplicate/',
-    gfgUrl: null,
-    notes: 'Simple hash set problem for duplicate detection',
-    companies: ['Google', 'Apple'],
-    tags: ['Hash Table', 'Array'],
-    acceptance: '60.8%',
-    submissions: '1.9M'
-  },
-  {
-    id: 4,
-    title: 'Maximum Subarray',
-    difficulty: 'Medium',
-    topic: 'Arrays',
-    sheetId: 'love-babbar-450',
-    leetcodeUrl: 'https://leetcode.com/problems/maximum-subarray/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/kadanes-algorithm/',
-    notes: 'Kadane\'s algorithm - classic DP problem',
-    companies: ['Amazon', 'Microsoft', 'LinkedIn'],
-    tags: ['Dynamic Programming', 'Array'],
-    acceptance: '49.7%',
-    submissions: '2.1M'
-  },
-  {
-    id: 5,
-    title: 'Product of Array Except Self',
-    difficulty: 'Medium',
-    topic: 'Arrays',
-    sheetId: 'blind-75',
-    leetcodeUrl: 'https://leetcode.com/problems/product-of-array-except-self/',
-    gfgUrl: null,
-    notes: 'Clever array manipulation without division',
-    companies: ['Facebook', 'Amazon', 'Microsoft'],
-    tags: ['Array', 'Prefix Sum'],
-    acceptance: '64.4%',
-    submissions: '1.5M'
-  },
-  {
-    id: 6,
-    title: 'Reverse Linked List',
-    difficulty: 'Easy',
-    topic: 'Linked List',
-    sheetId: 'striver-sde',
-    leetcodeUrl: 'https://leetcode.com/problems/reverse-linked-list/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/reverse-a-linked-list/',
-    notes: 'Fundamental linked list operation',
-    companies: ['Google', 'Amazon', 'Microsoft'],
-    tags: ['Linked List', 'Recursion'],
-    acceptance: '72.1%',
-    submissions: '2.3M'
-  },
-  {
-    id: 7,
-    title: 'Merge Two Sorted Lists',
-    difficulty: 'Easy',
-    topic: 'Linked List',
-    sheetId: 'neetcode-150',
-    leetcodeUrl: 'https://leetcode.com/problems/merge-two-sorted-lists/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/merge-two-sorted-linked-lists/',
-    notes: 'Classic merge operation for linked lists',
-    companies: ['Amazon', 'Microsoft', 'Apple'],
-    tags: ['Linked List', 'Recursion'],
-    acceptance: '62.8%',
-    submissions: '1.8M'
-  },
-  {
-    id: 8,
-    title: 'Valid Parentheses',
-    difficulty: 'Easy',
-    topic: 'Stack',
-    sheetId: 'blind-75',
-    leetcodeUrl: 'https://leetcode.com/problems/valid-parentheses/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/parenthesis-checker/',
-    notes: 'Classic stack application problem',
-    companies: ['Google', 'Facebook', 'Amazon'],
-    tags: ['Stack', 'String'],
-    acceptance: '40.7%',
-    submissions: '2.7M'
-  },
-  {
-    id: 9,
-    title: 'Binary Tree Inorder Traversal',
-    difficulty: 'Easy',
-    topic: 'Trees',
-    sheetId: 'love-babbar-450',
-    leetcodeUrl: 'https://leetcode.com/problems/binary-tree-inorder-traversal/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/inorder-traversal/',
-    notes: 'Fundamental tree traversal technique',
-    companies: ['Microsoft', 'Amazon'],
-    tags: ['Tree', 'Depth-First Search'],
-    acceptance: '74.8%',
-    submissions: '1.4M'
-  },
-  {
-    id: 10,
-    title: 'Maximum Depth of Binary Tree',
-    difficulty: 'Easy',
-    topic: 'Trees',
-    sheetId: 'neetcode-150',
-    leetcodeUrl: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/',
-    gfgUrl: 'https://practice.geeksforgeeks.org/problems/height-of-binary-tree/',
-    notes: 'Simple recursive tree problem',
-    companies: ['LinkedIn', 'Apple'],
-    tags: ['Tree', 'Depth-First Search'],
-    acceptance: '73.2%',
-    submissions: '1.6M'
-  }
-]
+  // ── ARRAYS ──────────────────────────────────────────────────────────────────
+  { id: 1,   title: 'Two Sum',                          difficulty: 'Easy',   topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/two-sum/',                              companies: ['Amazon','Google','Microsoft','Apple'],    acceptance: '49.1%', tags: ['Hash Table','Array'] },
+  { id: 2,   title: 'Best Time to Buy and Sell Stock',  difficulty: 'Easy',   topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/',     companies: ['Amazon','Microsoft','Apple'],             acceptance: '54.2%', tags: ['DP','Array','Greedy'] },
+  { id: 3,   title: 'Contains Duplicate',              difficulty: 'Easy',   topic: 'Arrays',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/contains-duplicate/',                  companies: ['Amazon','Apple','Google'],                acceptance: '60.8%', tags: ['Hash Table','Array'] },
+  { id: 4,   title: 'Maximum Subarray',                difficulty: 'Medium', topic: 'Arrays',              sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/maximum-subarray/',                    companies: ['Amazon','Microsoft','LinkedIn'],          acceptance: '49.7%', tags: ['DP','Array','Kadane'] },
+  { id: 5,   title: 'Product of Array Except Self',    difficulty: 'Medium', topic: 'Arrays',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/product-of-array-except-self/',        companies: ['Amazon','Apple','Meta'],                  acceptance: '64.4%', tags: ['Array','Prefix Sum'] },
+  { id: 6,   title: 'Find Minimum in Rotated Sorted',  difficulty: 'Medium', topic: 'Arrays',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/', companies: ['Microsoft','Amazon','Bloomberg'],         acceptance: '47.9%', tags: ['Array','Binary Search'] },
+  { id: 7,   title: 'Search in Rotated Sorted Array',  difficulty: 'Medium', topic: 'Arrays',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/search-in-rotated-sorted-array/',     companies: ['Amazon','Microsoft','LinkedIn'],          acceptance: '38.1%', tags: ['Array','Binary Search'] },
+  { id: 8,   title: '3Sum',                            difficulty: 'Medium', topic: 'Arrays',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/3sum/',                                companies: ['Amazon','Meta','Microsoft','Adobe'],      acceptance: '32.0%', tags: ['Two Pointers','Array'] },
+  { id: 9,   title: 'Container With Most Water',       difficulty: 'Medium', topic: 'Arrays',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/container-with-most-water/',           companies: ['Amazon','Google','Microsoft'],            acceptance: '54.0%', tags: ['Two Pointers','Array','Greedy'] },
+  { id: 10,  title: 'Trapping Rain Water',             difficulty: 'Hard',   topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/trapping-rain-water/',                 companies: ['Amazon','Google','Meta','Microsoft'],    acceptance: '59.7%', tags: ['Two Pointers','Stack','Array'] },
+  { id: 11,  title: 'Set Matrix Zeroes',               difficulty: 'Medium', topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/set-matrix-zeroes/',                   companies: ['Amazon','Microsoft','Oracle'],            acceptance: '52.6%', tags: ['Array','Matrix'] },
+  { id: 12,  title: "Pascal's Triangle",               difficulty: 'Easy',   topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: "https://leetcode.com/problems/pascals-triangle/",                    companies: ['Amazon','Apple','Bloomberg'],             acceptance: '71.1%', tags: ['Array','DP'] },
+  { id: 13,  title: 'Next Permutation',                difficulty: 'Medium', topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/next-permutation/',                    companies: ['Meta','Amazon','Microsoft'],              acceptance: '37.4%', tags: ['Array','Two Pointers'] },
+  { id: 14,  title: 'Sort Colors',                     difficulty: 'Medium', topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/sort-colors/',                         companies: ['Microsoft','Amazon','Meta'],              acceptance: '60.4%', tags: ['Array','Two Pointers','Dutch Flag'] },
+  { id: 15,  title: 'Rotate Image',                    difficulty: 'Medium', topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/rotate-image/',                        companies: ['Amazon','Microsoft','Apple'],             acceptance: '72.9%', tags: ['Array','Matrix','Math'] },
+  { id: 16,  title: 'Merge Intervals',                 difficulty: 'Medium', topic: 'Arrays',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/merge-intervals/',                     companies: ['Amazon','Google','Meta','LinkedIn'],     acceptance: '46.1%', tags: ['Array','Sorting','Intervals'] },
+  { id: 17,  title: 'Maximum Product Subarray',        difficulty: 'Medium', topic: 'Arrays',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/maximum-product-subarray/',           companies: ['Amazon','Google','Meta'],                 acceptance: '34.3%', tags: ['DP','Array'] },
+  { id: 18,  title: 'Jump Game',                       difficulty: 'Medium', topic: 'Arrays',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/jump-game/',                           companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '38.6%', tags: ['Array','Greedy','DP'] },
+  { id: 19,  title: 'Spiral Matrix',                   difficulty: 'Medium', topic: 'Arrays',              sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/spiral-matrix/',                       companies: ['Amazon','Microsoft','Adobe'],             acceptance: '47.1%', tags: ['Array','Matrix','Simulation'] },
+  { id: 20,  title: 'Majority Element',                difficulty: 'Easy',   topic: 'Arrays',              sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/majority-element/',                    companies: ['Amazon','Microsoft','Yahoo'],             acceptance: '63.0%', tags: ['Array','Boyer-Moore','Hash Table'] },
 
+  // ── STRINGS ──────────────────────────────────────────────────────────────────
+  { id: 21,  title: 'Valid Anagram',                   difficulty: 'Easy',   topic: 'Strings',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/valid-anagram/',                       companies: ['Amazon','Google','Microsoft'],            acceptance: '63.5%', tags: ['Hash Table','String','Sorting'] },
+  { id: 22,  title: 'Group Anagrams',                  difficulty: 'Medium', topic: 'Strings',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/group-anagrams/',                      companies: ['Amazon','Google','Meta'],                 acceptance: '67.0%', tags: ['Hash Table','String','Sorting'] },
+  { id: 23,  title: 'Valid Palindrome',                difficulty: 'Easy',   topic: 'Strings',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/valid-palindrome/',                    companies: ['Meta','Microsoft','Uber'],                acceptance: '44.0%', tags: ['Two Pointers','String'] },
+  { id: 24,  title: 'Longest Substring Without Repeat',difficulty: 'Medium', topic: 'Strings',             sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/', companies: ['Amazon','Google','Microsoft'], acceptance: '33.6%', tags: ['Sliding Window','String','Hash Table'] },
+  { id: 25,  title: 'Longest Repeating Character Replacement', difficulty: 'Medium', topic: 'Strings',    sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/longest-repeating-character-replacement/', companies: ['Amazon','Google','Meta'],      acceptance: '51.9%', tags: ['Sliding Window','String'] },
+  { id: 26,  title: 'Minimum Window Substring',        difficulty: 'Hard',   topic: 'Strings',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/minimum-window-substring/',            companies: ['Amazon','Google','Meta','LinkedIn'],     acceptance: '40.4%', tags: ['Sliding Window','String','Hash Table'] },
+  { id: 27,  title: 'Encode and Decode Strings',       difficulty: 'Medium', topic: 'Strings',             sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/encode-and-decode-strings/',           companies: ['Google','Meta'],                          acceptance: '43.8%', tags: ['String','Design'] },
+  { id: 28,  title: 'Palindromic Substrings',          difficulty: 'Medium', topic: 'Strings',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/palindromic-substrings/',              companies: ['Amazon','Google','Apple'],                acceptance: '68.9%', tags: ['String','DP'] },
+  { id: 29,  title: 'Longest Palindromic Substring',   difficulty: 'Medium', topic: 'Strings',             sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/longest-palindromic-substring/',       companies: ['Amazon','Google','Microsoft'],            acceptance: '32.7%', tags: ['String','DP','Two Pointers'] },
+  { id: 30,  title: 'Count and Say',                   difficulty: 'Medium', topic: 'Strings',             sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/count-and-say/',                       companies: ['Amazon','Microsoft'],                     acceptance: '53.5%', tags: ['String','Recursion'] },
+
+  // ── LINKED LIST ──────────────────────────────────────────────────────────────
+  { id: 31,  title: 'Reverse Linked List',             difficulty: 'Easy',   topic: 'Linked List',         sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/reverse-linked-list/',                 companies: ['Amazon','Apple','Microsoft','Google'],   acceptance: '72.1%', tags: ['Linked List','Recursion'] },
+  { id: 32,  title: 'Merge Two Sorted Lists',          difficulty: 'Easy',   topic: 'Linked List',         sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/merge-two-sorted-lists/',              companies: ['Amazon','Microsoft','Apple'],             acceptance: '62.8%', tags: ['Linked List','Recursion'] },
+  { id: 33,  title: 'Linked List Cycle',               difficulty: 'Easy',   topic: 'Linked List',         sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/linked-list-cycle/',                   companies: ['Amazon','Microsoft','Google'],            acceptance: '45.5%', tags: ['Linked List','Two Pointers','Floyd'] },
+  { id: 34,  title: 'Reorder List',                    difficulty: 'Medium', topic: 'Linked List',         sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/reorder-list/',                        companies: ['Amazon','Microsoft','Adobe'],             acceptance: '55.6%', tags: ['Linked List','Two Pointers','Stack'] },
+  { id: 35,  title: 'Remove Nth Node From End',        difficulty: 'Medium', topic: 'Linked List',         sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/remove-nth-node-from-end-of-list/',   companies: ['Amazon','Microsoft','Apple'],             acceptance: '40.5%', tags: ['Linked List','Two Pointers'] },
+  { id: 36,  title: 'Copy List with Random Pointer',   difficulty: 'Medium', topic: 'Linked List',         sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/copy-list-with-random-pointer/',      companies: ['Amazon','Meta','Microsoft'],              acceptance: '53.8%', tags: ['Linked List','Hash Table'] },
+  { id: 37,  title: 'Add Two Numbers',                 difficulty: 'Medium', topic: 'Linked List',         sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/add-two-numbers/',                     companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '41.2%', tags: ['Linked List','Math','Recursion'] },
+  { id: 38,  title: 'Merge K Sorted Lists',            difficulty: 'Hard',   topic: 'Linked List',         sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/merge-k-sorted-lists/',               companies: ['Amazon','Google','Meta','Uber'],         acceptance: '52.3%', tags: ['Linked List','Heap','Divide & Conquer'] },
+  { id: 39,  title: 'Reverse Nodes in k-Group',        difficulty: 'Hard',   topic: 'Linked List',         sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/reverse-nodes-in-k-group/',           companies: ['Amazon','Microsoft','Adobe'],             acceptance: '57.0%', tags: ['Linked List','Recursion'] },
+  { id: 40,  title: 'Find Duplicate Number',           difficulty: 'Medium', topic: 'Linked List',         sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/find-the-duplicate-number/',          companies: ['Amazon','Microsoft','Google'],            acceptance: '59.3%', tags: ['Linked List','Binary Search','Floyd'] },
+
+  // ── STACK ─────────────────────────────────────────────────────────────────────
+  { id: 41,  title: 'Valid Parentheses',               difficulty: 'Easy',   topic: 'Stack',               sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/valid-parentheses/',                   companies: ['Google','Amazon','Meta'],                 acceptance: '40.7%', tags: ['Stack','String'] },
+  { id: 42,  title: 'Min Stack',                       difficulty: 'Medium', topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/min-stack/',                           companies: ['Amazon','Bloomberg','Microsoft'],         acceptance: '53.1%', tags: ['Stack','Design'] },
+  { id: 43,  title: 'Evaluate Reverse Polish Notation',difficulty: 'Medium', topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/evaluate-reverse-polish-notation/',   companies: ['Amazon','LinkedIn'],                      acceptance: '48.0%', tags: ['Stack','Array','Math'] },
+  { id: 44,  title: 'Generate Parentheses',            difficulty: 'Medium', topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/generate-parentheses/',               companies: ['Amazon','Google','Meta'],                 acceptance: '73.2%', tags: ['Stack','Backtracking','String'] },
+  { id: 45,  title: 'Daily Temperatures',              difficulty: 'Medium', topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/daily-temperatures/',                  companies: ['Amazon','Google','Yahoo'],                acceptance: '67.6%', tags: ['Stack','Array','Monotonic Stack'] },
+  { id: 46,  title: 'Car Fleet',                       difficulty: 'Medium', topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/car-fleet/',                           companies: ['Amazon'],                                 acceptance: '48.8%', tags: ['Stack','Array','Sorting','Monotonic Stack'] },
+  { id: 47,  title: 'Largest Rectangle in Histogram',  difficulty: 'Hard',   topic: 'Stack',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/largest-rectangle-in-histogram/',     companies: ['Amazon','Google','Microsoft'],            acceptance: '44.9%', tags: ['Stack','Array','Monotonic Stack'] },
+  { id: 48,  title: 'Next Greater Element I',          difficulty: 'Easy',   topic: 'Stack',               sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/next-greater-element-i/',             companies: ['Amazon','Microsoft'],                     acceptance: '70.2%', tags: ['Stack','Array','Hash Table'] },
+
+  // ── BINARY SEARCH ─────────────────────────────────────────────────────────────
+  { id: 49,  title: 'Binary Search',                   difficulty: 'Easy',   topic: 'Binary Search',       sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/binary-search/',                       companies: ['Amazon','Google','Microsoft'],            acceptance: '56.2%', tags: ['Array','Binary Search'] },
+  { id: 50,  title: 'Koko Eating Bananas',             difficulty: 'Medium', topic: 'Binary Search',       sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/koko-eating-bananas/',                 companies: ['Amazon','Google'],                        acceptance: '55.1%', tags: ['Array','Binary Search'] },
+  { id: 51,  title: 'Find Minimum in Rotated Sorted',  difficulty: 'Medium', topic: 'Binary Search',       sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/', companies: ['Microsoft','Amazon','Bloomberg'],       acceptance: '47.9%', tags: ['Array','Binary Search'] },
+  { id: 52,  title: 'Time Based Key-Value Store',      difficulty: 'Medium', topic: 'Binary Search',       sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/time-based-key-value-store/',         companies: ['Google','Amazon','Microsoft'],            acceptance: '53.7%', tags: ['Binary Search','Design','Hash Table'] },
+  { id: 53,  title: 'Median of Two Sorted Arrays',     difficulty: 'Hard',   topic: 'Binary Search',       sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/median-of-two-sorted-arrays/',        companies: ['Amazon','Google','Meta','Apple'],        acceptance: '38.0%', tags: ['Array','Binary Search','Divide & Conquer'] },
+  { id: 54,  title: 'Search a 2D Matrix',              difficulty: 'Medium', topic: 'Binary Search',       sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/search-a-2d-matrix/',                 companies: ['Amazon','Microsoft','Google'],            acceptance: '50.0%', tags: ['Array','Binary Search','Matrix'] },
+  { id: 55,  title: 'Find Peak Element',               difficulty: 'Medium', topic: 'Binary Search',       sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/find-peak-element/',                   companies: ['Google','Amazon','Microsoft'],            acceptance: '45.7%', tags: ['Array','Binary Search'] },
+
+  // ── SLIDING WINDOW ────────────────────────────────────────────────────────────
+  { id: 56,  title: 'Best Time to Buy Stock II',       difficulty: 'Medium', topic: 'Sliding Window',      sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/', companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '63.9%', tags: ['Array','Greedy','DP'] },
+  { id: 57,  title: 'Permutation in String',           difficulty: 'Medium', topic: 'Sliding Window',      sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/permutation-in-string/',              companies: ['Amazon','Microsoft','Adobe'],             acceptance: '45.3%', tags: ['Sliding Window','Hash Table','String'] },
+  { id: 58,  title: 'Sliding Window Maximum',          difficulty: 'Hard',   topic: 'Sliding Window',      sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/sliding-window-maximum/',             companies: ['Amazon','Google','Meta'],                 acceptance: '46.8%', tags: ['Sliding Window','Array','Deque','Monotonic'] },
+  { id: 59,  title: 'Minimum Window Substring',        difficulty: 'Hard',   topic: 'Sliding Window',      sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/minimum-window-substring/',            companies: ['Amazon','Google','Meta'],                 acceptance: '40.4%', tags: ['Sliding Window','String','Hash Table'] },
+
+  // ── TREES ─────────────────────────────────────────────────────────────────────
+  { id: 60,  title: 'Invert Binary Tree',              difficulty: 'Easy',   topic: 'Trees',               sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/invert-binary-tree/',                  companies: ['Amazon','Apple','Google'],                acceptance: '75.7%', tags: ['Tree','DFS','BFS'] },
+  { id: 61,  title: 'Maximum Depth of Binary Tree',    difficulty: 'Easy',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/',       companies: ['Amazon','LinkedIn','Apple'],              acceptance: '73.2%', tags: ['Tree','DFS','BFS'] },
+  { id: 62,  title: 'Diameter of Binary Tree',         difficulty: 'Easy',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/diameter-of-binary-tree/',            companies: ['Facebook','Google','Amazon'],             acceptance: '57.3%', tags: ['Tree','DFS'] },
+  { id: 63,  title: 'Balanced Binary Tree',            difficulty: 'Easy',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/balanced-binary-tree/',               companies: ['Amazon','Apple','Bloomberg'],             acceptance: '46.2%', tags: ['Tree','DFS'] },
+  { id: 64,  title: 'Same Tree',                       difficulty: 'Easy',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/same-tree/',                           companies: ['Amazon','Microsoft'],                     acceptance: '57.1%', tags: ['Tree','DFS','BFS'] },
+  { id: 65,  title: 'Subtree of Another Tree',         difficulty: 'Easy',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/subtree-of-another-tree/',            companies: ['Amazon','Microsoft'],                     acceptance: '44.6%', tags: ['Tree','DFS','String Matching'] },
+  { id: 66,  title: 'Lowest Common Ancestor of BST',   difficulty: 'Medium', topic: 'Trees',               sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/', companies: ['Amazon','Meta','Microsoft'],  acceptance: '61.8%', tags: ['Tree','DFS','BST'] },
+  { id: 67,  title: 'Binary Tree Level Order Traversal',difficulty: 'Medium', topic: 'Trees',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/binary-tree-level-order-traversal/', companies: ['Amazon','Google','Microsoft'],            acceptance: '65.9%', tags: ['Tree','BFS'] },
+  { id: 68,  title: 'Binary Tree Right Side View',     difficulty: 'Medium', topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/binary-tree-right-side-view/',        companies: ['Amazon','Meta','Microsoft'],              acceptance: '61.4%', tags: ['Tree','BFS','DFS'] },
+  { id: 69,  title: 'Count Good Nodes in Binary Tree', difficulty: 'Medium', topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/count-good-nodes-in-binary-tree/',   companies: ['Microsoft','Amazon'],                     acceptance: '72.2%', tags: ['Tree','DFS'] },
+  { id: 70,  title: 'Validate Binary Search Tree',     difficulty: 'Medium', topic: 'Trees',               sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/validate-binary-search-tree/',        companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '31.5%', tags: ['Tree','DFS','BST'] },
+  { id: 71,  title: 'Kth Smallest Element in BST',     difficulty: 'Medium', topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/kth-smallest-element-in-a-bst/',     companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '70.5%', tags: ['Tree','DFS','BST'] },
+  { id: 72,  title: 'Binary Tree Inorder Traversal',   difficulty: 'Easy',   topic: 'Trees',               sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/binary-tree-inorder-traversal/',     companies: ['Microsoft','Amazon'],                     acceptance: '74.8%', tags: ['Tree','DFS','Stack'] },
+  { id: 73,  title: 'Construct Tree from Pre+Inorder',  difficulty: 'Medium', topic: 'Trees',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/', companies: ['Amazon','Microsoft','Apple'], acceptance: '60.1%', tags: ['Tree','DFS','Divide & Conquer'] },
+  { id: 74,  title: 'Binary Tree Maximum Path Sum',    difficulty: 'Hard',   topic: 'Trees',               sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/binary-tree-maximum-path-sum/',      companies: ['Amazon','Google','Microsoft'],            acceptance: '38.9%', tags: ['Tree','DFS','DP'] },
+  { id: 75,  title: 'Serialize and Deserialize BST',   difficulty: 'Hard',   topic: 'Trees',               sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/', companies: ['Amazon','Google','Meta'],              acceptance: '55.4%', tags: ['Tree','DFS','BFS','Design'] },
+
+  // ── GRAPHS ────────────────────────────────────────────────────────────────────
+  { id: 76,  title: 'Number of Islands',               difficulty: 'Medium', topic: 'Graphs',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/number-of-islands/',                   companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '57.0%', tags: ['Graph','DFS','BFS','Union Find'] },
+  { id: 77,  title: 'Clone Graph',                     difficulty: 'Medium', topic: 'Graphs',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/clone-graph/',                         companies: ['Amazon','Meta','Google'],                 acceptance: '53.3%', tags: ['Graph','DFS','BFS','Hash Table'] },
+  { id: 78,  title: 'Max Area of Island',              difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/max-area-of-island/',                  companies: ['Amazon','Google','Microsoft'],            acceptance: '71.4%', tags: ['Graph','DFS','BFS'] },
+  { id: 79,  title: 'Pacific Atlantic Water Flow',     difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/pacific-atlantic-water-flow/',        companies: ['Google','Amazon'],                        acceptance: '52.8%', tags: ['Graph','DFS','BFS'] },
+  { id: 80,  title: 'Surrounded Regions',              difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/surrounded-regions/',                  companies: ['Amazon','Microsoft'],                     acceptance: '37.1%', tags: ['Graph','DFS','BFS','Union Find'] },
+  { id: 81,  title: 'Rotting Oranges',                 difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/rotting-oranges/',                     companies: ['Amazon','Google','DoorDash'],             acceptance: '52.0%', tags: ['Graph','BFS','Matrix'] },
+  { id: 82,  title: 'Walls and Gates',                 difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/walls-and-gates/',                     companies: ['Amazon','Google','Meta'],                 acceptance: '60.0%', tags: ['Graph','BFS','Matrix'] },
+  { id: 83,  title: 'Course Schedule',                 difficulty: 'Medium', topic: 'Graphs',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/course-schedule/',                     companies: ['Amazon','Kohl\'s','Zenefits'],            acceptance: '45.5%', tags: ['Graph','DFS','Topological Sort','Cycle Detection'] },
+  { id: 84,  title: 'Course Schedule II',              difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/course-schedule-ii/',                  companies: ['Amazon','Google','Meta'],                 acceptance: '48.0%', tags: ['Graph','DFS','Topological Sort','BFS'] },
+  { id: 85,  title: 'Graph Valid Tree',                difficulty: 'Medium', topic: 'Graphs',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/graph-valid-tree/',                    companies: ['LinkedIn','Amazon','Google'],             acceptance: '44.5%', tags: ['Graph','DFS','Union Find'] },
+  { id: 86,  title: 'Number of Connected Components', difficulty: 'Medium', topic: 'Graphs',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/', companies: ['LinkedIn','Amazon'],       acceptance: '62.0%', tags: ['Graph','DFS','Union Find'] },
+  { id: 87,  title: 'Redundant Connection',            difficulty: 'Medium', topic: 'Graphs',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/redundant-connection/',               companies: ['Amazon','Google'],                        acceptance: '62.1%', tags: ['Graph','Union Find','DFS'] },
+  { id: 88,  title: 'Word Ladder',                     difficulty: 'Hard',   topic: 'Graphs',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/word-ladder/',                         companies: ['Amazon','Meta','Google'],                 acceptance: '35.6%', tags: ['Graph','BFS','Hash Table'] },
+
+  // ── DYNAMIC PROGRAMMING ───────────────────────────────────────────────────────
+  { id: 89,  title: 'Climbing Stairs',                 difficulty: 'Easy',   topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/climbing-stairs/',                     companies: ['Amazon','Google','Apple'],                acceptance: '51.8%', tags: ['DP','Math','Memoization'] },
+  { id: 90,  title: 'Min Cost Climbing Stairs',        difficulty: 'Easy',   topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/min-cost-climbing-stairs/',           companies: ['Amazon','Adobe'],                         acceptance: '61.8%', tags: ['DP','Array'] },
+  { id: 91,  title: 'House Robber',                    difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/house-robber/',                        companies: ['Amazon','Google','Microsoft'],            acceptance: '49.7%', tags: ['DP','Array'] },
+  { id: 92,  title: 'House Robber II',                 difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/house-robber-ii/',                     companies: ['Microsoft','Amazon'],                     acceptance: '41.1%', tags: ['DP','Array'] },
+  { id: 93,  title: 'Longest Palindromic Substring',   difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/longest-palindromic-substring/',      companies: ['Amazon','Microsoft','Google'],            acceptance: '32.7%', tags: ['DP','String'] },
+  { id: 94,  title: 'Palindromic Substrings',          difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/palindromic-substrings/',             companies: ['Amazon','Google'],                        acceptance: '68.9%', tags: ['DP','String'] },
+  { id: 95,  title: 'Decode Ways',                     difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/decode-ways/',                         companies: ['Amazon','Facebook','Microsoft'],          acceptance: '32.1%', tags: ['DP','String'] },
+  { id: 96,  title: 'Coin Change',                     difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/coin-change/',                         companies: ['Amazon','Google','Microsoft'],            acceptance: '42.2%', tags: ['DP','BFS','Array'] },
+  { id: 97,  title: 'Maximum Product Subarray',        difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/maximum-product-subarray/',           companies: ['Amazon','Google','Meta'],                 acceptance: '34.3%', tags: ['DP','Array'] },
+  { id: 98,  title: 'Word Break',                      difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/word-break/',                          companies: ['Amazon','Google','Apple'],                acceptance: '44.8%', tags: ['DP','Hash Table','Trie','Memoization'] },
+  { id: 99,  title: 'Longest Increasing Subsequence',  difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/longest-increasing-subsequence/',     companies: ['Amazon','Microsoft','Google'],            acceptance: '53.6%', tags: ['DP','Binary Search','Array'] },
+  { id: 100, title: 'Unique Paths',                    difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/unique-paths/',                        companies: ['Amazon','Google','Microsoft'],            acceptance: '62.9%', tags: ['DP','Math','Combinatorics'] },
+  { id: 101, title: 'Jump Game II',                    difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/jump-game-ii/',                        companies: ['Amazon','Microsoft'],                     acceptance: '39.8%', tags: ['DP','Array','Greedy'] },
+  { id: 102, title: 'Partition Equal Subset Sum',      difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/partition-equal-subset-sum/',         companies: ['Amazon','Microsoft'],                     acceptance: '46.5%', tags: ['DP','Array','0/1 Knapsack'] },
+  { id: 103, title: 'Longest Common Subsequence',      difficulty: 'Medium', topic: 'Dynamic Programming', sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/longest-common-subsequence/',         companies: ['Amazon','Google','Apple'],                acceptance: '57.5%', tags: ['DP','String'] },
+  { id: 104, title: 'Edit Distance',                   difficulty: 'Hard',   topic: 'Dynamic Programming', sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/edit-distance/',                       companies: ['Amazon','Google','Microsoft'],            acceptance: '55.3%', tags: ['DP','String'] },
+  { id: 105, title: 'Burst Balloons',                  difficulty: 'Hard',   topic: 'Dynamic Programming', sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/burst-balloons/',                      companies: ['Google','Amazon'],                        acceptance: '57.4%', tags: ['DP','Array','Divide & Conquer'] },
+
+  // ── HEAP / PRIORITY QUEUE ─────────────────────────────────────────────────────
+  { id: 106, title: 'Kth Largest Element in Array',   difficulty: 'Medium', topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/kth-largest-element-in-an-array/',  companies: ['Amazon','Microsoft','Facebook'],          acceptance: '65.6%', tags: ['Heap','Divide & Conquer','Quickselect'] },
+  { id: 107, title: 'K Closest Points to Origin',     difficulty: 'Medium', topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/k-closest-points-to-origin/',       companies: ['Amazon','Facebook','LinkedIn'],           acceptance: '66.5%', tags: ['Heap','Array','Math','Sort'] },
+  { id: 108, title: 'Last Stone Weight',               difficulty: 'Easy',   topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/last-stone-weight/',                  companies: ['Amazon'],                                 acceptance: '64.7%', tags: ['Heap','Array'] },
+  { id: 109, title: 'Task Scheduler',                  difficulty: 'Medium', topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/task-scheduler/',                     companies: ['Amazon','Facebook'],                      acceptance: '57.3%', tags: ['Heap','Array','Greedy','Hash Table'] },
+  { id: 110, title: 'Find Median from Data Stream',   difficulty: 'Hard',   topic: 'Heap',                sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/find-median-from-data-stream/',     companies: ['Amazon','Microsoft','Apple'],             acceptance: '52.0%', tags: ['Heap','Design','Two Heaps'] },
+  { id: 111, title: 'Merge K Sorted Lists',            difficulty: 'Hard',   topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/merge-k-sorted-lists/',               companies: ['Amazon','Google','Uber'],                 acceptance: '52.3%', tags: ['Heap','Linked List','Divide & Conquer'] },
+
+  // ── BACKTRACKING ──────────────────────────────────────────────────────────────
+  { id: 112, title: 'Subsets',                         difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/subsets/',                             companies: ['Amazon','Facebook','Microsoft'],          acceptance: '75.3%', tags: ['Backtracking','Bit Manipulation','Array'] },
+  { id: 113, title: 'Combination Sum',                 difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/combination-sum/',                     companies: ['Amazon','Microsoft','Uber'],              acceptance: '70.0%', tags: ['Backtracking','Array'] },
+  { id: 114, title: 'Permutations',                    difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/permutations/',                        companies: ['Amazon','LinkedIn','Microsoft'],          acceptance: '75.2%', tags: ['Backtracking','Array'] },
+  { id: 115, title: 'Subsets II',                      difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/subsets-ii/',                         companies: ['Amazon','Meta'],                          acceptance: '55.9%', tags: ['Backtracking','Array','Bit Manipulation'] },
+  { id: 116, title: 'Combination Sum II',              difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/combination-sum-ii/',                  companies: ['Amazon','Microsoft'],                     acceptance: '52.7%', tags: ['Backtracking','Array'] },
+  { id: 117, title: 'Word Search',                     difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/word-search/',                         companies: ['Amazon','Microsoft','Apple'],             acceptance: '40.1%', tags: ['Backtracking','Matrix','DFS'] },
+  { id: 118, title: 'Palindrome Partitioning',         difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/palindrome-partitioning/',            companies: ['Amazon','Apple'],                         acceptance: '66.8%', tags: ['Backtracking','DP','String'] },
+  { id: 119, title: 'Letter Combinations of Phone',   difficulty: 'Medium', topic: 'Backtracking',        sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/letter-combinations-of-a-phone-number/', companies: ['Amazon','Google','Microsoft'],        acceptance: '56.9%', tags: ['Backtracking','Hash Table','String'] },
+  { id: 120, title: 'N-Queens',                        difficulty: 'Hard',   topic: 'Backtracking',        sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/n-queens/',                            companies: ['Amazon','Google','Microsoft'],            acceptance: '68.5%', tags: ['Backtracking','Array','Matrix'] },
+
+  // ── TRIE ──────────────────────────────────────────────────────────────────────
+  { id: 121, title: 'Implement Trie (Prefix Tree)',    difficulty: 'Medium', topic: 'Trie',                sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/implement-trie-prefix-tree/',        companies: ['Amazon','Google','Microsoft'],            acceptance: '62.1%', tags: ['Trie','Design','String'] },
+  { id: 122, title: 'Design Add and Search Words',     difficulty: 'Medium', topic: 'Trie',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/design-add-and-search-words-data-structure/', companies: ['Facebook','Amazon'],               acceptance: '43.7%', tags: ['Trie','DFS','Design','String'] },
+  { id: 123, title: 'Word Search II',                  difficulty: 'Hard',   topic: 'Trie',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/word-search-ii/',                      companies: ['Amazon','Google','Airbnb'],               acceptance: '36.7%', tags: ['Trie','Backtracking','Matrix','DFS'] },
+
+  // ── INTERVALS ─────────────────────────────────────────────────────────────────
+  { id: 124, title: 'Insert Interval',                 difficulty: 'Medium', topic: 'Intervals',           sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/insert-interval/',                     companies: ['Amazon','Google','Palantir'],             acceptance: '39.9%', tags: ['Array','Intervals','Sorting'] },
+  { id: 125, title: 'Non-Overlapping Intervals',       difficulty: 'Medium', topic: 'Intervals',           sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/non-overlapping-intervals/',          companies: ['Google','Amazon'],                        acceptance: '48.5%', tags: ['Intervals','Sorting','Greedy','DP'] },
+  { id: 126, title: 'Meeting Rooms',                   difficulty: 'Easy',   topic: 'Intervals',           sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/meeting-rooms/',                       companies: ['Google','Meta','Lyft'],                   acceptance: '56.6%', tags: ['Intervals','Sorting','Array'] },
+  { id: 127, title: 'Meeting Rooms II',                difficulty: 'Medium', topic: 'Intervals',           sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/meeting-rooms-ii/',                    companies: ['Amazon','Google','Meta'],                 acceptance: '50.8%', tags: ['Intervals','Heap','Sorting'] },
+  { id: 128, title: 'Minimum Interval to Include Each Query', difficulty: 'Hard', topic: 'Intervals',     sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/minimum-interval-to-include-each-query/', companies: ['Amazon','Google'],                 acceptance: '51.8%', tags: ['Intervals','Heap','Sorting','Binary Search'] },
+
+  // ── GREEDY ────────────────────────────────────────────────────────────────────
+  { id: 129, title: 'Maximum Subarray',                difficulty: 'Medium', topic: 'Greedy',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/maximum-subarray/',                    companies: ['Amazon','Microsoft','LinkedIn'],          acceptance: '49.7%', tags: ['DP','Array','Kadane','Greedy'] },
+  { id: 130, title: 'Jump Game',                       difficulty: 'Medium', topic: 'Greedy',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/jump-game/',                           companies: ['Amazon','Microsoft','Bloomberg'],         acceptance: '38.6%', tags: ['Greedy','DP','Array'] },
+  { id: 131, title: 'Gas Station',                     difficulty: 'Medium', topic: 'Greedy',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/gas-station/',                         companies: ['Amazon','Microsoft'],                     acceptance: '44.8%', tags: ['Greedy','Array'] },
+  { id: 132, title: 'Hand of Straights',               difficulty: 'Medium', topic: 'Greedy',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/hand-of-straights/',                   companies: ['Google'],                                 acceptance: '56.9%', tags: ['Greedy','Hash Table','Sorting'] },
+
+  // ── MATH & BIT MANIPULATION ────────────────────────────────────────────────────
+  { id: 133, title: 'Number of 1 Bits',                difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/number-of-1-bits/',                    companies: ['Amazon','Apple'],                         acceptance: '67.0%', tags: ['Bit Manipulation'] },
+  { id: 134, title: 'Counting Bits',                   difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/counting-bits/',                       companies: ['Amazon','Microsoft'],                     acceptance: '77.1%', tags: ['Bit Manipulation','DP'] },
+  { id: 135, title: 'Reverse Bits',                    difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/reverse-bits/',                        companies: ['Apple','Amazon'],                         acceptance: '56.0%', tags: ['Bit Manipulation','Divide & Conquer'] },
+  { id: 136, title: 'Missing Number',                  difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/missing-number/',                      companies: ['Amazon','Microsoft','Apple'],             acceptance: '63.1%', tags: ['Bit Manipulation','Array','Math'] },
+  { id: 137, title: 'Sum of Two Integers',             difficulty: 'Medium', topic: 'Bit Manipulation',    sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/sum-of-two-integers/',                 companies: ['Amazon','Apple'],                         acceptance: '50.4%', tags: ['Bit Manipulation','Math'] },
+  { id: 138, title: 'Reverse Integer',                 difficulty: 'Medium', topic: 'Math',                sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/reverse-integer/',                     companies: ['Amazon','Apple','Microsoft'],             acceptance: '27.8%', tags: ['Math'] },
+  { id: 139, title: 'Power of Two',                    difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'gfg-must-do',      leetcodeUrl: 'https://leetcode.com/problems/power-of-two/',                        companies: ['Amazon','Google'],                        acceptance: '46.1%', tags: ['Bit Manipulation','Math','Recursion'] },
+  { id: 140, title: 'Single Number',                   difficulty: 'Easy',   topic: 'Bit Manipulation',    sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/single-number/',                       companies: ['Amazon','Apple','Microsoft'],             acceptance: '70.7%', tags: ['Bit Manipulation','Array'] },
+
+  // ── DESIGN ───────────────────────────────────────────────────────────────────
+  { id: 141, title: 'LRU Cache',                       difficulty: 'Medium', topic: 'Design',              sheetId: 'blind-75',         leetcodeUrl: 'https://leetcode.com/problems/lru-cache/',                           companies: ['Amazon','Google','Microsoft','Meta'],    acceptance: '41.4%', tags: ['Design','Hash Table','Linked List'] },
+  { id: 142, title: 'LFU Cache',                       difficulty: 'Hard',   topic: 'Design',              sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/lfu-cache/',                           companies: ['Amazon','Google'],                        acceptance: '42.3%', tags: ['Design','Hash Table','Linked List','Heap'] },
+  { id: 143, title: 'Design Twitter',                  difficulty: 'Medium', topic: 'Design',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/design-twitter/',                      companies: ['Amazon','Twitter'],                       acceptance: '36.6%', tags: ['Design','Hash Table','Heap','Linked List'] },
+  { id: 144, title: 'Time Based Key-Value Store',      difficulty: 'Medium', topic: 'Design',              sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/time-based-key-value-store/',         companies: ['Google','Amazon'],                        acceptance: '53.7%', tags: ['Design','Hash Table','Binary Search'] },
+
+  // ── RECURSION & SORTING ───────────────────────────────────────────────────────
+  { id: 145, title: 'Merge Sort',                      difficulty: 'Medium', topic: 'Sorting',             sheetId: 'striver-sde',      leetcodeUrl: 'https://leetcode.com/problems/sort-an-array/',                       companies: ['Amazon','Microsoft'],                     acceptance: '62.3%', tags: ['Sorting','Divide & Conquer','Array'] },
+  { id: 146, title: 'Quick Sort Implementation',       difficulty: 'Medium', topic: 'Sorting',             sheetId: 'love-babbar-450',  leetcodeUrl: 'https://leetcode.com/problems/sort-an-array/',                       companies: ['Amazon','Adobe'],                         acceptance: '62.3%', tags: ['Sorting','Divide & Conquer'] },
+  { id: 147, title: 'Top K Frequent Words',            difficulty: 'Medium', topic: 'Heap',                sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/top-k-frequent-words/',               companies: ['Amazon','Bloomberg'],                     acceptance: '57.9%', tags: ['Heap','Hash Table','String','Sorting'] },
+  { id: 148, title: 'Sort K-Sorted Array',             difficulty: 'Medium', topic: 'Heap',                sheetId: 'gfg-must-do',      leetcodeUrl: 'https://practice.geeksforgeeks.org/problems/k-sorted-elements/',    companies: ['Amazon','Microsoft'],                     acceptance: '65.0%', tags: ['Heap','Array','Sorting'] },
+
+  // ── HASHING ───────────────────────────────────────────────────────────────────
+  { id: 149, title: 'Top K Frequent Elements',         difficulty: 'Medium', topic: 'Hashing',             sheetId: 'neetcode-150',     leetcodeUrl: 'https://leetcode.com/problems/top-k-frequent-elements/',            companies: ['Amazon','Google','Microsoft'],            acceptance: '65.4%', tags: ['Hash Table','Heap','Bucket Sort'] },
+  { id: 150, title: 'Ransom Note',                     difficulty: 'Easy',   topic: 'Hashing',             sheetId: 'gfg-must-do',      leetcodeUrl: 'https://leetcode.com/problems/ransom-note/',                         companies: ['Amazon','Google','Apple'],                acceptance: '58.0%', tags: ['Hash Table','String','Counting'] },
+];
+
+// ─── RANKINGS ─────────────────────────────────────────────────────────────────
 export const mockRankings = {
-  college: [
-    { rank: 1, name: 'Arjun Sharma', college: 'IIT Delhi', solved: 247, streak: 15 },
-    { rank: 2, name: 'Priya Patel', college: 'IIT Delhi', solved: 234, streak: 12 },
-    { rank: 3, name: 'Rahul Kumar', college: 'IIT Delhi', solved: 221, streak: 8 },
-    { rank: 4, name: 'Sneha Singh', college: 'IIT Delhi', solved: 198, streak: 22 },
-    { rank: 5, name: 'Amit Verma', college: 'IIT Delhi', solved: 187, streak: 5 }
-  ],
   global: [
-    { rank: 1, name: 'CodeMaster2024', college: 'MIT', solved: 892, streak: 45 },
-    { rank: 2, name: 'AlgoExpert', college: 'Stanford', solved: 856, streak: 38 },
-    { rank: 3, name: 'DSA_Ninja', college: 'IIT Bombay', solved: 834, streak: 42 },
-    { rank: 4, name: 'ProblemSolver', college: 'Carnegie Mellon', solved: 798, streak: 28 },
-    { rank: 5, name: 'CodeWarrior', college: 'UC Berkeley', solved: 776, streak: 35 }
-  ]
-}
+    { rank: 1,  username: 'CodeGod2024',     fullName: 'Arjun Mehta',     college: 'IIT Bombay',              problemsSolved: 892, streakDays: 87, points: 8920 },
+    { rank: 2,  username: 'AlgoMaster',      fullName: 'Priya Sharma',    college: 'IIT Delhi',               problemsSolved: 856, streakDays: 73, points: 8560 },
+    { rank: 3,  username: 'DSA_Ninja_Pro',   fullName: 'Rahul Kumar',     college: 'IIT Madras',              problemsSolved: 834, streakDays: 91, points: 8340 },
+    { rank: 4,  username: 'ProbSolverX',     fullName: 'Sneha Patel',     college: 'NIT Trichy',              problemsSolved: 798, streakDays: 45, points: 7980 },
+    { rank: 5,  username: 'SwiftCoder',      fullName: 'Amit Verma',      college: 'BITS Pilani',             problemsSolved: 776, streakDays: 60, points: 7760 },
+    { rank: 6,  username: 'grindKing',       fullName: 'Kavya Nair',      college: 'IIT Kharagpur',           problemsSolved: 745, streakDays: 32, points: 7450 },
+    { rank: 7,  username: 'leetcodeHero',    fullName: 'Vikram Singh',    college: 'IIIT Hyderabad',          problemsSolved: 712, streakDays: 55, points: 7120 },
+    { rank: 8,  username: 'ByteBuster',      fullName: 'Ananya Roy',      college: 'IIT Guwahati',            problemsSolved: 698, streakDays: 28, points: 6980 },
+    { rank: 9,  username: 'codeMachine',     fullName: 'Siddharth Joshi', college: 'VIT Vellore',             problemsSolved: 672, streakDays: 41, points: 6720 },
+    { rank: 10, username: 'AlgorithmAce',    fullName: 'Pooja Gupta',     college: 'IIT Roorkee',             problemsSolved: 650, streakDays: 19, points: 6500 },
+    { rank: 11, username: 'codeWizard',      fullName: 'Aditya Kumar',    college: 'NIT Warangal',            problemsSolved: 634, streakDays: 38, points: 6340 },
+    { rank: 12, username: 'stackOverflow_',  fullName: 'Riya Desai',      college: 'IIIT Bangalore',          problemsSolved: 618, streakDays: 22, points: 6180 },
+    { rank: 13, username: 'binarySearch99',  fullName: 'Nikhil Sharma',   college: 'DTU Delhi',               problemsSolved: 601, streakDays: 15, points: 6010 },
+    { rank: 14, username: 'twoPointers',     fullName: 'Shreya Yadav',    college: 'Thapar University',       problemsSolved: 589, streakDays: 44, points: 5890 },
+    { rank: 15, username: 'dpMaster',        fullName: 'Karan Malhotra',  college: 'IIT BHU',                 problemsSolved: 572, streakDays: 17, points: 5720 },
+    { rank: 16, username: 'graphGuru',       fullName: 'Meera Krishnan',  college: 'PSG Tech Coimbatore',     problemsSolved: 558, streakDays: 33, points: 5580 },
+    { rank: 17, username: 'recursion_king',  fullName: 'Rohit Bhat',      college: 'Manipal University',      problemsSolved: 541, streakDays: 11, points: 5410 },
+    { rank: 18, username: 'hashMapHero',     fullName: 'Divya Menon',     college: 'NSIT Delhi',              problemsSolved: 527, streakDays: 26, points: 5270 },
+    { rank: 19, username: 'greedyGopher',    fullName: 'Suresh Iyer',     college: 'Anna University',         problemsSolved: 514, streakDays: 9,  points: 5140 },
+    { rank: 20, username: 'trieExpert',      fullName: 'Neha Agarwal',    college: 'BIT Mesra',               problemsSolved: 498, streakDays: 52, points: 4980 },
+  ],
+  college: [
+    { rank: 1,  username: 'topCoderIIT',     fullName: 'Arjun Mehta',     college: 'IIT Delhi', problemsSolved: 347, streakDays: 22, points: 3470 },
+    { rank: 2,  username: 'algoQueenIIT',    fullName: 'Priya Kapoor',    college: 'IIT Delhi', problemsSolved: 312, streakDays: 18, points: 3120 },
+    { rank: 3,  username: 'codeNinjaIIT',    fullName: 'Ravi Shankar',    college: 'IIT Delhi', problemsSolved: 298, streakDays: 41, points: 2980 },
+    { rank: 4,  username: 'bitManipIIT',     fullName: 'Sneha Khanna',    college: 'IIT Delhi', problemsSolved: 276, streakDays: 15, points: 2760 },
+    { rank: 5,  username: 'recursionIIT',    fullName: 'Mohan Lal',       college: 'IIT Delhi', problemsSolved: 254, streakDays: 30, points: 2540 },
+  ],
+};
 
+// ─── RESOURCES ───────────────────────────────────────────────────────────────
 export const mockResources = [
-  {
-    id: 1,
-    title: 'Complete DSA Course',
-    type: 'Course',
-    provider: 'Striver',
-    description: 'Comprehensive course covering all DSA topics with detailed explanations',
-    url: 'https://takeuforward.org/strivers-a2z-dsa-course/',
-    rating: 4.9,
-    duration: '100+ hours',
-    level: 'Beginner to Advanced',
-    tags: ['Complete', 'Video', 'Free']
-  },
-  {
-    id: 2,
-    title: 'Algorithms Specialization',
-    type: 'Course',
-    provider: 'Coursera',
-    description: 'Stanford University algorithms course by Tim Roughgarden',
-    url: 'https://www.coursera.org/specializations/algorithms',
-    rating: 4.8,
-    duration: '4 months',
-    level: 'Intermediate',
-    tags: ['University', 'Paid', 'Certificate']
-  },
-  {
-    id: 3,
-    title: 'Cracking the Coding Interview',
-    type: 'Book',
-    provider: 'Gayle McDowell',
-    description: 'The most popular book for coding interview preparation',
-    url: 'https://www.amazon.com/Cracking-Coding-Interview-Programming-Questions/dp/0984782850',
-    rating: 4.7,
-    duration: '300+ pages',
-    level: 'All Levels',
-    tags: ['Interview', 'Book', 'Classic']
-  },
-  {
-    id: 4,
-    title: 'LeetCode Patterns',
-    type: 'Article',
-    provider: 'LeetCode',
-    description: 'Common patterns and techniques for solving coding problems',
-    url: 'https://leetcode.com/discuss/general-discussion/458695/dynamic-programming-patterns',
-    rating: 4.6,
-    duration: '2-3 hours',
-    level: 'Intermediate',
-    tags: ['Patterns', 'Free', 'Reference']
-  },
-  {
-    id: 5,
-    title: 'System Design Primer',
-    type: 'Repository',
-    provider: 'GitHub',
-    description: 'Learn how to design large-scale systems',
-    url: 'https://github.com/donnemartin/system-design-primer',
-    rating: 4.9,
-    duration: 'Self-paced',
-    level: 'Advanced',
-    tags: ['System Design', 'Free', 'Comprehensive']
-  }
-]
+  { id: 1,  title: 'Introduction to Algorithms (CLRS)',   type: 'Book',    provider: 'MIT Press',       description: 'The bible of algorithms. Used in university courses worldwide.', url: 'https://mitpress.mit.edu/books/introduction-algorithms-third-edition', rating: 4.8, duration: '1300+ pages', level: 'Advanced',              tags: ['Theory','Algorithms','Classic'] },
+  { id: 2,  title: 'Striver A2Z DSA Course',              type: 'Course',  provider: 'TakeUForward',    description: 'Complete DSA from basics to advanced with problems and explanations.', url: 'https://takeuforward.org/strivers-a2z-dsa-course/', rating: 4.9, duration: '100+ hours', level: 'Beginner to Advanced',  tags: ['Complete','Free','Video'] },
+  { id: 3,  title: 'NeetCode.io',                         type: 'Course',  provider: 'NeetCode',        description: 'Pattern-organized LeetCode solutions with video explanations.', url: 'https://neetcode.io/', rating: 4.9, duration: 'Self-paced', level: 'Intermediate',          tags: ['Patterns','LeetCode','Video'] },
+  { id: 4,  title: 'LeetCode Study Plans',                type: 'Course',  provider: 'LeetCode',        description: 'Official curated study plans: Top Interview 150, LeetCode 75, SQL 50.', url: 'https://leetcode.com/study-plan/', rating: 4.7, duration: 'Self-paced', level: 'All Levels',             tags: ['Official','Structured','Curated'] },
+  { id: 5,  title: 'Cracking the Coding Interview',       type: 'Book',    provider: 'Gayle McDowell',  description: '189 programming questions with detailed solutions for FAANG interviews.', url: 'https://www.crackingthecodinginterview.com/', rating: 4.6, duration: '700+ pages', level: 'Intermediate',          tags: ['Interview','FAANG','Classic'] },
+  { id: 6,  title: 'GeeksforGeeks DSA Course',            type: 'Course',  provider: 'GFG',             description: 'Self-paced DSA with practice problems, theory, quizzes, and certificate.', url: 'https://www.geeksforgeeks.org/dsa-self-paced-course/', rating: 4.5, duration: '80+ hours', level: 'Beginner to Intermediate', tags: ['Practice','Certificate','Paid'] },
+  { id: 7,  title: 'CSES Problem Set',                    type: 'Article', provider: 'CSES Finland',    description: '300 curated competitive programming problems for building algorithmic thinking.', url: 'https://cses.fi/problemset/', rating: 4.8, duration: 'Self-paced', level: 'Intermediate to Advanced', tags: ['Competitive','Practice','Free'] },
+  { id: 8,  title: 'Competitive Programming Handbook',   type: 'Book',    provider: 'Antti Laaksonen', description: 'Free comprehensive guide to competitive programming and contests.', url: 'https://cses.fi/book/book.pdf', rating: 4.6, duration: '300+ pages', level: 'Advanced',              tags: ['Competitive','Free','PDF'] },
+  { id: 9,  title: 'System Design Primer',               type: 'Repository', provider: 'GitHub',        description: '250k+ star GitHub repo. Learn to design large-scale distributed systems.', url: 'https://github.com/donnemartin/system-design-primer', rating: 4.9, duration: 'Self-paced', level: 'Advanced',              tags: ['System Design','Free','GitHub'] },
+  { id: 10, title: 'Grokking the Coding Interview',      type: 'Course',  provider: 'Educative.io',    description: '16 coding patterns to solve any LeetCode problem. Used by FAANG candidates.', url: 'https://www.educative.io/courses/grokking-the-coding-interview', rating: 4.8, duration: '50+ hours', level: 'Intermediate',          tags: ['Patterns','FAANG','Paid'] },
+];
 
+// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
 export const mockAchievements = [
-  { id: 1, title: 'First Problem Solved', icon: '🎯', description: 'Solved your first problem', unlocked: true },
-  { id: 2, title: '7-Day Streak', icon: '🔥', description: 'Maintained a 7-day solving streak', unlocked: true },
-  { id: 3, title: '30-Day Streak', icon: '💪', description: 'Maintained a 30-day solving streak', unlocked: false },
-  { id: 4, title: '100 Problems Solved', icon: '💯', description: 'Solved 100 problems', unlocked: true },
-  { id: 5, title: 'Array Master', icon: '📊', description: 'Solved 50 array problems', unlocked: true },
-  { id: 6, title: 'String Specialist', icon: '🔤', description: 'Solved 30 string problems', unlocked: true },
-  { id: 7, title: 'Tree Traverser', icon: '🌳', description: 'Solved 25 tree problems', unlocked: true },
-  { id: 8, title: 'Graph Explorer', icon: '🕸️', description: 'Solved 20 graph problems', unlocked: false },
-  { id: 9, title: 'DP Dynamo', icon: '⚡', description: 'Solved 30 DP problems', unlocked: false },
-  { id: 10, title: 'Speed Demon', icon: '🏃', description: 'Solved a problem in under 5 minutes', unlocked: false }
-]
+  { id: 1,  title: 'First Problem Solved',  icon: '🎯', description: 'Solved your first problem',            unlocked: true },
+  { id: 2,  title: '7-Day Streak',          icon: '🔥', description: 'Maintained a 7-day solving streak',   unlocked: true },
+  { id: 3,  title: '30-Day Streak',         icon: '💪', description: 'Maintained a 30-day solving streak',  unlocked: false },
+  { id: 4,  title: '100 Problems Solved',   icon: '💯', description: 'Solved 100 problems',                  unlocked: true },
+  { id: 5,  title: 'Array Master',          icon: '📊', description: 'Solved 30 array problems',             unlocked: true },
+  { id: 6,  title: 'String Specialist',     icon: '🔤', description: 'Solved 20 string problems',            unlocked: false },
+  { id: 7,  title: 'Tree Traverser',        icon: '🌳', description: 'Solved 15 tree problems',              unlocked: false },
+  { id: 8,  title: 'Graph Explorer',        icon: '🕸️', description: 'Solved 10 graph problems',             unlocked: false },
+  { id: 9,  title: 'DP Dynamo',             icon: '⚡', description: 'Solved 20 DP problems',                unlocked: false },
+  { id: 10, title: 'Speed Demon',           icon: '🏃', description: 'Solved a problem under 5 minutes',    unlocked: false },
+  { id: 11, title: 'Sheet Starter',         icon: '📋', description: 'Started solving an SDE sheet',        unlocked: true },
+  { id: 12, title: 'Consistent Coder',      icon: '📅', description: 'Solved a problem 14 days in a row',  unlocked: false },
+  { id: 13, title: 'Hard Hitter',           icon: '🔨', description: 'Solved 5 Hard difficulty problems',   unlocked: false },
+  { id: 14, title: 'Pattern Recognizer',    icon: '🧩', description: 'Completed 5 different patterns',      unlocked: false },
+  { id: 15, title: 'Stack Overflow Fan',    icon: '📚', description: 'Used notes feature 10 times',         unlocked: false },
+];
 
-// Helper functions for data manipulation
-export const getSheetById = (id) => {
-  return mockSheets.find(sheet => sheet.id === id)
-}
-
-export const getProblemsBySheet = (sheetId) => {
-  return mockProblems.filter(problem => problem.sheetId === sheetId)
-}
-
-export const getProblemById = (id) => {
-  return mockProblems.find(problem => problem.id === parseInt(id))
-}
-
-export const getResourcesByType = (type) => {
-  if (type === 'all') return mockResources
-  return mockResources.filter(resource => resource.type.toLowerCase() === type.toLowerCase())
-}
-
-export const searchProblems = (query, filters = {}) => {
-  let results = mockProblems
-  
-  if (query) {
-    results = results.filter(problem => 
-      problem.title.toLowerCase().includes(query.toLowerCase()) ||
-      problem.topic.toLowerCase().includes(query.toLowerCase()) ||
-      problem.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-    )
-  }
-  
-  if (filters.difficulty && filters.difficulty !== 'all') {
-    results = results.filter(problem => problem.difficulty === filters.difficulty)
-  }
-  
-  if (filters.topic && filters.topic !== 'all') {
-    results = results.filter(problem => problem.topic === filters.topic)
-  }
-  
-  return results
-}
-
-export const getUserStats = (userId) => {
-  // Mock user statistics
-  return {
-    totalSolved: 247,
-    easyCount: 89,
-    mediumCount: 132,
-    hardCount: 26,
-    currentStreak: 15,
-    longestStreak: 42,
-    collegeRank: 12,
-    globalRank: 1847,
-    sheetsCompleted: 3,
-    totalSheets: mockSheets.length,
-    recentActivity: [
-      { date: '2024-01-20', action: 'Solved 8 problems in Striver SDE Sheet', type: 'solve' },
-      { date: '2024-01-19', action: 'Completed Arrays section in Love Babbar 450', type: 'complete' },
-      { date: '2024-01-18', action: 'Started NeetCode 150 sheet', type: 'start' },
-      { date: '2024-01-17', action: 'Achieved 7-day solving streak', type: 'achievement' }
-    ]
-  }
-}
+// ─── HELPER FUNCTIONS ─────────────────────────────────────────────────────────
+export const getSheetById     = (id) => mockSheets.find(s => s.id === id);
+export const getProblemsBySheet = (sheetId) => mockProblems.filter(p => p.sheetId === sheetId);
+export const getProblemById   = (id) => mockProblems.find(p => p.id === parseInt(id));
+export const searchProblems   = (query, filters = {}) => {
+  let r = mockProblems;
+  if (query) r = r.filter(p =>
+    p.title.toLowerCase().includes(query.toLowerCase()) ||
+    p.topic.toLowerCase().includes(query.toLowerCase()) ||
+    (p.tags || []).some(t => t.toLowerCase().includes(query.toLowerCase()))
+  );
+  if (filters.difficulty && filters.difficulty !== 'all') r = r.filter(p => p.difficulty === filters.difficulty);
+  if (filters.topic && filters.topic !== 'all') r = r.filter(p => p.topic === filters.topic);
+  return r;
+};

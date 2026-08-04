@@ -24,6 +24,7 @@ public class UserProfileResponse {
     private String bio;
     private String role;
     private int currentStreak;
+    private int streakDays; // Alias for frontend streakDays
     private int maxStreak;
     private int totalSolved;
 
@@ -43,6 +44,7 @@ public class UserProfileResponse {
             user.getBio(),
             user.getRole().name(),
             user.getCurrentStreak(),
+            user.getCurrentStreak(), // streakDays
             user.getMaxStreak(),
             user.getTotalSolved()
         );

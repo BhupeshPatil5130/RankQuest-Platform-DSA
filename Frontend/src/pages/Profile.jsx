@@ -1,36 +1,64 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Trophy, Target, Flame, School, CheckCircle2, Settings, BookOpen, ArrowRight, Layers, TrendingUp } from 'lucide-react';
+import {
+  Mail, Trophy, Target, Flame, School, CheckCircle2,
+  Settings, BookOpen, ArrowRight, Layers, TrendingUp, Calendar, Zap
+} from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { useAuth } from '../contexts/AuthContext';
-import { getSolvedProblems, getActivityHeatmap } from '../services/apiService';
+import { useDailySolved } from '../hooks/useDailySolved';
+import { getActivityHeatmap, getAllPatterns, getSolvedProblems } from '../services/apiService';
 import ActivityHeatmap from '../components/features/ActivityHeatmap';
 
 export default function Profile() {
   const { user } = useAuth();
-  const [loading,     setLoading]     = useState(true);
-  const [solvedCount, setSolvedCount] = useState(0);
-  const [heatmapData, setHeatmapData] = useState({});
+  const { streak, totalSolved, globalRank, solvedToday, loading: statsLoading } = useDailySolved();
+
+  const [loading,       setLoading]       = useState(true);
+  const [heatmapData,   setHeatmapData]   = useState({});
+  const [patternsDone,  setPatternsDone]  = useState(0);
+  const [totalPatterns, setTotalPatterns] = useState(15);
 
   useEffect(() => {
     (async () => {
       try {
-        const [solved, heatmap] = await Promise.all([
-          getSolvedProblems().catch(() => []),
-          getActivityHeatmap().catch(() => []),
+        const [heatmap, pats, solved] = await Promise.allSettled([
+          getActivityHeatmap(),
+          getAllPatterns(),
+          getSolvedProblems(),
         ]);
-        setSolvedCount(solved?.length || 0);
+
+        // Build heatmap
         const hm = {};
-        if (Array.isArray(heatmap)) heatmap.forEach(i => { if (i.date) hm[i.date] = i.count || 1; });
-        else if (typeof heatmap === 'object') Object.assign(hm, heatmap);
+        if (heatmap.status === 'fulfilled' && Array.isArray(heatmap.value)) {
+          heatmap.value.forEach(i => { if (i.date) hm[i.date] = i.count || 1; });
+        } else if (heatmap.status === 'fulfilled' && typeof heatmap.value === 'object' && heatmap.value) {
+          Object.assign(hm, heatmap.value);
+        }
         setHeatmapData(hm);
-      } finally { setLoading(false); }
+
+        // Count patterns with at least 1 problem solved
+        if (pats.status === 'fulfilled' && pats.value?.length && solved.status === 'fulfilled') {
+          const solvedSet = new Set(solved.value || []);
+          setTotalPatterns(pats.value.length || 15);
+          // We consider a pattern "started" if user has any solved problem
+          // A simplified approach: count patterns that have solved > 0 in our tracking
+          // Since we can't feasibly check each pattern's problems here, we'll use a heuristic:
+          // patternsStarted = Math.floor(solvedCount / 10) capped to totalPatterns
+          const approxDone = Math.min(Math.floor((solved.value?.length || 0) / 10), pats.value.length);
+          setPatternsDone(approxDone);
+        }
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
   const name    = user?.fullName || user?.username || 'Developer';
   const initial = name.charAt(0).toUpperCase();
-  const pct     = Math.round((solvedCount / 150) * 100);
+  const pct     = totalSolved > 0 ? Math.round((totalSolved / 150) * 100) : 0;
+  const patPct  = totalPatterns > 0 ? Math.round((patternsDone / totalPatterns) * 100) : 0;
+  const isLoading = loading || statsLoading;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
@@ -68,27 +96,68 @@ export default function Profile() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Problems Solved */}
           <div className="bg-white dark:bg-slate-900 border-2 border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500">Problems Solved</span><CheckCircle2 className="w-4 h-4 text-emerald-500" /></div>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{solvedCount} <span className="text-xs text-slate-400 font-normal">/ 150</span></div>
+            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Problems Solved</span><CheckCircle2 className="w-4 h-4 text-emerald-500" /></div>
+            {isLoading
+              ? <div className="h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              : <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{totalSolved} <span className="text-xs text-slate-400 font-normal">/ 150</span></div>
+            }
             <Progress value={pct} className="h-1.5 bg-emerald-100 dark:bg-emerald-950 [&>div]:bg-gradient-to-r [&>div]:from-emerald-400 [&>div]:to-teal-500" />
           </div>
+
+          {/* Day Streak */}
           <div className="bg-white dark:bg-slate-900 border-2 border-amber-200 dark:border-amber-800/60 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500">Day Streak</span><Flame className="w-4 h-4 text-amber-500" /></div>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">7 <span className="text-xs text-slate-400 font-normal">Days</span></div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1"><TrendingUp className="w-3 h-3" /> Active daily</p>
+            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Day Streak</span><Flame className="w-4 h-4 text-amber-500" /></div>
+            {isLoading
+              ? <div className="h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              : <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{streak} <span className="text-xs text-slate-400 font-normal">Days</span></div>
+            }
+            <p className={`text-xs font-semibold flex items-center gap-1 ${streak > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+              <TrendingUp className="w-3 h-3" /> {streak > 0 ? 'Active daily' : 'Start today!'}
+            </p>
           </div>
+
+          {/* Global Rank */}
           <div className="bg-white dark:bg-slate-900 border-2 border-amber-200 dark:border-amber-800/60 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500">Global Rank</span><Trophy className="w-4 h-4 text-amber-500" /></div>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">#12</div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Top 5%</p>
+            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Global Rank</span><Trophy className="w-4 h-4 text-amber-500" /></div>
+            {isLoading
+              ? <div className="h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              : <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{globalRank ? `#${globalRank}` : '—'}</div>
+            }
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {globalRank && globalRank <= 100 ? 'Top 100! 🔥' : 'Keep solving to rank'}
+            </p>
           </div>
+
+          {/* Patterns Done */}
           <div className="bg-white dark:bg-slate-900 border-2 border-violet-200 dark:border-violet-800/60 rounded-2xl p-5 space-y-3 shadow-sm hover:shadow-md transition-all">
-            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500">Patterns Done</span><Layers className="w-4 h-4 text-violet-500" /></div>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">4 <span className="text-xs text-slate-400 font-normal">/ 15</span></div>
-            <Progress value={26} className="h-1.5 bg-violet-100 dark:bg-violet-950 [&>div]:bg-gradient-to-r [&>div]:from-violet-400 [&>div]:to-fuchsia-500" />
+            <div className="flex justify-between"><span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Patterns Done</span><Layers className="w-4 h-4 text-violet-500" /></div>
+            {isLoading
+              ? <div className="h-8 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              : <div className="text-2xl font-extrabold text-slate-900 dark:text-white">{patternsDone} <span className="text-xs text-slate-400 font-normal">/ {totalPatterns}</span></div>
+            }
+            <Progress value={patPct} className="h-1.5 bg-violet-100 dark:bg-violet-950 [&>div]:bg-gradient-to-r [&>div]:from-violet-400 [&>div]:to-fuchsia-500" />
           </div>
         </div>
+
+        {/* Solved Today Banner */}
+        {!isLoading && solvedToday > 0 && (
+          <div className="bg-gradient-to-r from-cyan-500/10 to-teal-500/10 border border-cyan-200 dark:border-cyan-800/60 rounded-2xl p-4 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-md shrink-0">
+              <Calendar className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-slate-900 dark:text-white text-sm">
+                You solved <span className="text-cyan-600 dark:text-cyan-400">{solvedToday} problem{solvedToday !== 1 ? 's' : ''}</span> today! 🎉
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Keep it up — consistency builds mastery.</p>
+            </div>
+            <div className="ml-auto shrink-0">
+              <Zap className="w-6 h-6 text-cyan-500" />
+            </div>
+          </div>
+        )}
 
         {/* Activity Heatmap */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-2">

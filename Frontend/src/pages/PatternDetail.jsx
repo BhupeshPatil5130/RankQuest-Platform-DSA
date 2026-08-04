@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Circle, ExternalLink, Code2, Sparkles, ChevronRight } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft, CheckCircle2, Circle, ExternalLink, Code2,
+  Sparkles, ChevronRight, Lock, LogIn, TrendingUp
+} from 'lucide-react';
 import { getPatternBySlug, getProblemsByPattern, toggleSolveStatus, getSolvedProblems } from '../services/apiService';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
@@ -14,13 +17,15 @@ const stepGradients = [
 ];
 
 export default function PatternDetail() {
-  const { slug } = useParams();
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const { slug }     = useParams();
+  const { user }     = useAuth();
+  const { toast }    = useToast();
+  const navigate     = useNavigate();
   const [pattern,   setPattern]  = useState(null);
   const [problems,  setProblems] = useState([]);
   const [solvedIds, setSolved]   = useState(new Set());
   const [loading,   setLoading]  = useState(true);
+  const [toggling,  setToggling] = useState(null); // problem id being toggled
 
   useEffect(() => {
     (async () => {
@@ -37,11 +42,24 @@ export default function PatternDetail() {
   }, [slug, user]);
 
   const handleToggle = async (id) => {
-    if (!user) return toast({ title: 'Sign in required', description: 'Please sign in to track progress.' });
-    const newState = !solvedIds.has(id);
-    await toggleSolveStatus(id, newState).catch(() => {});
-    setSolved(prev => { const n = new Set(prev); newState ? n.add(id) : n.delete(id); return n; });
-    toast({ title: newState ? '✅ Marked solved!' : 'Unmarked', variant: 'default' });
+    if (!user) {
+      toast({ title: '🔐 Sign in required', description: 'Create a free account to track your progress.' });
+      navigate('/login', { state: { from: { pathname: `/patterns/${slug}` } } });
+      return;
+    }
+    setToggling(id);
+    try {
+      const newState = !solvedIds.has(id);
+      await toggleSolveStatus(id, newState).catch(() => {});
+      setSolved(prev => {
+        const n = new Set(prev);
+        newState ? n.add(id) : n.delete(id);
+        return n;
+      });
+      toast({ title: newState ? '✅ Marked as solved!' : '↩ Unmarked', variant: 'default' });
+    } finally {
+      setToggling(null);
+    }
   };
 
   if (loading) return (
@@ -60,10 +78,10 @@ export default function PatternDetail() {
     </div>
   );
 
-  const gradient   = stepGradients[(pattern.sequenceOrder - 1) % stepGradients.length];
-  const solved     = problems.filter(p => solvedIds.has(p.id)).length;
-  const total      = problems.length;
-  const pct        = total ? Math.round((solved / total) * 100) : 0;
+  const gradient = stepGradients[(pattern.sequenceOrder - 1) % stepGradients.length];
+  const solved   = problems.filter(p => solvedIds.has(p.id)).length;
+  const total    = problems.length;
+  const pct      = total ? Math.round((solved / total) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
@@ -78,7 +96,7 @@ export default function PatternDetail() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-white text-xs font-extrabold code-font uppercase">
-                Step {String(pattern.sequenceOrder).padStart(2,'0')} · {pattern.difficulty}
+                Step {String(pattern.sequenceOrder).padStart(2, '0')} · {pattern.difficulty}
               </div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">{pattern.name}</h1>
               <p className="text-sm text-white/80 leading-relaxed max-w-2xl">{pattern.description}</p>
@@ -105,32 +123,96 @@ export default function PatternDetail() {
           )}
         </div>
 
+        {/* Guest Login Banner — shown when not authenticated */}
+        {!user && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border-2 border-indigo-200 dark:border-indigo-800/60 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shrink-0">
+                <Lock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 dark:text-white text-sm">Sign in to track your progress</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Mark problems as solved, maintain streaks, and see your progress across all patterns.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/login"
+              state={{ from: { pathname: `/patterns/${slug}` } }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs shadow-lg hover:opacity-90 hover:scale-[1.02] transition-all shrink-0"
+            >
+              <LogIn className="w-4 h-4" /> Sign In Free
+            </Link>
+          </div>
+        )}
+
+        {/* Stats row when logged in */}
+        {user && solved > 0 && (
+          <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+            <TrendingUp className="w-4 h-4" />
+            {solved === total
+              ? `🎉 Pattern Complete! You solved all ${total} problems!`
+              : `Great progress! ${solved} of ${total} problems solved (${pct}%)`
+            }
+          </div>
+        )}
+
         {/* Problem list */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="font-extrabold text-slate-900 dark:text-white">Curated Problem Set</h2>
-            <p className="text-xs text-slate-500 mt-0.5">10 handpicked problems — solve on LeetCode, GFG, or the in-app Playground</p>
+          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <div>
+              <h2 className="font-extrabold text-slate-900 dark:text-white">Curated Problem Set</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {total} handpicked problems — solve on LeetCode, GFG, or the in-app Playground
+              </p>
+            </div>
+            {!user && (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
+                <Lock className="w-3 h-3" /> Login to track
+              </div>
+            )}
           </div>
           <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {problems.map((problem, idx) => {
-              const done = solvedIds.has(problem.id);
-              const diffCls = problem.difficulty === 'Easy' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                            : problem.difficulty === 'Medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-800'
-                            : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+              const done    = solvedIds.has(problem.id);
+              const isBusy  = toggling === problem.id;
+              const diffCls = problem.difficulty === 'Easy'
+                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                : problem.difficulty === 'Medium'
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                  : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+
               return (
                 <div key={problem.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-3.5 transition-colors ${
+                    done ? 'bg-emerald-50/50 dark:bg-emerald-950/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                  }`}>
                   <div className="flex items-center gap-3">
-                    <button onClick={() => handleToggle(problem.id)} className="shrink-0">
-                      {done
-                        ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                        : <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600 hover:text-emerald-400 transition-colors" />}
+                    <button
+                      onClick={() => handleToggle(problem.id)}
+                      disabled={isBusy}
+                      className="shrink-0 transition-transform hover:scale-110 disabled:opacity-50"
+                      title={user ? (done ? 'Mark as unsolved' : 'Mark as solved') : 'Sign in to track'}
+                    >
+                      {isBusy
+                        ? <div className="w-5 h-5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+                        : done
+                          ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                          : user
+                            ? <Circle className="w-5 h-5 text-slate-300 dark:text-slate-600 hover:text-emerald-400 transition-colors" />
+                            : <Lock className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                      }
                     </button>
-                    <span className="text-[11px] text-slate-400 dark:text-slate-500 code-font shrink-0">#{idx+1}</span>
-                    <span className={`text-sm font-semibold transition-colors ${done ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'}`}>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 code-font shrink-0">#{idx + 1}</span>
+                    <span className={`text-sm font-semibold transition-colors ${
+                      done ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-900 dark:text-slate-100'
+                    }`}>
                       {problem.title}
                     </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffCls} hidden sm:inline`}>{problem.difficulty}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diffCls} hidden sm:inline`}>
+                      {problem.difficulty}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-8 sm:ml-0">
                     {problem.leetcodeUrl && (
