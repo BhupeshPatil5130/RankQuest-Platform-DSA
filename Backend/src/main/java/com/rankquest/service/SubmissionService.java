@@ -55,9 +55,7 @@ public class SubmissionService {
         if ("UNSOLVED".equalsIgnoreCase(requestedStatus)) {
             if (existing.isPresent()) {
                 submissionRepository.delete(existing.get());
-                if (user.getTotalSolved() > 0) {
-                    user.setTotalSolved(user.getTotalSolved() - 1);
-                }
+                user.setTotalSolved((int) submissionRepository.countDistinctSolvedByUserId(user.getId()));
 
                 // Decrement or remove today's activity log entry
                 LocalDate today = LocalDate.now();
@@ -87,6 +85,7 @@ public class SubmissionService {
             }
             submissionRepository.save(s);
             updateStreakAndActivity(user);
+            user.setTotalSolved((int) submissionRepository.countDistinctSolvedByUserId(user.getId()));
             userRepository.save(user);
             return ApiResponse.success("Submission updated!");
         }
@@ -101,8 +100,8 @@ public class SubmissionService {
         submissionRepository.save(submission);
 
         // Update user stats for new solve
-        user.setTotalSolved(user.getTotalSolved() + 1);
         updateStreakAndActivity(user);
+        user.setTotalSolved((int) submissionRepository.countDistinctSolvedByUserId(user.getId()));
         userRepository.save(user);
 
         return ApiResponse.success("Problem solved! 🎉 Keep going!");
@@ -141,8 +140,9 @@ public class SubmissionService {
             user.setCurrentStreak(user.getCurrentStreak() + 1);
         } else if (lastSolved.isBefore(today.minusDays(1))) {
             user.setCurrentStreak(1);
+        } else if (lastSolved.equals(today) && user.getCurrentStreak() == 0) {
+            user.setCurrentStreak(1);
         }
-        // Note: if lastSolved equals today, user already incremented streak today; currentStreak stays unchanged.
 
         user.setMaxStreak(Math.max(user.getMaxStreak(), user.getCurrentStreak()));
         user.setLastSolvedDate(today);

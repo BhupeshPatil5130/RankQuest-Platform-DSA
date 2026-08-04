@@ -104,7 +104,7 @@ export default function Rankings() {
                       {(r.fullName || r.username || 'D').charAt(0).toUpperCase()}
                     </div>
                     <p className="text-xs font-bold text-slate-900 dark:text-white mt-1 max-w-[90px] truncate">{r.fullName || r.username}</p>
-                    <p className="text-[10px] text-slate-500">{r.problemsSolved || 0} solved</p>
+                    <p className="text-[10px] text-slate-500">{r.problemsSolved ?? r.totalSolved ?? 0} solved</p>
                   </div>
                   <div className={`w-24 ${heights[pos]} rounded-t-xl bg-gradient-to-b ${grads[pos]} flex items-start justify-center pt-3`}>
                     <span className="text-2xl">{emojis[pos]}</span>
@@ -143,6 +143,9 @@ export default function Rankings() {
                     const isMe = user && (user.username === row.username || user.email === row.email);
                     const n    = i + 1;
                     const rs   = rankStyle(n);
+                    const solvedCount = row.problemsSolved ?? row.totalSolved ?? row.solvedCount ?? 0;
+                    const streakCount = row.streakDays ?? row.currentStreak ?? row.streak ?? 0;
+                    const pointsCount = row.points ?? (solvedCount * 10);
                     return (
                       <tr key={row.username || i}
                         className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${isMe ? 'bg-indigo-50 dark:bg-indigo-950/30 font-semibold' : ''}`}>
@@ -172,14 +175,14 @@ export default function Rankings() {
                         </td>
                         <td className="px-5 py-3.5 text-center">
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 font-bold border border-amber-200 dark:border-amber-800">
-                            <Flame className="w-3 h-3" /> {row.streakDays || row.streak || 0}d
+                            <Flame className="w-3 h-3" /> {streakCount}d
                           </span>
                         </td>
                         <td className="px-5 py-3.5 text-center font-extrabold text-emerald-600 dark:text-emerald-400">
-                          {row.problemsSolved || row.solvedCount || 0}
+                          {solvedCount}
                         </td>
                         <td className="px-5 py-3.5 text-right font-extrabold text-slate-900 dark:text-white">
-                          {(row.problemsSolved || 0) * 10} <span className="text-slate-400 font-normal">pts</span>
+                          {pointsCount} <span className="text-slate-400 font-normal">pts</span>
                         </td>
                       </tr>
                     );
