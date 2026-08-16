@@ -84,18 +84,18 @@ const CodePlayground = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-background py-10 transition-colors">
+      <div className="container mx-auto px-4 max-w-7xl page-enter">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Code Playground</h1>
-            <p className="text-muted-foreground text-sm">Run code snippets instantly in multiple languages</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Code Playground</h1>
+            <p className="text-muted-foreground text-base mt-1">Run code snippets instantly in multiple languages</p>
           </div>
           <div className="flex items-center gap-3">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-medium focus:outline-none focus:border-primary/50 text-foreground"
+              className="px-4 py-2.5 bg-white/5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:outline-none focus:border-primary/50 text-foreground bg-slate-50 dark:bg-slate-800 transition-colors"
             >
               <option value="python" className="bg-background">Python 3</option>
               <option value="javascript" className="bg-background">JavaScript (Node.js)</option>
@@ -105,7 +105,7 @@ const CodePlayground = () => {
             <Button
               onClick={runCode}
               disabled={isRunning}
-              className="bg-emerald-600 hover:bg-emerald-700 font-bold px-5 rounded-xl gap-2"
+              className="bg-emerald-600 hover:bg-emerald-700 font-bold px-6 py-2.5 rounded-xl gap-2 text-sm shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all duration-300"
             >
               {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
               {isRunning ? 'Executing...' : 'Run Code'}
@@ -115,16 +115,16 @@ const CodePlayground = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Code Editor Box */}
-          <Card className="glass-dark border-0 shadow-2xl flex flex-col h-[650px]">
-            <CardHeader className="py-3 px-6 border-b border-white/10 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Card className="glass-dark border-0 shadow-2xl flex flex-col h-[700px] rounded-3xl overflow-hidden">
+            <CardHeader className="py-4 px-6 border-b border-white/10 flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2.5">
                 <Code2 className="w-4 h-4 text-primary" /> Source Code
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setCode(codeTemplates[language])}
-                className="text-xs text-muted-foreground hover:text-foreground gap-1"
+                className="text-sm text-muted-foreground hover:text-foreground gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Reset
               </Button>
@@ -135,32 +135,32 @@ const CodePlayground = () => {
           </Card>
 
           {/* Stdin & Output Box */}
-          <div className="flex flex-col gap-6 h-[650px]">
+          <div className="flex flex-col gap-6 h-[700px]">
             {/* Custom Input */}
-            <Card className="glass-dark border-0 shadow-xl flex-1 flex flex-col min-h-0">
-              <CardHeader className="py-3 px-6 border-b border-white/10">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Card className="glass-dark border-0 shadow-xl flex-1 flex flex-col min-h-0 rounded-3xl overflow-hidden">
+              <CardHeader className="py-4 px-6 border-b border-white/10">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2.5">
                   <Terminal className="w-4 h-4 text-blue-400" /> Custom Input (stdin)
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 flex-1">
+              <CardContent className="p-5 flex-1">
                 <textarea
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   placeholder="Enter custom input arguments here..."
-                  className="w-full h-full p-3 bg-black/30 border border-white/10 rounded-xl font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none"
+                  className="w-full h-full p-4 bg-black/30 border border-white/10 rounded-xl font-mono text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none transition-colors"
                 />
               </CardContent>
             </Card>
 
             {/* Program Output */}
-            <Card className="glass-dark border-0 shadow-xl flex-[1.5] flex flex-col min-h-0">
-              <CardHeader className="py-3 px-6 border-b border-white/10">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Card className="glass-dark border-0 shadow-xl flex-[1.5] flex flex-col min-h-0 rounded-3xl overflow-hidden">
+              <CardHeader className="py-4 px-6 border-b border-white/10">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2.5">
                   <Terminal className="w-4 h-4 text-emerald-400" /> Output
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-4 flex-1 bg-black/40 overflow-auto custom-scrollbar rounded-b-2xl">
+              <CardContent className="p-5 flex-1 bg-black/40 overflow-auto custom-scrollbar rounded-b-3xl">
                 <pre className="w-full h-full font-mono text-sm text-foreground whitespace-pre-wrap">
                   {output || <span className="text-muted-foreground/50">Run your code to see the output here...</span>}
                 </pre>

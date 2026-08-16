@@ -33,7 +33,7 @@ function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className="pt-16">
+      <main className="pt-20">
         <Routes>
           {/* Smart root: guest → Home landing, auth → Dashboard */}
           <Route path="/" element={<SmartHome />} />

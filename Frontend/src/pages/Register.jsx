@@ -6,17 +6,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
 
 const Field = ({ label, icon: Icon, error, iconColor = 'text-indigo-500', children }) => (
-  <div className="space-y-1">
-    <label className={`text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5`}>
-      <Icon className={`w-3.5 h-3.5 ${iconColor}`} /> {label}
+  <div className="space-y-1.5">
+    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+      <Icon className={`w-4 h-4 ${iconColor}`} /> {label}
     </label>
     {children}
-    {error && <p className="text-[11px] text-rose-500">{error}</p>}
+    {error && <p className="text-xs text-rose-500">{error}</p>}
   </div>
 );
 
 const inputCls = (err) =>
-  `w-full h-10 px-3.5 rounded-xl border ${err ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'} bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all`;
+  `w-full h-12 px-4 rounded-xl border ${err ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'} bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 transition-all duration-300`;
 
 export default function Register() {
   const navigate = useNavigate();
@@ -63,25 +63,30 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid flex flex-col justify-center py-12 px-4 transition-colors">
-      <div className="w-full max-w-xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid flex flex-col justify-center py-16 px-4 transition-colors relative overflow-hidden">
+      {/* Floating background decorations */}
+      <div className="absolute top-20 -left-32 w-80 h-80 rounded-full bg-indigo-400/10 dark:bg-indigo-500/5 blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-20 -right-24 w-72 h-72 rounded-full bg-purple-400/10 dark:bg-purple-500/5 blur-3xl animate-float-slow pointer-events-none" />
+      <div className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-pink-400/8 dark:bg-pink-500/5 blur-3xl animate-float-reverse pointer-events-none" />
+
+      <div className="w-full max-w-2xl mx-auto space-y-8 relative animate-slide-in-up">
 
         {/* Brand */}
-        <div className="text-center space-y-3">
-          <Link to="/" className="inline-flex items-center gap-2 group">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
-              <Layers className="w-5 h-5 text-white" />
+        <div className="text-center space-y-4">
+          <Link to="/" className="inline-flex items-center gap-2.5 group">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-all duration-300">
+              <Layers className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">RankQuest</span>
+            <span className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">RankQuest</span>
           </Link>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white">Create your account</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Start your pattern-wise DSA journey today</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Create your account</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">Start your pattern-wise DSA journey today</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-7 shadow-xl space-y-5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 shadow-xl space-y-6">
 
           <div className="flex justify-center">
             <GoogleLogin
@@ -95,15 +100,15 @@ export default function Register() {
             />
           </div>
 
-          <div className="relative flex items-center gap-3">
+          <div className="relative flex items-center gap-4">
             <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-            <span className="text-[11px] font-semibold text-slate-400 shrink-0">or register with email</span>
+            <span className="text-sm font-semibold text-slate-400 shrink-0">or register with email</span>
             <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-5">
             {/* Name & Email */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Field label="Full Name *" icon={User} error={errors.name}>
                 <input type="text" placeholder="John Doe" value={form.name} onChange={e => set('name', e.target.value)} className={inputCls(errors.name)} />
               </Field>
@@ -113,9 +118,9 @@ export default function Register() {
             </div>
 
             {/* College details */}
-            <div className="pt-1 space-y-3">
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Academic Details (optional)</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="pt-2 space-y-4">
+              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Academic Details (optional)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Field label="College" icon={School} iconColor="text-emerald-500">
                   <input type="text" placeholder="IIT Bombay" value={form.college} onChange={e => set('college', e.target.value)} className={inputCls(false)} />
                 </Field>
@@ -126,22 +131,22 @@ export default function Register() {
             </div>
 
             {/* Password */}
-            <div className="pt-1 space-y-3">
-              <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Security</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="pt-2 space-y-4">
+              <p className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Security</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Field label="Password *" icon={Lock} error={errors.password}>
                   <div className="relative">
-                    <input type={showPass ? 'text' : 'password'} placeholder="Min 6 characters" value={form.password} onChange={e => set('password', e.target.value)} className={inputCls(errors.password) + ' pr-10'} />
-                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <input type={showPass ? 'text' : 'password'} placeholder="Min 6 characters" value={form.password} onChange={e => set('password', e.target.value)} className={inputCls(errors.password) + ' pr-12'} />
+                    <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                      {showPass ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </button>
                   </div>
                 </Field>
                 <Field label="Confirm Password *" icon={Lock} error={errors.confirmPassword}>
                   <div className="relative">
-                    <input type={showConf ? 'text' : 'password'} placeholder="Repeat password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} className={inputCls(errors.confirmPassword) + ' pr-10'} />
-                    <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      {showConf ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <input type={showConf ? 'text' : 'password'} placeholder="Repeat password" value={form.confirmPassword} onChange={e => set('confirmPassword', e.target.value)} className={inputCls(errors.confirmPassword) + ' pr-12'} />
+                    <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                      {showConf ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                     </button>
                   </div>
                 </Field>
@@ -149,12 +154,12 @@ export default function Register() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full h-10 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-60">
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account…</> : <><UserPlus className="w-4 h-4" /> Create Account <ArrowRight className="w-4 h-4" /></>}
+              className="w-full h-12 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-extrabold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:opacity-60">
+              {loading ? <><Loader2 className="w-4.5 h-4.5 animate-spin" /> Creating Account…</> : <><UserPlus className="w-4.5 h-4.5" /> Create Account <ArrowRight className="w-4.5 h-4.5" /></>}
             </button>
           </form>
 
-          <p className="text-center text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-center text-sm text-slate-600 dark:text-slate-400">
             Already have an account?{' '}
             <Link to="/login" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Sign in</Link>
           </p>

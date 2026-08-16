@@ -103,30 +103,92 @@
     background-size: 32px 32px;
   }
 
-  /* ── Animations ──────────────────────────────── */
+  /* ── Floating / Parallax Animations ─────────────── */
 
+  /* Gentle vertical float — for decorative elements */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: floatSlow 8s ease-in-out infinite;
+  }
+  .animate-float-reverse {
+    animation: floatReverse 7s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: float 6s ease-in-out 2s infinite;
+  }
+
+  /* Entrance animations */
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeIn 0.6s ease-out forwards;
   }
-
   .animate-slide-up {
-    animation: slideUp 0.4s ease-out forwards;
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  .animate-slide-in-up {
+    animation: slideInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
+  /* Stagger children entrance */
   .animate-stagger-in > * {
-    animation: slideUp 0.4s ease-out forwards;
+    animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     opacity: 0;
   }
   .animate-stagger-in > *:nth-child(1)  { animation-delay: 0.05s; }
-  .animate-stagger-in > *:nth-child(2)  { animation-delay: 0.10s; }
-  .animate-stagger-in > *:nth-child(3)  { animation-delay: 0.15s; }
-  .animate-stagger-in > *:nth-child(4)  { animation-delay: 0.20s; }
-  .animate-stagger-in > *:nth-child(5)  { animation-delay: 0.25s; }
-  .animate-stagger-in > *:nth-child(6)  { animation-delay: 0.30s; }
-  .animate-stagger-in > *:nth-child(n+7) { animation-delay: 0.35s; }
+  .animate-stagger-in > *:nth-child(2)  { animation-delay: 0.12s; }
+  .animate-stagger-in > *:nth-child(3)  { animation-delay: 0.19s; }
+  .animate-stagger-in > *:nth-child(4)  { animation-delay: 0.26s; }
+  .animate-stagger-in > *:nth-child(5)  { animation-delay: 0.33s; }
+  .animate-stagger-in > *:nth-child(6)  { animation-delay: 0.40s; }
+  .animate-stagger-in > *:nth-child(7)  { animation-delay: 0.47s; }
+  .animate-stagger-in > *:nth-child(8)  { animation-delay: 0.54s; }
+  .animate-stagger-in > *:nth-child(n+9) { animation-delay: 0.60s; }
 
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Card hover lift — unified hover interaction for all cards */
+  .card-hover-lift {
+    @apply transition-all duration-500 ease-out;
+  }
+  .card-hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  }
+  .dark .card-hover-lift:hover {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Shimmer skeleton loading */
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* ── Keyframes ──────────────────────────────── */
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+
+  @keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes floatReverse {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(14px); }
   }
 
   @keyframes fadeIn {
@@ -135,8 +197,28 @@
   }
 
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-30px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 
   /* Gradient text shorthand */
@@ -156,5 +238,10 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* Page transition wrapper */
+  .page-enter {
+    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }

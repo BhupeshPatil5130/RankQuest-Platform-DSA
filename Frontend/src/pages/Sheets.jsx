@@ -56,56 +56,61 @@ export default function Sheets() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-12 px-4 sm:px-6 lg:px-8 transition-colors">
+      <div className="max-w-7xl mx-auto space-y-10 page-enter">
 
-        <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl p-7 md:p-10 shadow-xl shadow-emerald-500/20 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-extrabold uppercase tracking-widest">
-            <BookOpen className="w-3.5 h-3.5" /> {sheets.length}+ Curated SDE Problem Sheets
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 rounded-3xl p-8 md:p-12 shadow-2xl shadow-emerald-500/20 space-y-5">
+          {/* Floating decorations */}
+          <div className="absolute top-8 right-12 w-20 h-20 rounded-full bg-white/10 animate-float pointer-events-none" />
+          <div className="absolute bottom-6 left-20 w-14 h-14 rounded-full bg-white/10 animate-float-reverse pointer-events-none" />
+
+          <div className="relative inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/20 text-white text-sm font-extrabold uppercase tracking-widest">
+            <BookOpen className="w-4 h-4" /> {sheets.length}+ Curated SDE Problem Sheets
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">SDE Sheet Collections</h1>
-          <p className="text-emerald-100 text-sm max-w-2xl leading-relaxed">
+          <h1 className="relative text-4xl md:text-5xl font-extrabold text-white tracking-tight">SDE Sheet Collections</h1>
+          <p className="relative text-emerald-100 text-base max-w-2xl leading-relaxed">
             Handpicked problem collections — Placement 10x10 Master Sheet, Striver SDE Sheet, NeetCode 150, Blind 75, Love Babbar 450, GFG Must-Do, Apna College, Grind 75 and more.
           </p>
-          <div className="flex flex-wrap gap-3 text-xs text-white font-semibold">
-            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><Sparkles className="w-4 h-4 text-yellow-300" /> {sheets.reduce((a, s) => a + (s.problemCount || 0), 0)}+ Problems</div>
-            <div className="flex items-center gap-1.5 bg-white/15 px-3 py-1.5 rounded-lg"><BookOpen className="w-4 h-4 text-emerald-300" /> {sheets.length} Sheets</div>
+          <div className="relative flex flex-wrap gap-4 text-sm text-white font-semibold">
+            <div className="flex items-center gap-2 bg-white/15 px-4 py-2 rounded-xl"><Sparkles className="w-4 h-4 text-yellow-300" /> {sheets.reduce((a, s) => a + (s.problemCount || 0), 0)}+ Problems</div>
+            <div className="flex items-center gap-2 bg-white/15 px-4 py-2 rounded-xl"><BookOpen className="w-4 h-4 text-emerald-300" /> {sheets.length} Sheets</div>
           </div>
         </div>
 
         {/* Featured Placement Master Sheet Banner */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl p-6 shadow-xl text-white flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="space-y-1.5 text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-wider">
+        <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 shadow-2xl text-white flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="absolute top-4 right-8 w-16 h-16 rounded-full bg-white/10 animate-float pointer-events-none" />
+          <div className="space-y-2.5 text-center md:text-left relative">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 text-xs font-black uppercase tracking-wider">
               🔥 Featured Placement Special
             </div>
-            <h2 className="text-xl md:text-2xl font-black">10x10 Data Structure Interview Master Sheet</h2>
-            <p className="text-xs text-indigo-100 max-w-xl">
+            <h2 className="text-2xl md:text-3xl font-black">10x10 Data Structure Interview Master Sheet</h2>
+            <p className="text-sm text-indigo-100 max-w-xl">
               Covers all Data Structures (Arrays, Linked Lists, Trees, Graphs, DP, Tries, etc.) with 10 Easy, 10 Medium, and 10 Hard questions per topic!
             </p>
           </div>
           <Link to="/placement" 
-            className="px-5 py-2.5 rounded-xl bg-white text-indigo-700 font-extrabold text-xs shadow-lg hover:scale-105 transition-all shrink-0 flex items-center gap-2">
+            className="relative px-6 py-3 rounded-2xl bg-white text-indigo-700 font-extrabold text-sm shadow-lg hover:scale-105 transition-all duration-300 shrink-0 flex items-center gap-2.5">
             Explore Placement Prep <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
         {/* Search */}
-        <div className="flex justify-end bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm">
+        <div className="flex justify-end bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input placeholder="Search sheets…" value={search} onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-9 text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg" />
+              className="pl-10 h-11 text-sm bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl" />
           </div>
         </div>
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1,2,3,4,5,6].map(i => <div key={i} className="h-56 rounded-2xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-64 rounded-3xl bg-slate-200 dark:bg-slate-800 animate-pulse" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger-in">
             {filtered.map((sheet, idx) => {
               const c      = sheetColors[idx % sheetColors.length];
               const solved = solvedCountMap[sheet.id] || 0;
@@ -113,27 +118,27 @@ export default function Sheets() {
               const pct    = total ? Math.round((solved / total) * 100) : 0;
               return (
                 <div key={sheet.id}
-                  className={`group bg-white dark:bg-slate-900 border-2 ${c.border} rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between`}>
-                  <div className="space-y-3">
+                  className={`group bg-white dark:bg-slate-900 border-2 ${c.border} rounded-3xl p-7 space-y-5 shadow-sm card-hover-lift flex flex-col justify-between`}>
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${c.badge}`}>{sheet.author || 'Curated'}</span>
-                      <span className="text-xs text-slate-400 dark:text-slate-500 code-font">{total} Qs</span>
+                      <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${c.badge}`}>{sheet.author || 'Curated'}</span>
+                      <span className="text-sm text-slate-400 dark:text-slate-500 code-font">{total} Qs</span>
                     </div>
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${c.grad} flex items-center justify-center shadow-md`}>
-                      <BookOpen className="w-5 h-5 text-white" />
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${c.grad} flex items-center justify-center shadow-lg`}>
+                      <BookOpen className="w-6 h-6 text-white" />
                     </div>
-                    <h2 className="font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{sheet.title}</h2>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">{sheet.description}</p>
+                    <h2 className="font-extrabold text-lg text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{sheet.title}</h2>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">{sheet.description}</p>
                   </div>
-                  <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <div className="flex justify-between text-[11px] font-semibold">
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex justify-between text-sm font-semibold">
                       <span className="text-slate-500">Progress</span>
                       <span className="text-emerald-600 dark:text-emerald-400">{solved} / {total}</span>
                     </div>
-                    <Progress value={pct} className={`h-1.5 bg-slate-100 dark:bg-slate-800 [&>div]:bg-gradient-to-r ${c.bar}`} />
+                    <Progress value={pct} className={`h-2 bg-slate-100 dark:bg-slate-800 [&>div]:bg-gradient-to-r ${c.bar}`} />
                     <Link to={`/sheets/${sheet.id}`}>
-                      <button className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r ${c.grad} text-white text-xs font-bold shadow-md hover:opacity-90 hover:scale-[1.02] transition-all`}>
-                        Open Sheet <ArrowRight className="w-3.5 h-3.5" />
+                      <button className={`w-full flex items-center justify-center gap-2.5 py-3 rounded-xl bg-gradient-to-r ${c.grad} text-white text-sm font-bold shadow-md hover:opacity-90 hover:scale-[1.02] transition-all duration-300`}>
+                        Open Sheet <ArrowRight className="w-4 h-4" />
                       </button>
                     </Link>
                   </div>
