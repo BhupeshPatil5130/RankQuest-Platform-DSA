@@ -138,8 +138,8 @@ export default function PlacementSheet() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div className="space-y-6">
 
         {/* Hero Header */}
         <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-7 md:p-10 shadow-2xl shadow-indigo-500/20 text-white space-y-6 relative overflow-hidden">

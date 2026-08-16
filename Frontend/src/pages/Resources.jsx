@@ -214,8 +214,8 @@ const Resources = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div className="space-y-6">
 
         {/* Hero */}
         <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-7 md:p-10 shadow-xl shadow-purple-500/20 space-y-4">

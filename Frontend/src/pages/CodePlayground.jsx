@@ -84,9 +84,9 @@ const CodePlayground = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-10 transition-colors">
-      <div className="container mx-auto px-4 max-w-7xl page-enter">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-200/80 dark:border-slate-800/80 gap-4">
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Code Playground</h1>
             <p className="text-muted-foreground text-base mt-1">Run code snippets instantly in multiple languages</p>

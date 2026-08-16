@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -9,37 +9,39 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
 
 const schema = Yup.object().shape({
-  email:    Yup.string().email('Invalid email address').required('Email is required'),
+  email: Yup.string().email('Invalid email address').required('Email is required'),
   password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
 });
 
 export default function Login() {
-  const [loading,  setLoading]  = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const { login, googleLogin, isAuthenticated } = useAuth();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
-  // Where to redirect after successful login
   const from = location.state?.from?.pathname || '/';
 
-  // If already authenticated, redirect away
   useEffect(() => {
     if (isAuthenticated) navigate(from, { replace: true });
   }, [isAuthenticated, navigate, from]);
 
-  const { register, handleSubmit, formState: { errors } } = useForm({ resolver: yupResolver(schema) });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ resolver: yupResolver(schema) });
 
   const onSubmit = async (data) => {
     setLoading(true);
     const r = await login(data);
     setLoading(false);
     if (r.success) {
-      toast({ title: 'Welcome back! 🎉', description: 'Ready to grind some DSA?', variant: 'success' });
+      toast({ title: 'Welcome back! 🎉', description: 'Ready to continue practicing?', variant: 'success' });
       navigate(from, { replace: true });
     } else {
-      toast({ title: 'Login failed', description: r.error || 'Invalid email or password.', variant: 'destructive' });
+      toast({ title: 'Login failed', description: r.error || 'Invalid credentials', variant: 'destructive' });
     }
   };
 
@@ -56,114 +58,101 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid flex flex-col justify-center py-16 px-4 transition-colors relative overflow-hidden">
-      {/* Floating background decorations */}
-      <div className="absolute top-20 -left-32 w-80 h-80 rounded-full bg-indigo-400/10 dark:bg-indigo-500/5 blur-3xl animate-float pointer-events-none" />
-      <div className="absolute bottom-20 -right-24 w-72 h-72 rounded-full bg-purple-400/10 dark:bg-purple-500/5 blur-3xl animate-float-slow pointer-events-none" />
-      <div className="absolute top-1/2 left-1/3 w-48 h-48 rounded-full bg-pink-400/8 dark:bg-pink-500/5 blur-3xl animate-float-reverse pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center p-4">
+      {/* Floating orbs */}
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl animate-float pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-3xl animate-float-slow pointer-events-none" />
 
-      <div className="w-full max-w-md mx-auto space-y-8 relative animate-slide-in-up">
-
+      <div className="w-full max-w-md space-y-6 relative animate-slide-in-up">
         {/* Brand */}
-        <div className="text-center space-y-4">
-          <Link to="/" className="inline-flex items-center gap-2.5 group">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-all duration-300">
-              <Layers className="w-6 h-6 text-white" />
+        <div className="text-center space-y-2">
+          <Link to="/" className="inline-flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+              <Layers className="w-5 h-5" />
             </div>
-            <span className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">RankQuest</span>
+            <span className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">
+              RankQuest
+            </span>
           </Link>
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Welcome back</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5">Sign in to continue your DSA journey</p>
-          </div>
-          {/* Show redirect hint if coming from a protected page */}
-          {location.state?.from && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-sm font-medium">
-              <ShieldCheck className="w-4 h-4" />
-              Sign in to access that page
-            </div>
-          )}
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Sign in to your account</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Continue your DSA learning streak</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 shadow-xl space-y-6">
-
-          {/* Google */}
+        <div className="workspace-card p-6 sm:p-8 space-y-5 shadow-xl bg-white dark:bg-slate-900">
           <div className="flex justify-center">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => toast({ title: 'Google Sign-In Error', description: 'Unable to sign in with Google.', variant: 'destructive' })}
-              theme="filled_black" size="large" width="100%" shape="pill"
+              onError={() => toast({ title: 'Google Login Failed', variant: 'destructive' })}
+              theme="outline"
+              size="large"
+              shape="pill"
+              width="100%"
             />
           </div>
 
-          <div className="relative flex items-center gap-4">
-            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-            <span className="text-sm font-semibold text-slate-400 dark:text-slate-500 shrink-0">or sign in with email</span>
-            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase">or with email</span>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Email */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-indigo-500" /> Email
-              </label>
-              <input
-                type="email"
-                placeholder="name@example.com"
-                {...register('email')}
-                className={`w-full h-12 px-4 rounded-xl border ${
-                  errors.email ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'
-                } bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-300`}
-              />
-              {errors.email && <p className="text-xs text-rose-500 mt-0.5">{errors.email.message}</p>}
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  {...register('email')}
+                  className={`w-full h-11 pl-10 pr-4 rounded-xl border ${
+                    errors.email ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'
+                  } bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all`}
+                />
+              </div>
+              {errors.email && <p className="text-[11px] text-rose-500">{errors.email.message}</p>}
             </div>
 
-            {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Lock className="w-4 h-4 text-indigo-500" /> Password
-              </label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Password</label>
               <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={showPass ? 'text' : 'password'}
                   placeholder="••••••••"
                   {...register('password')}
-                  className={`w-full h-12 px-4 pr-12 rounded-xl border ${
-                    errors.password ? 'border-rose-400 dark:border-rose-600' : 'border-slate-200 dark:border-slate-700'
-                  } bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-300`}
+                  className={`w-full h-11 pl-10 pr-10 rounded-xl border ${
+                    errors.password ? 'border-rose-500' : 'border-slate-200 dark:border-slate-800'
+                  } bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  aria-label={showPass ? 'Hide password' : 'Show password'}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 >
-                  {showPass ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="text-xs text-rose-500 mt-0.5">{errors.password.message}</p>}
+              {errors.password && <p className="text-[11px] text-rose-500">{errors.password.message}</p>}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-extrabold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-indigo-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              {loading
-                ? <><Loader2 className="w-4.5 h-4.5 animate-spin" /> Signing in…</>
-                : <>Sign In <ArrowRight className="w-4.5 h-4.5" /></>
-              }
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-slate-600 dark:text-slate-400">
-            No account?{' '}
-            <Link to="/register" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">Create one for free</Link>
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+              Create one free
+            </Link>
           </p>
         </div>
-
       </div>
     </div>
   );
