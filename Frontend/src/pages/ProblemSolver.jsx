@@ -348,8 +348,8 @@ const ProblemSolver = () => {
   const diffCfg = difficultyConfig[problem?.difficulty] || difficultyConfig.Medium;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div>
         {/* Top Header Bar */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>

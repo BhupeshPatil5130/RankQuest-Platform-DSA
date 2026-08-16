@@ -217,14 +217,14 @@ const SheetDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <div className="space-y-6 animate-fade-in pb-12">
       {/* Notes Modal */}
       {noteModal && (
         <NoteModal problem={noteModal} onClose={() => setNoteModal(null)} />
       )}
 
-      <div className="container mx-auto px-4 max-w-6xl">
-        <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground" onClick={() => navigate('/sheets')}>
+      <div>
+        <Button variant="ghost" className="mb-4 gap-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white" onClick={() => navigate('/sheets')}>
           <ArrowLeft className="h-4 w-4" /> Back to Sheets
         </Button>
 

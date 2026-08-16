@@ -84,10 +84,9 @@ export default function PatternDetail() {
   const pct      = total ? Math.round((solved / total) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 subtle-grid py-10 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-5xl mx-auto space-y-6">
-
-        <Link to="/patterns" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div>
+        <Link to="/patterns" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-4">
           <ArrowLeft className="w-4 h-4" /> Back to Patterns Roadmap
         </Link>
 
