@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { loginUser, signupUser, getUserProfile, updateUserProfile as updateUserProfileApi, googleSignin } from '../services/apiService';
 
+// 15 days in milliseconds — must match backend jwt.expiration-ms
+const SESSION_MAX_AGE_MS = 15 * 24 * 60 * 60 * 1000;
+
 const AuthContext = createContext()
 
 export const useAuth = () => {
@@ -12,18 +15,38 @@ export const useAuth = () => {
 }
 
 export const AuthProvider = ({ children }) => {
-  // Load persisted user from localStorage immediately (prevents flash)
+  // Load persisted user from localStorage — auto-clear if session expired (15 days)
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('rankquest_user');
+    const loginTime = localStorage.getItem('rankquest_login_time');
+    if (savedUser && loginTime) {
+      const elapsed = Date.now() - Number(loginTime);
+      if (elapsed > SESSION_MAX_AGE_MS) {
+        // Session expired — clear everything
+        localStorage.removeItem('rankquest_token');
+        localStorage.removeItem('rankquest_user');
+        localStorage.removeItem('rankquest_login_time');
+        return null;
+      }
+      return JSON.parse(savedUser);
+    }
     return savedUser ? JSON.parse(savedUser) : null;
   });
   
   const [loading, setLoading] = useState(false);
 
-  // Background session validation on mount
+  // Background session validation on mount — also checks 15-day expiry
   useEffect(() => {
     const validateSession = async () => {
       const token = localStorage.getItem('rankquest_token');
+      const loginTime = localStorage.getItem('rankquest_login_time');
+
+      // Check if 15-day session has expired
+      if (loginTime && (Date.now() - Number(loginTime)) > SESSION_MAX_AGE_MS) {
+        logout();
+        return;
+      }
+
       if (token && user) {
         try {
           const response = await getUserProfile();
@@ -58,6 +81,7 @@ export const AuthProvider = ({ children }) => {
         const { token, user: userData } = response.data;
         localStorage.setItem('rankquest_token', token);
         localStorage.setItem('rankquest_user', JSON.stringify(userData));
+        localStorage.setItem('rankquest_login_time', String(Date.now()));
         setUser(userData);
         return { success: true };
       } else {
@@ -82,6 +106,7 @@ export const AuthProvider = ({ children }) => {
         const { token, user: userData } = response.data;
         localStorage.setItem('rankquest_token', token);
         localStorage.setItem('rankquest_user', JSON.stringify(userData));
+        localStorage.setItem('rankquest_login_time', String(Date.now()));
         setUser(userData);
         return { success: true };
       } else {
@@ -116,6 +141,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('rankquest_token');
     localStorage.removeItem('rankquest_user');
+    localStorage.removeItem('rankquest_login_time');
     setUser(null);
   }
 
